@@ -1,0 +1,13 @@
+COMPANY_ID,COMPANY_NAME,CHINESE_NAME,ACTIVE_INACTIVE,BUSINESS_TYPE,PRC_HOME_BASE,GOV_COMPLICITY
+1,Harbor Batch Bakery,,Active,Bakery,Midwest,Retail bakery
+2,Maple & Main Cookie Co.,,Active,Bakery,Northeast,Regional bakery
+3,Sunfield Flour Mills,,Active,Ingredient Supplier,Great Lakes,Flour mill
+4,Orchard Vanilla Imports,,Active,Importer,East Coast,Flavor importer
+5,Northwind Butter Works,,Active,Dairy Processor,Wisconsin,Butter supplier
+6,Cacao Coast Ingredients,,Active,Ingredient Supplier,West Coast,Chocolate ingredient supplier
+7,Spruce Street Packing,,Active,Co-Packer,Midwest,Packaging partner
+8,Golden Crate Logistics,,Active,Distributor,National,Distribution partner
+9,Clover Cane Sugars,,Active,Ingredient Supplier,Gulf Coast,Sugar refiner
+10,Copper Kettle Kitchen,,Active,Contract Bakery,South,Private-label bakery
+11,Bluebird Oven Foods,,Active,Bakery,Pacific Northwest,Regional bakery
+12,Seaside Biscuit Works,,Active,Bakery,Southeast,Retail bakery

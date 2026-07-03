@@ -1,0 +1,21 @@
+SUBSTANCE_SOURCING_ID,SUBSTANCE_ID,SUBSTANCE_SOURCING_LOCAL_NAME,SUBSTANCE_SOURCING_TYPE_ID,DATA_SOURCE_ID,SUBSTANCE_SOURCING_PRIMARY,SUBSTANCE_SOURCE_LOCAL_ID_ATTRIBUTE,SUBSTANCE_SOURCING_REFERENCE
+1,ING-FLOUR-AP,All-purpose flour,1,2,TRUE,Flour,All-purpose flour catalog family
+2,ING-FLOUR-AP,all-purpose flour,3,1,FALSE,Flour,Observed menu phrasing for All-purpose flour
+3,ING-SUGAR-BROWN,Brown sugar,1,2,TRUE,Sweetener,Brown sugar catalog family
+4,ING-SUGAR-BROWN,dark brown sugar,3,4,FALSE,Sweetener,Observed menu phrasing for Brown sugar
+5,ING-BUTTER-CULTURED,Cultured butter,1,2,TRUE,Fat,Cultured butter catalog family
+6,ING-BUTTER-CULTURED,cultured sweet cream butter,3,1,FALSE,Fat,Observed menu phrasing for Cultured butter
+7,ING-VANILLA-MDG,Madagascar vanilla extract,1,2,TRUE,Flavor,Madagascar vanilla extract catalog family
+8,ING-VANILLA-MDG,Madagascar vanilla,3,4,FALSE,Flavor,Observed menu phrasing for Madagascar vanilla extract
+9,ING-CHOC-SEMI,Semisweet chocolate chips,1,2,TRUE,Inclusion,Semisweet chocolate chips catalog family
+10,ING-CHOC-SEMI,semisweet chocolate chips,3,1,FALSE,Inclusion,Observed menu phrasing for Semisweet chocolate chips
+11,ING-SALT-SEA,Sea salt,1,2,TRUE,Flavor,Sea salt catalog family
+12,ING-SALT-SEA,flaky sea salt,3,4,FALSE,Flavor,Observed menu phrasing for Sea salt
+13,ING-OATS-ROLLED,Rolled oats,1,2,TRUE,Inclusion,Rolled oats catalog family
+14,ING-OATS-ROLLED,rolled oats,3,1,FALSE,Inclusion,Observed menu phrasing for Rolled oats
+15,ING-CINNAMON,Cinnamon,1,2,TRUE,Flavor,Cinnamon catalog family
+16,ING-CINNAMON,ground cinnamon,3,4,FALSE,Flavor,Observed menu phrasing for Cinnamon
+17,ING-FLOUR-ALMOND,Almond flour,1,2,TRUE,Flour,Almond flour catalog family
+18,ING-FLOUR-ALMOND,fine almond flour,3,1,FALSE,Flour,Observed menu phrasing for Almond flour
+19,ING-MOLASSES,Molasses,1,2,TRUE,Sweetener,Molasses catalog family
+20,ING-MOLASSES,blackstrap molasses,3,4,FALSE,Sweetener,Observed menu phrasing for Molasses

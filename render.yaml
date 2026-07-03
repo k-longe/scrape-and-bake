@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: scrape-and-bake
+    runtime: static
+    rootDir: scrape-and-bake/frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist

@@ -1,0 +1,16 @@
+LINKAGEID,COMPANY_ID,LINKAGE_METHOD,Linkage_Value_Type,LINKAGE_VALUE,DATA_SOURCE_ID
+1,1,Email,Email,batches@bakehouse-collective.example,1
+2,2,Email,Email,batches@bakehouse-collective.example,4
+3,10,Email,Email,batches@bakehouse-collective.example,4
+4,11,Email,Email,batches@bakehouse-collective.example,7
+5,3,Phone,Phone,+1-414-555-0110,2
+6,5,Phone,Phone,+1-414-555-0110,3
+7,9,Phone,Phone,+1-414-555-0110,2
+8,7,Phone,Phone,+1-773-555-0142,6
+9,8,Phone,Phone,+1-773-555-0142,6
+10,4,Email,Email,vanilla@pantry-inputs.example,2
+11,6,Email,Email,vanilla@pantry-inputs.example,5
+12,12,Email,Email,coastal-orders@bakehouse-collective.example,1
+13,1,Phone,Phone,+1-312-555-0188,1
+14,7,Email,Email,packing@fulfillment-partners.example,6
+15,8,Email,Email,packing@fulfillment-partners.example,6

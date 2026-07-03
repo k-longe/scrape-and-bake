@@ -1,0 +1,11 @@
+SUBSTANCE_REFERENCE_ID,SUBSTANCE_NAME,SUBSTANCE_ID,SUBSTANCE_WEIGHT,SUBSTANCE_DESCRIPTION,SUBSTANCE_TYPE_ID
+1,All-purpose flour,ING-FLOUR-AP,24,Primary flour used across house cookie bases.,1
+2,Brown sugar,ING-SUGAR-BROWN,18,Moisture-retaining sweetener used in classic cookie dough.,2
+3,Cultured butter,ING-BUTTER-CULTURED,20,Premium butter used in rich dough and laminated inclusions.,3
+4,Madagascar vanilla extract,ING-VANILLA-MDG,15,High-aroma vanilla extract used in signature cookie lines.,4
+5,Semisweet chocolate chips,ING-CHOC-SEMI,22,Core inclusion for chocolate chip and double chocolate cookies.,5
+6,Sea salt,ING-SALT-SEA,8,Finishing and balance ingredient used in sweet-savory blends.,4
+7,Rolled oats,ING-OATS-ROLLED,14,Textural inclusion used in oatmeal cookie programs.,5
+8,Cinnamon,ING-CINNAMON,11,Warm spice used in snickerdoodle and seasonal cookies.,4
+9,Almond flour,ING-FLOUR-ALMOND,17,Alternative flour used in gluten-aware cookie lines.,1
+10,Molasses,ING-MOLASSES,13,Dark sweetener used for ginger and chewy brown cookies.,2

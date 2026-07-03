@@ -1,0 +1,9 @@
+ASSOCIATIONID,COMPANY_ID,ASSOCIATED_COMPANY_ID,LINKAGE_METHOD,LINKAGE_VALUE,LINKAGE_TYPE,DATA_SOURCE_ID,company_name,associated_company_name
+1,1,2,Email,batches@bakehouse-collective.example,Shared production inbox,4,Harbor Batch Bakery,Maple & Main Cookie Co.
+2,1,10,Email,batches@bakehouse-collective.example,Shared production inbox,4,Harbor Batch Bakery,Copper Kettle Kitchen
+3,2,11,Email,batches@bakehouse-collective.example,Shared production inbox,7,Maple & Main Cookie Co.,Bluebird Oven Foods
+4,3,5,Phone,+1-414-555-0110,Shared procurement phone,3,Sunfield Flour Mills,Northwind Butter Works
+5,3,9,Phone,+1-414-555-0110,Shared procurement phone,2,Sunfield Flour Mills,Clover Cane Sugars
+6,7,8,Phone,+1-773-555-0142,Shared fulfillment line,6,Spruce Street Packing,Golden Crate Logistics
+7,4,6,Email,vanilla@pantry-inputs.example,Shared imports inbox,5,Orchard Vanilla Imports,Cacao Coast Ingredients
+8,1,12,Phone,+1-312-555-0188,Shared bakery office line,1,Harbor Batch Bakery,Seaside Biscuit Works

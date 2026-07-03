@@ -1,0 +1,13 @@
+COMPANY_ID,COMPANY_NAME,CHINESE_NAME,ACTIVE_INACTIVE,BUSINESS_TYPE,PRC_HOME_BASE,GOV_COMPLICITY,evidence_score,substance_score,company_tag_score,total_score_v2,legacy_score,evidence_count,substances_linked
+12,Seaside Biscuit Works,,Active,Bakery,Southeast,Retail bakery,155,113,10,205,165,6,6
+2,Maple & Main Cookie Co.,,Active,Bakery,Northeast,Regional bakery,146,110,5,189,151,6,6
+1,Harbor Batch Bakery,,Active,Bakery,Midwest,Retail bakery,137,107,10,184,147,6,6
+10,Copper Kettle Kitchen,,Active,Contract Bakery,South,Private-label bakery,136,97,7,177,143,5,5
+11,Bluebird Oven Foods,,Active,Bakery,Pacific Northwest,Regional bakery,113,81,6,147,119,5,5
+8,Golden Crate Logistics,,Active,Distributor,National,Distribution partner,89,59,0,110,89,3,3
+6,Cacao Coast Ingredients,,Active,Ingredient Supplier,West Coast,Chocolate ingredient supplier,63,41,0,77,63,3,3
+7,Spruce Street Packing,,Active,Co-Packer,Midwest,Packaging partner,48,30,7,65,55,2,2
+3,Sunfield Flour Mills,,Active,Ingredient Supplier,Great Lakes,Flour mill,47,41,0,61,47,2,2
+9,Clover Cane Sugars,,Active,Ingredient Supplier,Gulf Coast,Sugar refiner,35,31,0,46,35,2,2
+5,Northwind Butter Works,,Active,Dairy Processor,Wisconsin,Butter supplier,26,20,8,41,34,1,1
+4,Orchard Vanilla Imports,,Active,Importer,East Coast,Flavor importer,26,15,0,31,26,1,1

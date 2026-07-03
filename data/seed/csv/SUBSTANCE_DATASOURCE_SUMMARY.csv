@@ -1,0 +1,28 @@
+SUBSTANCE_REFERENCE_ID,DATA_SOURCE_NAME,DATA_SOURCE_TYPE,mention_count
+4,Pantry inputs wholesale catalog,catalog,4
+2,Pantry inputs wholesale catalog,catalog,3
+5,Golden Crate distribution roster,distributor_listing,3
+1,Harbor Batch seasonal cookie menu,bakery_menu,2
+1,Maple & Main online ingredient panel,bakery_menu,2
+2,Golden Crate distribution roster,distributor_listing,2
+3,Harbor Batch seasonal cookie menu,bakery_menu,2
+3,Maple & Main online ingredient panel,bakery_menu,2
+5,Harbor Batch seasonal cookie menu,bakery_menu,2
+6,Pantry inputs wholesale catalog,catalog,2
+8,Pantry inputs wholesale catalog,catalog,2
+1,Pantry inputs wholesale catalog,catalog,1
+1,Golden Crate distribution roster,distributor_listing,1
+1,Bluebird seasonal recipe archive,recipe_archive,1
+3,Northwind butter spec sheet,ingredient_sheet,1
+4,Golden Crate distribution roster,distributor_listing,1
+5,Maple & Main online ingredient panel,bakery_menu,1
+5,Cacao Coast supplier profile,supplier_profile,1
+6,Golden Crate distribution roster,distributor_listing,1
+7,Bluebird seasonal recipe archive,recipe_archive,1
+7,Golden Crate distribution roster,distributor_listing,1
+8,Cacao Coast supplier profile,supplier_profile,1
+9,Pantry inputs wholesale catalog,catalog,1
+9,Bluebird seasonal recipe archive,recipe_archive,1
+10,Golden Crate distribution roster,distributor_listing,1
+10,Pantry inputs wholesale catalog,catalog,1
+10,Maple & Main online ingredient panel,bakery_menu,1

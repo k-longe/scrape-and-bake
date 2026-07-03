@@ -1,0 +1,6 @@
+WEIGHTING_TAG_ID,WEIGHTING_TAG_TITLE,WEIGHTING_TAG_WEIGHT,WEIGHTING_TAG_DESCRIPTION,WEIGHTING_TAG_CATEGORY_ID
+1,Signature cookie line,10,Appears in a highlighted or signature product line.,1
+2,Cold-chain handling,8,Requires careful storage or temperature handling.,2
+3,Private-label partner,7,Supports co-manufacturing or private-label output.,2
+4,Seasonal rotation,5,Referenced in seasonal or limited-run assortment pages.,3
+5,Organic positioning,6,Markets an organic or specialty sourcing claim.,1

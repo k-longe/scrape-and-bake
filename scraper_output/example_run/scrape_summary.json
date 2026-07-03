@@ -1,0 +1,74 @@
+{
+  "scrape_run_id": "cookie-demo-scrape-20260703T170850Z",
+  "generated_at_utc": "2026-07-03T17:08:50.800407+00:00",
+  "target_count": 4,
+  "success_count": 4,
+  "failure_count": 0,
+  "parsed_evidence_row_count": 11,
+  "pages": [
+    {
+      "company_name": "King Arthur Baking Company",
+      "url": "https://www.kingarthurbaking.com/recipes/classic-chocolate-chip-cookies-recipe",
+      "data_source_name": "King Arthur classic chocolate chip cookies recipe",
+      "data_source_type": "recipe_page",
+      "evidence_type": "Bakery menu",
+      "source_mode": "fixture_fallback",
+      "matched_ingredients": [
+        "All-purpose flour",
+        "Brown sugar",
+        "Cultured butter",
+        "Semisweet chocolate chips",
+        "Madagascar vanilla extract"
+      ],
+      "matched_ingredient_count": 5,
+      "raw_html_file": "raw_html/king-arthur-baking-company.html",
+      "fetch_error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "company_name": "Bob's Red Mill",
+      "url": "https://www.bobsredmill.com/products/baking-flour.html",
+      "data_source_name": "Bob's Red Mill flour product index",
+      "data_source_type": "catalog_page",
+      "evidence_type": "Catalog listing",
+      "source_mode": "fixture_fallback",
+      "matched_ingredients": [
+        "All-purpose flour",
+        "Almond flour",
+        "Rolled oats"
+      ],
+      "matched_ingredient_count": 3,
+      "raw_html_file": "raw_html/bob-s-red-mill.html",
+      "fetch_error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "company_name": "Nielsen-Massey Vanillas",
+      "url": "https://www.nielsenmassey.com/products/madagascar-bourbon-pure-vanilla-extract/",
+      "data_source_name": "Nielsen-Massey vanilla extract product page",
+      "data_source_type": "supplier_profile",
+      "evidence_type": "Supplier profile",
+      "source_mode": "fixture_fallback",
+      "matched_ingredients": [
+        "Madagascar vanilla extract"
+      ],
+      "matched_ingredient_count": 1,
+      "raw_html_file": "raw_html/nielsen-massey-vanillas.html",
+      "fetch_error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "company_name": "Guittard Chocolate Company",
+      "url": "https://www.guittard.com/our-chocolate/detail/semisweet-chocolate-baking-chips",
+      "data_source_name": "Guittard semisweet baking chips page",
+      "data_source_type": "ingredient_sheet",
+      "evidence_type": "Ingredient spec sheet",
+      "source_mode": "fixture_fallback",
+      "matched_ingredients": [
+        "Semisweet chocolate chips",
+        "Sea salt"
+      ],
+      "matched_ingredient_count": 2,
+      "raw_html_file": "raw_html/guittard-chocolate-company.html",
+      "fetch_error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    }
+  ],
+  "failures": []
+}

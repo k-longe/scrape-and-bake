@@ -1,0 +1,49 @@
+[
+  {
+    "company_name": "King Arthur Baking Company",
+    "url": "https://www.kingarthurbaking.com/recipes/classic-chocolate-chip-cookies-recipe",
+    "data_source_name": "King Arthur classic chocolate chip cookies recipe",
+    "data_source_type": "recipe_page",
+    "evidence_type": "Bakery menu",
+    "ingredient_aliases": {
+      "All-purpose flour": ["all-purpose flour", "all purpose flour"],
+      "Brown sugar": ["brown sugar"],
+      "Cultured butter": ["butter"],
+      "Semisweet chocolate chips": ["semisweet chocolate chips", "chocolate chips"],
+      "Madagascar vanilla extract": ["vanilla extract", "vanilla"]
+    }
+  },
+  {
+    "company_name": "Bob's Red Mill",
+    "url": "https://www.bobsredmill.com/products/baking-flour.html",
+    "data_source_name": "Bob's Red Mill flour product index",
+    "data_source_type": "catalog_page",
+    "evidence_type": "Catalog listing",
+    "ingredient_aliases": {
+      "All-purpose flour": ["all purpose flour", "all-purpose flour"],
+      "Almond flour": ["almond flour"],
+      "Rolled oats": ["rolled oats", "oats"]
+    }
+  },
+  {
+    "company_name": "Nielsen-Massey Vanillas",
+    "url": "https://www.nielsenmassey.com/products/madagascar-bourbon-pure-vanilla-extract/",
+    "data_source_name": "Nielsen-Massey vanilla extract product page",
+    "data_source_type": "supplier_profile",
+    "evidence_type": "Supplier profile",
+    "ingredient_aliases": {
+      "Madagascar vanilla extract": ["madagascar bourbon pure vanilla extract", "vanilla extract", "madagascar vanilla"]
+    }
+  },
+  {
+    "company_name": "Guittard Chocolate Company",
+    "url": "https://www.guittard.com/our-chocolate/detail/semisweet-chocolate-baking-chips",
+    "data_source_name": "Guittard semisweet baking chips page",
+    "data_source_type": "ingredient_sheet",
+    "evidence_type": "Ingredient spec sheet",
+    "ingredient_aliases": {
+      "Semisweet chocolate chips": ["semisweet chocolate chips", "baking chips", "semisweet"],
+      "Sea salt": ["sea salt"]
+    }
+  }
+]
