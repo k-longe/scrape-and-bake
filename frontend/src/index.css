@@ -1,3 +1,14 @@
+:root {
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", "Avenir Next", sans-serif;
+  --font-body: "Nunito", "Avenir Next", "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", "SF Mono", "Consolas", "Liberation Mono", monospace;
+  --focus-ring: #ffb703;
+  --page-bg:
+    radial-gradient(circle at top left, rgba(255, 209, 102, 0.34), transparent 28%),
+    radial-gradient(circle at top right, rgba(239, 71, 111, 0.18), transparent 24%),
+    linear-gradient(180deg, #fff7ea 0%, #f5ebdb 48%, #efe1ca 100%);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html,
@@ -7,8 +18,53 @@ body,
   height: 100%;
 }
 
+html {
+  background: #f5ebdb;
+}
+
 body {
   overflow: hidden;
+  font-family: var(--font-body);
+  background: var(--page-bg);
+  color: #2b1811;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  isolation: isolate;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(239, 71, 111, 0.24);
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .graph-pulse-dot {

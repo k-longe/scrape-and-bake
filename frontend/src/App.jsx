@@ -5,42 +5,146 @@ import { DEFAULT_APP_ROLE, getSession, isAuthVerificationPending, signOut, verif
 
 // ── Themes ─────────────────────────────────────────────────────────────────
 const DARK = {
-  bg: "#070b10", surface: "#0a0e14", surfaceAlt: "#0f1520",
-  border: "#1a2233", borderMid: "#2a3550",
-  text: "#cdd6e8", textMid: "#7a90a8", textMuted: "#4a6080",
-  navy: "#0f1f35", accent: "#007aff", accentBg: "#0f2040",
+  bg: "#1c1111",
+  bgAlt: "#251616",
+  surface: "#2f1c1c",
+  surfaceAlt: "#392322",
+  surfaceSoft: "#472b29",
+  border: "#6f4d45",
+  borderMid: "#8e665c",
+  text: "#fff7ee",
+  textMid: "#efd9c6",
+  textMuted: "#caa88f",
+  navy: "#243249",
+  accent: "#ef476f",
+  accentBg: "#512433",
+  butter: "#ffd166",
+  butterBg: "#4a3517",
+  pistachio: "#8ecf7a",
+  pistachioBg: "#203926",
+  chocolate: "#b46a42",
+  chocolateBg: "#4a2b1d",
+  raspberry: "#ff7aa2",
+  raspberryBg: "#552335",
+  cream: "#fff4e2",
+  espresso: "#170d0d",
+  shadow: "0 22px 54px rgba(0,0,0,0.38)",
 };
 const LIGHT = {
-  bg: "#f2f0eb", surface: "#ffffff", surfaceAlt: "#f8f6f2",
-  border: "#e0dbd2", borderMid: "#c8c2b8",
-  text: "#18150f", textMid: "#52493c", textMuted: "#96897a",
-  navy: "#1b2d4f", accent: "#1b56a5", accentBg: "#eaf0fb",
+  bg: "#f7ead8",
+  bgAlt: "#fff5e9",
+  surface: "#fffaf2",
+  surfaceAlt: "#fff1dd",
+  surfaceSoft: "#ffe3c2",
+  border: "#d9b99c",
+  borderMid: "#bb8d6e",
+  text: "#2c1810",
+  textMid: "#674636",
+  textMuted: "#8d6b5a",
+  navy: "#22324f",
+  accent: "#d64067",
+  accentBg: "#ffe2eb",
+  butter: "#f2b940",
+  butterBg: "#fff1c6",
+  pistachio: "#4d8f4a",
+  pistachioBg: "#e5f3dd",
+  chocolate: "#9a5d36",
+  chocolateBg: "#f6e0cf",
+  raspberry: "#c72e59",
+  raspberryBg: "#ffd6e2",
+  cream: "#fff7ea",
+  espresso: "#2b1811",
+  shadow: "0 18px 38px rgba(79,48,24,0.16)",
 };
+
+const CARD_RADIUS = 18;
+const formatSourceTypeLabel = value => String(value || "")
+  .replace(/[_-]+/g, " ")
+  .replace(/\b\w/g, match => match.toUpperCase()) || "Source Page";
+const formatCompanyTypeLabel = value => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return "Company";
+  if (normalized.includes("bakery")) return "Bakery";
+  if (normalized.includes("supplier") || normalized.includes("importer") || normalized.includes("mill") || normalized.includes("processor")) return "Ingredient Supplier";
+  if (normalized.includes("distributor") || normalized.includes("logistics")) return "Distributor";
+  if (normalized.includes("packer")) return "Production Partner";
+  if (normalized.includes("source") || normalized.includes("catalog") || normalized.includes("profile") || normalized.includes("cert")) return "Source Entity";
+  return value;
+};
+const getCompanyTypePresentation = (type, dark) => {
+  const normalized = String(type || "").trim().toLowerCase();
+  const palette = dark ? DARK : LIGHT;
+  if (normalized.includes("bakery")) return { label: "Bakery", color: palette.raspberry, bg: palette.raspberryBg, border: `${palette.raspberry}55` };
+  if (normalized.includes("supplier") || normalized.includes("importer") || normalized.includes("mill") || normalized.includes("processor")) return { label: "Ingredient Supplier", color: palette.pistachio, bg: palette.pistachioBg, border: `${palette.pistachio}55` };
+  if (normalized.includes("distributor") || normalized.includes("logistics")) return { label: "Distributor", color: palette.butter, bg: palette.butterBg, border: `${palette.butter}66` };
+  if (normalized.includes("source") || normalized.includes("catalog") || normalized.includes("profile") || normalized.includes("cert")) return { label: "Source Entity", color: palette.navy, bg: dark ? "#1e2a3f" : "#dde8fb", border: dark ? "#4f6a9a" : "#9cb8e7" };
+  if (normalized.includes("packer")) return { label: "Production Partner", color: palette.chocolate, bg: palette.chocolateBg, border: `${palette.chocolate}55` };
+  return { label: formatCompanyTypeLabel(type), color: palette.textMid, bg: palette.surfaceSoft, border: palette.borderMid };
+};
+const getEvidenceTypePresentation = (type, dark) => {
+  const palette = dark ? DARK : LIGHT;
+  const normalized = String(type || "").trim().toLowerCase();
+  if (normalized.includes("catalog")) return { label: "Catalog Listing", color: palette.butter, bg: palette.butterBg, border: `${palette.butter}55` };
+  if (normalized.includes("spec")) return { label: "Spec Sheet", color: palette.chocolate, bg: palette.chocolateBg, border: `${palette.chocolate}55` };
+  if (normalized.includes("menu")) return { label: "Bakery Menu", color: palette.raspberry, bg: palette.raspberryBg, border: `${palette.raspberry}55` };
+  if (normalized.includes("distributor")) return { label: "Distributor Listing", color: palette.navy, bg: dark ? "#1d2941" : "#e1ebff", border: dark ? "#49668e" : "#a7bee6" };
+  if (normalized.includes("supplier")) return { label: "Supplier Profile", color: palette.pistachio, bg: palette.pistachioBg, border: `${palette.pistachio}55` };
+  return { label: type || "Source Evidence", color: palette.accent, bg: palette.accentBg, border: `${palette.accent}55` };
+};
+const getSourcePlatformPresentation = (sourceType, dark) => {
+  const palette = dark ? DARK : LIGHT;
+  const normalized = String(sourceType || "").trim().toLowerCase();
+  if (normalized.includes("bakery") || normalized.includes("menu")) return { label: "Bakery Page", color: palette.raspberry, bg: palette.raspberryBg, border: `${palette.raspberry}55` };
+  if (normalized.includes("catalog")) return { label: "Catalog Page", color: palette.butter, bg: palette.butterBg, border: `${palette.butter}55` };
+  if (normalized.includes("ingredient") || normalized.includes("sheet")) return { label: "Ingredient Sheet", color: palette.chocolate, bg: palette.chocolateBg, border: `${palette.chocolate}55` };
+  if (normalized.includes("supplier") || normalized.includes("profile")) return { label: "Supplier Profile", color: palette.pistachio, bg: palette.pistachioBg, border: `${palette.pistachio}55` };
+  if (normalized.includes("distributor")) return { label: "Distributor Page", color: palette.navy, bg: dark ? "#1d2941" : "#e1ebff", border: dark ? "#49668e" : "#a7bee6" };
+  return { label: formatSourceTypeLabel(sourceType), color: palette.textMid, bg: palette.surfaceSoft, border: palette.borderMid };
+};
+const getIngredientChipStyle = (T, dark, active = false) => ({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: "5px 11px",
+  borderRadius: 999,
+  background: active ? T.accentBg : T.butterBg,
+  color: active ? T.accent : (dark ? T.butter : T.chocolate),
+  border: `1px solid ${active ? T.accent : dark ? T.butter : T.chocolate}55`,
+  fontSize: 11,
+  fontWeight: 800,
+  boxShadow: dark ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "inset 0 1px 0 rgba(255,255,255,0.75)",
+});
+const getRecipeCardStyle = (T, dark, accent = T.accent) => ({
+  background: `linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)`,
+  border: `1px solid ${accent}44`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: dark ? "0 20px 44px rgba(0,0,0,0.26)" : "0 14px 30px rgba(93,55,29,0.12)",
+});
 
 const getPriorityCategory = s => (s >= 85 ? "critical" : s >= 65 ? "high" : s >= 45 ? "medium" : "low");
 const getPriorityPresentation = (score, dark) => {
   const category = getPriorityCategory(score);
   const palette = dark
     ? {
-        critical: { color: "#f472b6", bg: "#30111f", label: "Critical" },
-        high: { color: "#f59e0b", bg: "#2d1b05", label: "High" },
-        medium: { color: "#38bdf8", bg: "#0b2230", label: "Medium" },
-        low: { color: "#94a3b8", bg: "#182230", label: "Low" },
+        critical: { color: "#ff7aa2", bg: "#552335", label: "Critical" },
+        high: { color: "#ffd166", bg: "#4a3517", label: "High" },
+        medium: { color: "#8ecf7a", bg: "#203926", label: "Medium" },
+        low: { color: "#bca690", bg: "#3c2a24", label: "Low" },
       }
     : {
-        critical: { color: "#be185d", bg: "#fdf2f8", label: "Critical" },
-        high: { color: "#b45309", bg: "#fffbeb", label: "High" },
-        medium: { color: "#0369a1", bg: "#f0f9ff", label: "Medium" },
-        low: { color: "#475569", bg: "#f8fafc", label: "Low" },
+        critical: { color: "#c72e59", bg: "#ffd6e2", label: "Critical" },
+        high: { color: "#9a5d36", bg: "#fff1c6", label: "High" },
+        medium: { color: "#4d8f4a", bg: "#e5f3dd", label: "Medium" },
+        low: { color: "#7d6455", bg: "#f6e7d8", label: "Low" },
       };
   return { category, score, ...palette[category] };
 };
 const riskColor = (s, dark) => getPriorityPresentation(s, dark).color;
 const riskBg = (s, dark) => getPriorityPresentation(s, dark).bg;
 const linkCol = (m, dark) => {
-  const d = { "IP Address": "#007aff", "Email": "#ff9500", "Phone": "#af52de", "Digital": "#007aff", "Financial": "#ff9500", "Personnel": "#af52de" };
-  const l = { "IP Address": "#1b56a5", "Email": "#c2410c", "Phone": "#7c3aed", "Digital": "#1b56a5", "Financial": "#c2410c", "Personnel": "#7c3aed" };
-  return (dark ? d : l)[m] || (dark ? "#5ac8fa" : "#0e7490");
+  const d = { "IP Address": "#6ba3ff", "Email": "#ffd166", "Phone": "#ff7aa2", "Digital": "#6ba3ff", "Financial": "#ffd166", "Personnel": "#8ecf7a" };
+  const l = { "IP Address": "#2759a6", "Email": "#9a5d36", "Phone": "#c72e59", "Digital": "#2759a6", "Financial": "#9a5d36", "Personnel": "#4d8f4a" };
+  return (dark ? d : l)[m] || (dark ? "#b98cf5" : "#6b46c1");
 };
 const artifactKindFromMethod = method => {
   const normalized = String(method || "").toLowerCase();
@@ -58,9 +162,9 @@ const getSearchResultArtifactSeed = result => {
   return { kind, method: artifactMethodLabel(kind), value };
 };
 const evidCol = (t, dark) => {
-  const d = { "Catalog listing": "#007aff", "Ingredient spec sheet": "#ff9500", "Bakery menu": "#34c759", "Distributor listing": "#5ac8fa", "Supplier profile": "#af52de" };
-  const l = { "Catalog listing": "#1b56a5", "Ingredient spec sheet": "#c2410c", "Bakery menu": "#15803d", "Distributor listing": "#0f766e", "Supplier profile": "#7c3aed" };
-  return (dark ? d : l)[t] || "#888";
+  const d = { "Catalog listing": "#ffd166", "Ingredient spec sheet": "#b46a42", "Bakery menu": "#ff7aa2", "Distributor listing": "#6ba3ff", "Supplier profile": "#8ecf7a" };
+  const l = { "Catalog listing": "#a76a18", "Ingredient spec sheet": "#8e4d2a", "Bakery menu": "#c72e59", "Distributor listing": "#2759a6", "Supplier profile": "#4d8f4a" };
+  return (dark ? d : l)[t] || (dark ? "#d4b59d" : "#7d6455");
 };
 
 const MEDIA_BUCKETS = { images: "Images", sanctions: "Spec Sheets", indictments: "Source Packets" };
@@ -437,17 +541,46 @@ const getArtifactEntityFromTableRow = (tableKey, row) => {
   });
 };
 
+function StickerBadge({ label, palette, style = {} }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "4px 10px",
+        borderRadius: 999,
+        background: palette.bg,
+        color: palette.color,
+        border: `1px solid ${palette.border || `${palette.color}55`}`,
+        fontSize: 10,
+        fontWeight: 800,
+        letterSpacing: 0.6,
+        textTransform: "uppercase",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22)",
+        ...style,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function IngredientBadge({ label, T, dark, active = false, style = {} }) {
+  return <span style={{ ...getIngredientChipStyle(T, dark, active), ...style }}>🍪 {label}</span>;
+}
+
 function GraphLoadingOverlay({ dark }) {
   const T = dark ? DARK : LIGHT;
   return (
-    <div style={{ position: "absolute", inset: 0, zIndex: 4, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "auto", background: dark ? "rgba(7,11,16,0.32)" : "rgba(242,240,235,0.36)", backdropFilter: "blur(2px)" }}>
-      <div style={{ background: dark ? "rgba(10,14,20,0.94)" : "rgba(255,255,255,0.96)", border: `1px solid ${T.border}`, borderRadius: 12, padding: "15px 18px", boxShadow: dark ? "0 18px 44px rgba(0,0,0,0.35)" : "0 18px 34px rgba(54,45,31,0.14)", display: "flex", alignItems: "center", gap: 12 }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 4, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "auto", background: dark ? "rgba(28,17,17,0.34)" : "rgba(247,234,216,0.42)", backdropFilter: "blur(6px)" }}>
+      <div style={{ ...getRecipeCardStyle(T, dark, T.butter), padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, maxWidth: 420 }}>
         <div style={{ display: "flex", gap: 4 }} aria-hidden="true">
           {[0, 1, 2].map(i => <span key={i} className="graph-pulse-dot" style={{ animationDelay: `${i * 0.14}s`, background: T.accent }} />)}
         </div>
         <div>
-          <div style={{ color: T.text, fontSize: 13, fontWeight: 700 }}>Building network visual...</div>
-          <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>Fetching a bounded graph and redrawing the canvas.</div>
+          <div style={{ color: T.text, fontSize: 15, fontWeight: 800, fontFamily: "var(--font-display)" }}>Baking the network map…</div>
+          <div style={{ color: T.textMid, fontSize: 12, marginTop: 4, lineHeight: 1.55 }}>Pulling together company links, contact artifacts, and provenance so the graph redraws with the latest demo view.</div>
         </div>
       </div>
     </div>
@@ -483,7 +616,8 @@ function Spinner({ T }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", flexDirection: "column", gap: 12 }}>
       <div style={{ width: 32, height: 32, borderRadius: "50%", border: `3px solid ${T.border}`, borderTopColor: T.accent, animation: "spin 0.8s linear infinite" }} />
-      <div style={{ color: T.textMuted, fontSize: 11, letterSpacing: 1 }}>LOADING INTELLIGENCE DATA...</div>
+      <div style={{ color: T.text, fontSize: 14, fontWeight: 800, fontFamily: "var(--font-display)" }}>Preheating the demo…</div>
+      <div style={{ color: T.textMuted, fontSize: 12, maxWidth: 320, textAlign: "center", lineHeight: 1.55 }}>Loading synthetic companies, ingredients, source evidence, and network links for a public-friendly walkthrough.</div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -539,23 +673,23 @@ function BottomDrawer({ open, onClose, title, subtitle, dark, children, bodyScro
       {open && <div onClick={onClose} aria-hidden="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 40 }} />}
       <div ref={drawerRef} role="dialog" aria-modal="true" aria-label={title || "Detail drawer"} tabIndex={-1} style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
-        height, background: T.surface, borderTop: `2px solid ${T.border}`,
-        boxShadow: dark ? "0 -8px 40px rgba(0,0,0,0.7)" : "0 -6px 32px rgba(0,0,0,0.13)",
+        height, background: `linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)`, borderTop: `3px solid ${T.butter}`,
+        boxShadow: dark ? "0 -18px 46px rgba(0,0,0,0.48)" : "0 -14px 38px rgba(79,48,24,0.16)",
         transform: open ? "translateY(0)" : "translateY(100%)",
         transition: isDragging ? "none" : "transform 0.26s cubic-bezier(0.4,0,0.2,1)",
         outline: "none",
-        display: "flex", flexDirection: "column", fontFamily: "Georgia,serif",
+        display: "flex", flexDirection: "column", fontFamily: "var(--font-body)",
       }}>
         {/* Drag handle */}
         <div ref={dragRef} onMouseDown={onDragStart}
           style={{ height: 6, background: "transparent", cursor: "ns-resize", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: 48, height: 4, background: T.borderMid, borderRadius: 2 }} />
+          <div style={{ width: 60, height: 6, background: `linear-gradient(90deg, ${T.butter} 0%, ${T.accent} 100%)`, borderRadius: 999 }} />
         </div>
-        <div style={{ padding: "8px 24px 10px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, background: T.surfaceAlt }}>
+        <div style={{ padding: "10px 24px 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, background: `linear-gradient(135deg, ${T.surfaceAlt} 0%, ${T.bgAlt} 100%)` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div>
-              <div style={{ color: T.text, fontWeight: 700, fontSize: 16 }}>{title}</div>
-              {subtitle && <div style={{ color: T.textMuted, fontSize: 12, marginTop: 2 }}>{subtitle}</div>}
+              <div style={{ color: T.text, fontWeight: 800, fontSize: 18, fontFamily: "var(--font-display)" }}>{title}</div>
+              {subtitle && <div style={{ color: T.textMid, fontSize: 12, marginTop: 3 }}>{subtitle}</div>}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -563,7 +697,7 @@ function BottomDrawer({ open, onClose, title, subtitle, dark, children, bodyScro
               onClick={() => setHeight(isExpanded ? defaultHeight : expandedHeight)}
               title={isExpanded ? "Switch to partial drawer height" : "Expand drawer"}
               aria-label={isExpanded ? "Switch to partial drawer height" : "Expand drawer"}
-              style={{ background: "none", border: `1px solid ${T.border}`, color: T.textMuted, cursor: "pointer", fontSize: 10, padding: "4px 8px", borderRadius: 4, fontFamily: "Georgia,serif", minWidth: 62 }}
+              style={{ background: "none", border: `1px solid ${T.border}`, color: T.textMuted, cursor: "pointer", fontSize: 10, padding: "4px 8px", borderRadius: 4, fontFamily: "var(--font-body)", minWidth: 62 }}
             >
               {isExpanded ? "Partial" : "Expand"}
             </button>
@@ -581,11 +715,11 @@ function BottomDrawer({ open, onClose, title, subtitle, dark, children, bodyScro
 // ── Drawer Column ──────────────────────────────────────────────────────────
 function DrawerCol({ label, T, children, minWidth = 240 }) {
   return (
-    <div style={{ minWidth, flex: 1, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ padding: "10px 18px 8px", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
-        <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.2, fontWeight: 700 }}>{label}</div>
+    <div style={{ minWidth, flex: 1, borderRight: `1px dashed ${T.border}`, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ padding: "12px 18px 10px", borderBottom: `1px solid ${T.border}`, flexShrink: 0, background: `linear-gradient(135deg, ${T.surfaceAlt} 0%, ${T.bgAlt} 100%)` }}>
+        <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.3, fontWeight: 800 }}>{label}</div>
       </div>
-      <div style={{ flex: 1, overflowY: "auto", padding: "12px 18px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
         {children}
       </div>
     </div>
@@ -595,8 +729,8 @@ function DrawerCol({ label, T, children, minWidth = 240 }) {
 function EvidenceProvenancePanel({ title, summary, rows, loading, loaded, error, onLoad, T, dark, onAddRow, isRowInDossier }) {
   const field = (label, value) => value !== null && value !== undefined && value !== "" ? (
     <div style={{ minWidth: 110, flex: 1 }}>
-      <div style={{ color: T.textMuted, fontSize: 8, letterSpacing: 0.8 }}>{label}</div>
-      <div style={{ color: T.textMid, fontSize: 10, marginTop: 2, wordBreak: "break-word" }}>{String(value)}</div>
+      <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 0.9, textTransform: "uppercase" }}>{label}</div>
+      <div style={{ color: T.textMid, fontSize: 11, marginTop: 3, wordBreak: "break-word", lineHeight: 1.45 }}>{String(value)}</div>
     </div>
   ) : null;
 
@@ -604,30 +738,34 @@ function EvidenceProvenancePanel({ title, summary, rows, loading, loaded, error,
     <div style={{ marginTop: 18, borderTop: `1px solid ${T.border}`, paddingTop: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
         <div>
-          <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1 }}>{title}</div>
-          {summary && <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3, lineHeight: 1.5 }}>{summary}</div>}
+          <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.2 }}>{title}</div>
+          {summary && <div style={{ color: T.textMid, fontSize: 11, marginTop: 4, lineHeight: 1.55 }}>{summary}</div>}
         </div>
         <button
           onClick={onLoad}
           disabled={loading}
-          style={{ background: T.accentBg, border: `1px solid ${T.accent}44`, color: T.accent, padding: "5px 10px", borderRadius: 4, cursor: loading ? "default" : "pointer", fontSize: 10, fontFamily: "Georgia,serif", flexShrink: 0 }}
+          style={{ background: T.accentBg, border: `1px solid ${T.accent}44`, color: T.accent, padding: "7px 12px", borderRadius: 999, cursor: loading ? "default" : "pointer", fontSize: 10, fontWeight: 800, flexShrink: 0 }}
         >
-          {loading ? "Loading..." : loaded ? "Refresh" : "Load Records"}
+          {loading ? "Loading…" : loaded ? "Refresh cards" : "Load recipe cards"}
         </button>
       </div>
-      {error && <div style={{ color: dark ? "#ff3b30" : "#b91c1c", fontSize: 11, marginBottom: 8 }}>{error}</div>}
-      {loaded && rows.length === 0 && <div style={{ color: T.textMuted, fontSize: 11 }}>No source evidence records returned for this selection.</div>}
+      {error && <div style={{ color: dark ? "#ffb0a4" : "#9a1f1f", fontSize: 12, marginBottom: 8 }}>{error}</div>}
+      {loaded && rows.length === 0 && <div style={{ color: T.textMuted, fontSize: 12, lineHeight: 1.55 }}>No source evidence cards were returned for this selection yet. Try another company or ingredient to see the provenance trail.</div>}
       {rows.map(row => (
-        <div key={row.evidence_id || `${row.company_name}-${row.record_id}`} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 6, padding: "10px 12px", marginBottom: 8 }}>
+        <div key={row.evidence_id || `${row.company_name}-${row.record_id}`} style={{ ...getRecipeCardStyle(T, dark, getEvidenceTypePresentation(row.evidence_type, dark).color), padding: "14px 14px 12px", marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
-            <div style={{ color: T.text, fontSize: 12, fontWeight: 700 }}>Source Evidence #{row.evidence_id || "unknown"}</div>
+            <div>
+              <div style={{ color: T.text, fontSize: 13, fontWeight: 800, fontFamily: "var(--font-display)" }}>Source Evidence #{row.evidence_id || "unknown"}</div>
+              <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>Recipe card for provenance, source logging, and citation-ready fields.</div>
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-              <div style={{ color: evidCol(row.evidence_type, dark), fontSize: 10, fontWeight: 700 }}>{row.evidence_type || "Source Evidence"}</div>
+              <StickerBadge label={getEvidenceTypePresentation(row.evidence_type, dark).label} palette={getEvidenceTypePresentation(row.evidence_type, dark)} />
+              <StickerBadge label={getSourcePlatformPresentation(row.source_type, dark).label} palette={getSourcePlatformPresentation(row.source_type, dark)} />
               {onAddRow && (
                 <button
                   type="button"
                   onClick={() => onAddRow(row)}
-                  style={{ background: isRowInDossier?.(row) ? T.accentBg : T.surface, color: isRowInDossier?.(row) ? T.accent : T.textMid, border: `1px solid ${isRowInDossier?.(row) ? T.accent : T.border}`, borderRadius: 999, padding: "3px 8px", cursor: "pointer", fontSize: 10, fontWeight: 700, fontFamily: "Georgia,serif" }}
+                  style={{ background: isRowInDossier?.(row) ? T.accentBg : T.surface, color: isRowInDossier?.(row) ? T.accent : T.textMid, border: `1px solid ${isRowInDossier?.(row) ? T.accent : T.border}`, borderRadius: 999, padding: "5px 10px", cursor: "pointer", fontSize: 10, fontWeight: 800 }}
                 >
                   {isRowInDossier?.(row) ? "Update dossier" : "Add to dossier"}
                 </button>
@@ -636,7 +774,10 @@ function EvidenceProvenancePanel({ title, summary, rows, loading, loaded, error,
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
             {field("COMPANY", row.company_name)}
-            {field("INGREDIENT", row.canonical_substance_name)}
+            {row.canonical_substance_name ? <div style={{ minWidth: 140, flex: 1 }}>
+              <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 0.9, textTransform: "uppercase" }}>Ingredient</div>
+              <div style={{ marginTop: 5 }}><IngredientBadge label={row.canonical_substance_name} T={T} dark={dark} /></div>
+            </div> : null}
             {field("OBSERVED TEXT", row.observed_substance_text)}
             {field("SOURCE", row.source_name)}
             {field("SOURCE TYPE", row.source_type)}
@@ -1119,11 +1260,14 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
         <div style={{ marginBottom: 16 }}>
           <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1, marginBottom: 8 }}>PLATFORMS OBSERVED</div>
           {platformSummaries.length ? (
-            <div style={{ display: "grid", gap: 8 }}>
+            <div style={{ display: "grid", gap: 10 }}>
               {platformSummaries.map(platform => (
-                <div key={platform.name} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 11px" }}>
+                <div key={platform.name} style={{ ...getRecipeCardStyle(T, dark, getSourcePlatformPresentation(platform.sourceTypes[0], dark).color), padding: "10px 12px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
-                    <div style={{ color: T.text, fontSize: 12, fontWeight: 700 }}>{platform.name}</div>
+                    <div>
+                      <div style={{ color: T.text, fontSize: 12, fontWeight: 800, fontFamily: "var(--font-display)" }}>{platform.name}</div>
+                      {platform.sourceTypes[0] && <div style={{ marginTop: 5 }}><StickerBadge label={getSourcePlatformPresentation(platform.sourceTypes[0], dark).label} palette={getSourcePlatformPresentation(platform.sourceTypes[0], dark)} /></div>}
+                    </div>
                     <div style={{ color: T.textMuted, fontSize: 10, whiteSpace: "nowrap" }}>{platform.count} row{platform.count === 1 ? "" : "s"}</div>
                   </div>
                   <div style={{ color: T.textMuted, fontSize: 10, lineHeight: 1.5, marginTop: 4 }}>
@@ -1145,9 +1289,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
             <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1, marginBottom: 8 }}>TOP SHARED INFRASTRUCTURE TYPES</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {topSharedTypeSummary.map(entry => (
-                <span key={entry.category} style={{ background: T.accentBg, border: `1px solid ${T.accent}33`, color: T.accent, padding: "4px 10px", borderRadius: 999, fontSize: 10, fontWeight: 700 }}>
-                  {entry.label} · {entry.count}
-                </span>
+                <StickerBadge key={entry.category} label={`${entry.label} · ${entry.count}`} palette={{ color: T.accent, bg: T.accentBg, border: `${T.accent}33` }} />
               ))}
             </div>
           </div>
@@ -1159,7 +1301,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
               type="button"
               onClick={() => onBuildCompanyGraph(resolvedCompany)}
               disabled={isBuildingGraph}
-              style={{ width: "100%", background: T.surfaceAlt, color: T.text, border: `1px solid ${T.borderMid}`, borderRadius: 8, padding: "10px 12px", cursor: isBuildingGraph ? "wait" : "pointer", textAlign: "left", fontFamily: "Georgia,serif" }}
+              style={{ width: "100%", background: T.surfaceAlt, color: T.text, border: `1px solid ${T.borderMid}`, borderRadius: 8, padding: "10px 12px", cursor: isBuildingGraph ? "wait" : "pointer", textAlign: "left", fontFamily: "var(--font-body)" }}
             >
               <div style={{ color: T.text, fontSize: 12, fontWeight: 700 }}>{isBuildingGraph ? "Building bounded graph..." : "Build bounded graph from entity"}</div>
               <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>Keep the current graph source of truth aligned with this company’s canonical metrics.</div>
@@ -1170,7 +1312,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
               <button
                 type="button"
                 onClick={addCompanyToDossier}
-                style={{ width: "100%", background: isInDossier ? T.accentBg : T.surface, color: isInDossier ? T.accent : T.text, border: `1px solid ${isInDossier ? T.accent : T.borderMid}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", fontFamily: "Georgia,serif" }}
+                style={{ width: "100%", background: isInDossier ? T.accentBg : T.surface, color: isInDossier ? T.accent : T.text, border: `1px solid ${isInDossier ? T.accent : T.borderMid}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)" }}
               >
                 <div style={{ color: isInDossier ? T.accent : T.text, fontSize: 12, fontWeight: 700 }}>{isInDossier ? "Update entity summary in dossier" : "Add entity summary to dossier"}</div>
                 <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>Preserve the operational summary, canonical metrics, and cautious “why this matters” explanation.</div>
@@ -1178,7 +1320,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
               <button
                 type="button"
                 onClick={addPlatformSummaryToDossier}
-                style={{ width: "100%", background: T.surface, color: T.text, border: `1px solid ${T.borderMid}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", fontFamily: "Georgia,serif" }}
+                style={{ width: "100%", background: T.surface, color: T.text, border: `1px solid ${T.borderMid}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)" }}
               >
                 <div style={{ color: T.text, fontSize: 12, fontWeight: 700 }}>Add platform summary to dossier</div>
                 <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>Keep platform display names, last observed timing, and staged evidence counts together.</div>
@@ -1187,7 +1329,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
                 type="button"
                 onClick={addSelectedInfrastructureToDossier}
                 disabled={!selectedInfrastructureCount}
-                style={{ width: "100%", background: selectedInfrastructureCount ? T.surface : T.surfaceAlt, color: selectedInfrastructureCount ? T.text : T.textMuted, border: `1px solid ${selectedInfrastructureCount ? T.borderMid : T.border}`, borderRadius: 8, padding: "10px 12px", cursor: selectedInfrastructureCount ? "pointer" : "not-allowed", textAlign: "left", fontFamily: "Georgia,serif" }}
+                style={{ width: "100%", background: selectedInfrastructureCount ? T.surface : T.surfaceAlt, color: selectedInfrastructureCount ? T.text : T.textMuted, border: `1px solid ${selectedInfrastructureCount ? T.borderMid : T.border}`, borderRadius: 8, padding: "10px 12px", cursor: selectedInfrastructureCount ? "pointer" : "not-allowed", textAlign: "left", fontFamily: "var(--font-body)" }}
               >
                 <div style={{ color: selectedInfrastructureCount ? T.text : T.textMuted, fontSize: 12, fontWeight: 700 }}>Add selected infrastructure to dossier</div>
                 <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>{selectedInfrastructureCount ? `${selectedInfrastructureCount} grouped linkage${selectedInfrastructureCount === 1 ? "" : "s"} selected.` : "Select one or more grouped infrastructure items first."}</div>
@@ -1198,7 +1340,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
             <button
               type="button"
               onClick={() => onOpenEvidenceExplorer(resolvedCompany)}
-              style={{ width: "100%", background: T.surface, color: T.accent, border: `1px solid ${T.accent}44`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", fontFamily: "Georgia,serif" }}
+              style={{ width: "100%", background: T.surface, color: T.accent, border: `1px solid ${T.accent}44`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)" }}
             >
               <div style={{ color: T.accent, fontSize: 12, fontWeight: 700 }}>Open Source Evidence table view</div>
               <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>Jump to the Source Evidence table if you want row-level citation review instead of the compact drawer summary.</div>
@@ -1248,7 +1390,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
                                 <button
                                   type="button"
                                   onClick={() => toggleInfrastructureExpanded(group.key)}
-                                  style={{ background: T.surface, color: T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "4px 8px", cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                                  style={{ background: T.surface, color: T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "4px 8px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                                 >
                                   {expanded ? "Hide details" : "Expand"}
                                 </button>
@@ -1256,7 +1398,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
                                   <button
                                     type="button"
                                     onClick={() => addInfrastructureGroupToDossier(group)}
-                                    style={{ background: T.surface, color: T.accent, border: `1px solid ${T.accent}44`, borderRadius: 999, padding: "4px 8px", cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                                    style={{ background: T.surface, color: T.accent, border: `1px solid ${T.accent}44`, borderRadius: 999, padding: "4px 8px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                                   >
                                     Add linkage to dossier
                                   </button>
@@ -1322,9 +1464,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
                   <span style={{ color: T.textMuted, fontSize: 12 }}>None currently linked in the evidence summary.</span>
                 ) : (
                   companySubstances.map(s => (
-                    <span key={s.id} style={{ background: T.accentBg, border: `1px solid ${T.accent}33`, color: T.accent, padding: "4px 10px", borderRadius: 999, fontSize: 11 }}>
-                      {s.name}
-                    </span>
+                    <IngredientBadge key={s.id} label={s.name} T={T} dark={dark} />
                   ))
                 )}
               </div>
@@ -1351,7 +1491,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
                         <button
                           type="button"
                           onClick={e => { e.stopPropagation(); onAddMediaToDossier(img); }}
-                          style={{ width: "100%", background: isMediaInDossier?.(img) ? T.accentBg : T.surface, color: isMediaInDossier?.(img) ? T.accent : T.textMuted, border: 0, borderTop: `1px solid ${isMediaInDossier?.(img) ? T.accent : T.border}`, padding: "5px 4px", cursor: "pointer", fontSize: 8, fontWeight: 700, fontFamily: "Georgia,serif" }}
+                          style={{ width: "100%", background: isMediaInDossier?.(img) ? T.accentBg : T.surface, color: isMediaInDossier?.(img) ? T.accent : T.textMuted, border: 0, borderTop: `1px solid ${isMediaInDossier?.(img) ? T.accent : T.border}`, padding: "5px 4px", cursor: "pointer", fontSize: 8, fontWeight: 700, fontFamily: "var(--font-body)" }}
                         >
                           {isMediaInDossier?.(img) ? "Update dossier" : "Add artifact"}
                         </button>
@@ -1467,19 +1607,22 @@ function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, com
 
       {/* Col 1 — Overview */}
       <DrawerCol label="OVERVIEW" T={T} minWidth={240}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
           {[["MENTIONS", totalMentions.toLocaleString()], ["COMPANIES", linkedCompanies.length], ["SOURCES", dataSources.length]].map(([k, v]) => (
-            <div key={k} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 6, padding: "10px 12px" }}>
+            <div key={k} style={{ ...getRecipeCardStyle(T, dark, k === "MENTIONS" ? T.accent : k === "COMPANIES" ? T.pistachio : T.butter), padding: "10px 12px" }}>
               <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1 }}>{k}</div>
               <div style={{ color: T.text, fontSize: 22, fontWeight: 700, marginTop: 3 }}>{v}</div>
             </div>
           ))}
         </div>
+        <div style={{ marginBottom: 14 }}>
+          <IngredientBadge label={substance.name} T={T} dark={dark} style={{ fontSize: 12 }} />
+        </div>
         {categories.length > 0 && (
           <div style={{ marginBottom: 12 }}>
             <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1, marginBottom: 7 }}>CATEGORY</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {categories.map(c => <span key={c} style={{ background: T.accentBg, color: T.accent, fontSize: 11, padding: "3px 10px", borderRadius: 3, fontWeight: 700 }}>{c}</span>)}
+              {categories.map(c => <StickerBadge key={c} label={c} palette={{ color: T.accent, bg: T.accentBg, border: `${T.accent}44` }} />)}
             </div>
           </div>
         )}
@@ -1505,7 +1648,7 @@ function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, com
           <button
             type="button"
             onClick={addSubstanceToDossier}
-            style={{ width: "100%", background: isInDossier ? T.accentBg : T.surface, color: isInDossier ? T.accent : T.text, border: `1px solid ${isInDossier ? T.accent : T.borderMid}`, borderRadius: 6, padding: "10px 12px", marginTop: 16, cursor: "pointer", textAlign: "left", fontFamily: "Georgia, serif" }}
+            style={{ width: "100%", background: isInDossier ? T.accentBg : T.surface, color: isInDossier ? T.accent : T.text, border: `1px solid ${isInDossier ? T.accent : T.borderMid}`, borderRadius: 6, padding: "10px 12px", marginTop: 16, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)" }}
           >
             <div style={{ color: isInDossier ? T.accent : T.text, fontSize: 12, fontWeight: 700 }}>{isInDossier ? "Update dossier item" : "Add to dossier"}</div>
             <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>Keep the reviewed ingredient summary, linked companies, and source context in the in-app packet builder.</div>
@@ -1519,7 +1662,7 @@ function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, com
           <div style={{ marginBottom: 16 }}>
             <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1, marginBottom: 8 }}>SYNONYMS</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {synonyms.map((s, i) => <span key={i} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, color: T.textMid, fontSize: 12, padding: "3px 10px", borderRadius: 3 }}>{s}</span>)}
+              {synonyms.map((s, i) => <IngredientBadge key={i} label={s} T={T} dark={dark} style={{ fontSize: 11 }} />)}
             </div>
           </div>
         )}
@@ -1535,12 +1678,12 @@ function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, com
           <div>
             <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1, marginBottom: 8 }}>DATA SOURCES</div>
             {dataSources.map((ds, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${T.border}` }}>
+              <div key={i} style={{ ...getRecipeCardStyle(T, dark, getSourcePlatformPresentation(ds.data_source_type, dark).color), display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", marginBottom: 8 }}>
                 <div>
                   <div style={{ color: T.text, fontSize: 13 }}>{ds.data_source_name}</div>
-                  <div style={{ color: T.textMuted, fontSize: 10, marginTop: 2 }}>{ds.data_source_type}</div>
+                  <div style={{ marginTop: 5 }}><StickerBadge label={getSourcePlatformPresentation(ds.data_source_type, dark).label} palette={getSourcePlatformPresentation(ds.data_source_type, dark)} /></div>
                 </div>
-                <span style={{ color: T.accent, background: T.accentBg, fontSize: 12, padding: "3px 10px", borderRadius: 3, fontWeight: 600, flexShrink: 0, marginLeft: 10 }}>{ds.mention_count.toLocaleString()}</span>
+                <span style={{ color: T.accent, background: T.accentBg, fontSize: 12, padding: "4px 10px", borderRadius: 999, fontWeight: 700, flexShrink: 0, marginLeft: 10 }}>{ds.mention_count.toLocaleString()}</span>
               </div>
             ))}
           </div>
@@ -1553,12 +1696,16 @@ function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, com
           ? <div style={{ color: T.textMuted, fontSize: 13 }}>No linked companies found</div>
           : linkedCompanies.map(c => {
             const evCount = subEvidence.filter(e => e.company_id === c.id).reduce((s, e) => s + e.evidence_count, 0);
+            const companyType = getCompanyTypePresentation(c.type, dark);
             return (
-              <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
-                <div style={{ color: T.text, fontSize: 13, fontWeight: 600, flex: 1, paddingRight: 10 }}>{c.name}</div>
+              <div key={c.id} style={{ ...getRecipeCardStyle(T, dark, companyType.color), display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", marginBottom: 8 }}>
+                <div style={{ flex: 1, paddingRight: 10 }}>
+                  <div style={{ color: T.text, fontSize: 13, fontWeight: 700 }}>{c.name}</div>
+                  <div style={{ marginTop: 5 }}><StickerBadge label={companyType.label} palette={companyType} /></div>
+                </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
                   <span style={{ color: T.textMuted, fontSize: 11 }}>{evCount.toLocaleString()}</span>
-                  <span style={{ background: riskBg(c.risk, dark), color: riskColor(c.risk, dark), border: `1px solid ${riskColor(c.risk, dark)}55`, padding: "2px 8px", borderRadius: 3, fontSize: 12, fontWeight: 700 }}>{c.risk}</span>
+                  <StickerBadge label={`${c.risk}`} palette={{ color: riskColor(c.risk, dark), bg: riskBg(c.risk, dark), border: `${riskColor(c.risk, dark)}55` }} style={{ fontSize: 11 }} />
                 </div>
               </div>
             );
@@ -1610,14 +1757,14 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
           <span style={{ color: loading ? T.accent : T.textMuted, fontSize: 13 }}>{loading ? "⟳" : "⌕"}</span>
           <span style={{ color: T.accent, background: T.accentBg, border: `1px solid ${T.border}`, borderRadius: 999, fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase", padding: "3px 7px", whiteSpace: "nowrap" }}>{copy.label}</span>
           <input ref={inputRef} value={query} onChange={e => onChange(e.target.value)} placeholder={copy.placeholder}
-            style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "Georgia,serif", flex: "1 1 220px", minWidth: 140 }} />
+            style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "var(--font-body)", flex: "1 1 220px", minWidth: 140 }} />
           <label style={{ display: "flex", alignItems: "center", gap: 5, color: T.textMuted, fontSize: 9, letterSpacing: 0.7, textTransform: "uppercase", whiteSpace: "nowrap" }}>
             Scope
             <select
               value={filter}
               onChange={e => onFilterChange(e.target.value)}
               aria-label="Search scope"
-              style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 999, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif", padding: "3px 8px", maxWidth: 150 }}
+              style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 999, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "3px 8px", maxWidth: 150 }}
             >
               {SEARCH_FILTERS.map(item => (
                 <option key={item.id} value={item.id}>{item.label}</option>
@@ -1667,7 +1814,7 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
                                 onBuildGraphFromResult(r);
                                 onChange("");
                               }}
-                              style={{ marginTop: 7, marginLeft: 46, background: T.surfaceAlt, color: T.accent, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "4px 9px", cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                              style={{ marginTop: 7, marginLeft: 46, background: T.surfaceAlt, color: T.accent, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "4px 9px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                             >
                               Build graph from this
                             </button>
@@ -1679,7 +1826,7 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
                       <button
                         type="button"
                         onClick={() => onViewMore(type)}
-                        style={{ width: "100%", textAlign: "left", padding: "8px 14px", background: T.surfaceAlt, border: "none", borderBottom: `1px solid ${T.border}`, color: T.accent, cursor: "pointer", fontSize: 11, fontFamily: "Georgia,serif" }}
+                        style={{ width: "100%", textAlign: "left", padding: "8px 14px", background: T.surfaceAlt, border: "none", borderBottom: `1px solid ${T.border}`, color: T.accent, cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)" }}
                       >
                         View all {total} {searchTypeLabel(type)} results
                       </button>
@@ -1718,7 +1865,7 @@ function SearchResultsPanel({ query, type, results, onSelect, onBuildGraphFromRe
               tabIndex={0}
               onClick={() => onSelect(result)}
               onKeyDown={onKeyboardActivate(() => onSelect(result))}
-              style={{ textAlign: "left", background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12, cursor: "pointer", color: T.text, fontFamily: "Georgia,serif" }}
+              style={{ textAlign: "left", background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12, cursor: "pointer", color: T.text, fontFamily: "var(--font-body)" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; }}
             >
@@ -1734,7 +1881,7 @@ function SearchResultsPanel({ query, type, results, onSelect, onBuildGraphFromRe
                     e.stopPropagation();
                     onBuildGraphFromResult(result);
                   }}
-                  style={{ marginTop: 9, background: T.surface, color: T.accent, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "5px 10px", cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                  style={{ marginTop: 9, background: T.surface, color: T.accent, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "5px 10px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                 >
                   Build graph from this
                 </button>
@@ -1859,28 +2006,28 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
         n.x = Math.max(80, Math.min(W - 80, n.x + n.vx)); n.y = Math.max(80, Math.min(H - 80, n.y + n.vy));
       });
     };
-    const draw = () => {
-      const ctx = cv.getContext("2d"), isDark = darkRef.current, selId = selectedIdRef.current, currentSeedId = seedIdRef.current, Th = isDark ? DARK : LIGHT;
-      const z = zoomRef.current, px = panRef.current.x, py = panRef.current.y;
-      ctx.clearRect(0, 0, W, H);
+      const draw = () => {
+        const ctx = cv.getContext("2d"), isDark = darkRef.current, selId = selectedIdRef.current, currentSeedId = seedIdRef.current, Th = isDark ? DARK : LIGHT;
+        const z = zoomRef.current, px = panRef.current.x, py = panRef.current.y;
+        ctx.clearRect(0, 0, W, H);
       ctx.save();
       ctx.translate(px, py);
       ctx.scale(z, z);
-      if (isDark) {
-        ctx.strokeStyle = "rgba(255,255,255,0.025)"; ctx.lineWidth = 1 / z;
-        for (let x = 0; x < W / z; x += 40) { ctx.beginPath(); ctx.moveTo(x, -py/z); ctx.lineTo(x, (H - py) / z); ctx.stroke(); }
-        for (let y = 0; y < H / z; y += 40) { ctx.beginPath(); ctx.moveTo(-px/z, y); ctx.lineTo((W - px) / z, y); ctx.stroke(); }
-      } else {
-        ctx.fillStyle = "rgba(0,0,0,0.045)";
-        for (let x = 0; x < W / z + Math.abs(px/z); x += 24) for (let y = 0; y < H / z + Math.abs(py/z); y += 24) { ctx.beginPath(); ctx.arc(x - (px%24)/z, y - (py%24)/z, 0.8/z, 0, Math.PI * 2); ctx.fill(); }
-      }
+        if (isDark) {
+          ctx.strokeStyle = "rgba(255,247,238,0.05)"; ctx.lineWidth = 1 / z;
+          for (let x = 0; x < W / z; x += 40) { ctx.beginPath(); ctx.moveTo(x, -py/z); ctx.lineTo(x, (H - py) / z); ctx.stroke(); }
+          for (let y = 0; y < H / z; y += 40) { ctx.beginPath(); ctx.moveTo(-px/z, y); ctx.lineTo((W - px) / z, y); ctx.stroke(); }
+        } else {
+          ctx.fillStyle = "rgba(154,93,54,0.12)";
+          for (let x = 0; x < W / z + Math.abs(px/z); x += 24) for (let y = 0; y < H / z + Math.abs(py/z); y += 24) { ctx.beginPath(); ctx.arc(x - (px%24)/z, y - (py%24)/z, 0.8/z, 0, Math.PI * 2); ctx.fill(); }
+        }
       edgesRef.current.forEach(e => {
         const s = gn(e.from), t = gn(e.to); if (!s || !t) return;
-        const col = linkCol(e.method, isDark);
-        ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y);
-        ctx.strokeStyle = col + (e.edgeType === "artifact" ? "77" : "55"); ctx.lineWidth = (e.edgeType === "artifact" ? 1.1 : 1.5) / z;
-        if (!isDark) ctx.setLineDash([5/z, 5/z]); ctx.stroke(); ctx.setLineDash([]);
-      });
+          const col = linkCol(e.method, isDark);
+          ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y);
+          ctx.strokeStyle = col + (e.edgeType === "artifact" ? "99" : "66"); ctx.lineWidth = (e.edgeType === "artifact" ? 1.6 : 2.1) / z;
+          if (!isDark) ctx.setLineDash([5/z, 5/z]); ctx.stroke(); ctx.setLineDash([]);
+        });
       nodesRef.current.forEach(n => {
         if (n.kind === "artifact") {
           const r = nodeRadius(n), col = linkCol(n.a.method, isDark);
@@ -1891,10 +2038,10 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
           if (isSeed) {
             ctx.beginPath(); ctx.arc(n.x, n.y, r + 12, 0, Math.PI * 2);
             ctx.strokeStyle = col + "77"; ctx.lineWidth = 3 / z; ctx.stroke();
-            ctx.font = `bold ${8}px Georgia,serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+            ctx.font = `bold ${8}px "Bricolage Grotesque", sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
             ctx.fillStyle = col; ctx.fillText("SEED", n.x, n.y - r - 10);
           } else if (isSelectedArtifact) {
-            ctx.font = `bold ${8}px Georgia,serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+            ctx.font = `bold ${8}px "Bricolage Grotesque", sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
             ctx.fillStyle = col; ctx.fillText("SELECTED", n.x, n.y - r - 10);
           }
           ctx.save();
@@ -1905,16 +2052,16 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
           } else {
             ctx.beginPath(); ctx.roundRect(-r * 0.72, -r * 0.72, r * 1.44, r * 1.44, 4);
           }
-          ctx.fillStyle = isDark ? "rgba(10,14,20,0.95)" : "rgba(255,255,255,0.96)";
+          ctx.fillStyle = isDark ? "rgba(47,28,28,0.95)" : "rgba(255,250,242,0.98)";
           ctx.strokeStyle = col;
           ctx.lineWidth = (isHov || isSelectedArtifact || isSeed ? 2.7 : 1.6) / z;
           ctx.fill(); ctx.stroke();
           ctx.restore();
-          ctx.font = `bold ${Math.max(8, r * 0.55)}px Georgia,serif`; ctx.fillStyle = col;
+          ctx.font = `bold ${Math.max(8, r * 0.55)}px "Bricolage Grotesque", sans-serif`; ctx.fillStyle = col;
           ctx.textAlign = "center"; ctx.textBaseline = "middle";
           ctx.fillText(n.a.kind === "email" ? "@" : "ph", n.x, n.y);
           if (isHov || isSelectedArtifact || isSeed) {
-            ctx.font = `${9}px Georgia,serif`; ctx.textBaseline = "top";
+            ctx.font = `${9}px "Nunito", sans-serif`; ctx.textBaseline = "top";
             const valueLabel = n.a.value.length > 28 ? n.a.value.slice(0, 26) + "..." : n.a.value;
             const lbl = `${valueLabel} · ${companyCount} companies`, lw = ctx.measureText(lbl).width;
             ctx.fillStyle = isDark ? "rgba(7,11,16,0.92)" : "rgba(242,240,235,0.96)";
@@ -1931,6 +2078,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
           sharedInfrastructureLinks: n.sharedInfrastructureLinks || n.degree || 0,
           dark: isDark,
         });
+        const companyType = getCompanyTypePresentation(c.type, isDark);
         const col = visualMetrics.priorityColor;
         const bg = visualMetrics.priorityBg;
         const sel = selId === c.id, isHov = hovRef.current === c.id;
@@ -1943,16 +2091,19 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
         ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fillStyle = sel ? col : bg; ctx.fill();
         ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
         ctx.strokeStyle = col; ctx.lineWidth = (sel || isSeed ? 2.7 : 1.5) / z; ctx.stroke();
+        ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(3.5, r * 0.28), 0, Math.PI * 2);
+        ctx.fillStyle = companyType.color;
+        ctx.fill();
         if (sel || isHov || isSeed) {
-          ctx.fillStyle = sel ? "#fff" : col; ctx.font = `bold ${Math.max(8, r * 0.34)}px Georgia,serif`;
+          ctx.fillStyle = sel ? "#fff" : col; ctx.font = `bold ${Math.max(8, r * 0.34)}px "Bricolage Grotesque", sans-serif`;
           ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(visualMetrics.displayedCountText, n.x, n.y);
         }
         if (sel && !isSeed) {
-          ctx.font = `bold ${8}px Georgia,serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+          ctx.font = `bold ${8}px "Bricolage Grotesque", sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
           ctx.fillStyle = col; ctx.fillText("SELECTED", n.x, n.y - r - 10);
         }
         if (showLabel) {
-          ctx.font = `${10}px Georgia,serif`; ctx.textAlign = "center"; ctx.textBaseline = "top";
+          ctx.font = `${10}px "Nunito", sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "top";
           const nameLabel = c.name.length > 26 ? c.name.slice(0, 24) + "..." : c.name;
           const prefix = isSeed ? "SEED · " : sel ? "SELECTED · " : "";
           const lbl = (sel || isHov || isSeed)
@@ -1968,7 +2119,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
       ctx.restore();
       // Zoom indicator
       if (z !== 1) {
-        ctx.font = "10px Georgia,serif"; ctx.fillStyle = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)";
+        ctx.font = '10px "Nunito", sans-serif'; ctx.fillStyle = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)";
         ctx.textAlign = "right"; ctx.fillText(`${Math.round(z * 100)}%`, W - 12, H - 12); ctx.textAlign = "left";
       }
     };
@@ -2035,8 +2186,10 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
 // ── Section Header ─────────────────────────────────────────────────────────
 function SectionHeader({ label, T }) {
   return (
-    <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.5, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ height: 1, width: 16, background: T.borderMid }} />{label}<div style={{ flex: 1, height: 1, background: T.border }} />
+    <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.5, marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ width: 14, height: 14, borderRadius: 4, background: `linear-gradient(135deg, ${T.butter} 0%, ${T.accent} 100%)`, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)" }} />
+      <span style={{ fontWeight: 800 }}>{label}</span>
+      <div style={{ flex: 1, height: 2, borderRadius: 999, background: `linear-gradient(90deg, ${T.borderMid} 0%, transparent 100%)` }} />
     </div>
   );
 }
@@ -2053,29 +2206,33 @@ function SubstanceMatrix({ substances, evidenceSummary, companies, onSelectSubst
 
   return (
     <div style={{ padding: "0 24px 24px" }}>
-      <SectionHeader label="SUBSTANCE INTELLIGENCE MATRIX — CLICK ANY CARD TO EXPLORE" T={T} />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+      <SectionHeader label="INGREDIENT MATRIX — CLICK ANY CARD TO OPEN THE PANTRY TRAIL" T={T} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
         {substancesWithCounts.map(s => {
           const isSel = selectedId === s.id;
           const topCos = companies.filter(c => new Set(evidenceSummary.filter(e => e.substance_reference_id === s.id).map(e => e.company_id)).has(c.id)).sort((a, b) => b.risk - a.risk).slice(0, 3);
+          const sourcePalette = getCompanyTypePresentation(topCos[0]?.type, dark);
           return (
             <div key={s.id} role="button" tabIndex={0} aria-label={`Open ingredient ${s.name}`} onClick={() => onSelectSubstance(s)} onKeyDown={onKeyboardActivate(() => onSelectSubstance(s))}
-              style={{ background: isSel ? T.accentBg : T.surface, border: `1px solid ${isSel ? T.accent : T.border}`, borderRadius: 8, padding: "16px 18px", cursor: "pointer", transition: "all 0.18s" }}
-              onMouseEnter={e => { if (!isSel) { e.currentTarget.style.border = `1px solid ${T.accent}`; e.currentTarget.style.background = T.accentBg; } }}
-              onMouseLeave={e => { if (!isSel) { e.currentTarget.style.border = `1px solid ${T.border}`; e.currentTarget.style.background = T.surface; } }}>
-              <div style={{ color: T.text, fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{s.name}</div>
-              <div style={{ color: T.textMuted, fontSize: 10, marginBottom: 14 }}>wt: {s.weight} · click to explore</div>
+              style={{ ...getRecipeCardStyle(T, dark, isSel ? T.accent : sourcePalette.color), padding: "18px 18px 16px", cursor: "pointer", transition: "transform 0.18s, border-color 0.18s, box-shadow 0.18s", transform: isSel ? "translateY(-2px)" : "none" }}
+              onMouseEnter={e => { if (!isSel) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+              onMouseLeave={e => { if (!isSel) { e.currentTarget.style.borderColor = `${sourcePalette.color}44`; e.currentTarget.style.transform = "translateY(0)"; } }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
+                <IngredientBadge label={s.name} T={T} dark={dark} active={isSel} style={{ maxWidth: "100%", whiteSpace: "normal" }} />
+                <StickerBadge label={`Wt ${s.weight}`} palette={{ color: T.chocolate, bg: T.chocolateBg, border: `${T.chocolate}44` }} />
+              </div>
+              <div style={{ color: T.textMid, fontSize: 11, marginBottom: 14, lineHeight: 1.55 }}>A demo ingredient card with linked companies, evidence mentions, and quick supplier signals.</div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
                 {[["COMPANIES", s.companyCount], ["MENTIONS", s.totalMentions.toLocaleString()]].map(([k, v]) => (
                   <div key={k}><div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1 }}>{k}</div><div style={{ color: T.text, fontSize: k === "COMPANIES" ? 22 : 16, fontWeight: 700 }}>{v}</div></div>
                 ))}
               </div>
-              <div style={{ height: 3, background: T.border, borderRadius: 2, overflow: "hidden", marginBottom: 10 }}>
-                <div style={{ width: `${(s.companyCount / maxCompanies) * 100}%`, height: "100%", background: T.accent, borderRadius: 2 }} />
+              <div style={{ height: 8, background: dark ? "rgba(255,255,255,0.08)" : "rgba(44,24,16,0.08)", borderRadius: 999, overflow: "hidden", marginBottom: 12 }}>
+                <div style={{ width: `${(s.companyCount / maxCompanies) * 100}%`, height: "100%", background: `linear-gradient(90deg, ${T.butter} 0%, ${T.accent} 100%)`, borderRadius: 999 }} />
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                {topCos.map(c => <span key={c.id} style={{ fontSize: 9, color: riskColor(c.risk, dark), background: riskBg(c.risk, dark), padding: "2px 6px", borderRadius: 2, border: `1px solid ${riskColor(c.risk, dark)}33` }}>{c.name.split(" ")[0]}</span>)}
-                {s.companyCount > 3 && <span style={{ fontSize: 9, color: T.textMuted }}>+{s.companyCount - 3}</span>}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {topCos.map(c => <StickerBadge key={c.id} label={c.name.split(" ")[0]} palette={{ color: riskColor(c.risk, dark), bg: riskBg(c.risk, dark), border: `${riskColor(c.risk, dark)}33` }} style={{ fontSize: 9 }} />)}
+                {s.companyCount > 3 && <span style={{ fontSize: 10, color: T.textMuted }}>+{s.companyCount - 3} more</span>}
               </div>
             </div>
           );
@@ -2125,8 +2282,8 @@ function FlagsTable({ companies, onSelect, selectedId, dark, getCompanyGraphMetr
           <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 5, padding: "4px 12px", fontSize: 10, color: T.textMuted }}>○ LEGACY (reference only)</div>
         </div>
       </div>
-      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Georgia,serif", fontSize: 12 }}>
+      <div style={{ ...getRecipeCardStyle(T, dark, T.accent), overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--font-body)", fontSize: 12 }}>
           <thead>
             <tr style={{ background: T.surfaceAlt, borderBottom: `1px solid ${T.border}` }}>
               {["RANK", "COMPANY", "TYPE", "SCORE BREAKDOWN", "V2 SCORE", "LEGACY", "SHARED LINKS", "PRIORITY"].map(h => (
@@ -2139,6 +2296,7 @@ function FlagsTable({ companies, onSelect, selectedId, dark, getCompanyGraphMetr
               const isSel = selectedId === c.id;
               const legacyRisk = c.legacyWeight > 0 ? Math.max(Math.round((c.legacyWeight / (companies[0]?.legacyWeight || 1)) * 100), 1) : 0;
               const visualMetrics = getCompanyVisualMetrics({ company: c, canonicalMetrics: getCompanyGraphMetrics?.(c.id), dark });
+              const companyType = getCompanyTypePresentation(c.type, dark);
               return (
                 <tr key={c.id} tabIndex={0} onClick={() => onSelect(c)} onKeyDown={onKeyboardActivate(() => onSelect(c))}
                   aria-label={`Open company ${c.name}`}
@@ -2151,7 +2309,9 @@ function FlagsTable({ companies, onSelect, selectedId, dark, getCompanyGraphMetr
                     {c.chineseName && <div style={{ color: T.textMuted, fontSize: 10 }}>{c.chineseName}</div>}
                     <div style={{ color: T.textMuted, fontSize: 10, marginTop: 2 }}>{c.evidenceCount.toLocaleString()} records · {c.substancesLinked} ingredients</div>
                   </td>
-                  <td style={{ padding: "10px 14px", color: T.textMid, fontSize: 11, whiteSpace: "nowrap" }}>{c.type || "—"}</td>
+                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                    <StickerBadge label={companyType.label} palette={companyType} />
+                  </td>
                   <td style={{ padding: "10px 14px", minWidth: 220 }}>
                     <ScoreBar evidenceScore={c.evidenceScore} substanceScore={c.substanceScore} companyTagScore={c.companyTagScore} dark={dark} T={T} />
                   </td>
@@ -2287,16 +2447,16 @@ function MediaTab({ dark, onAddToDossier, isInDossier, previewRequest, onHandled
   const filterPdfs = list => list.filter(f => !search || f.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", fontFamily: "Georgia,serif", minWidth: 0 }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", minWidth: 0 }}>
       <div style={{ padding: "14px 24px 8px", borderBottom: `1px solid ${T.border}`, background: T.surface, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           {[["images", `Images (${images.length})`], ["sanctions", `Spec Sheets (${pdfs.sanctions.length})`], ["indictments", `Source Packets (${pdfs.indictments.length})`]].map(([id, label]) => (
-            <button key={id} onClick={() => setSubTab(id)} style={{ padding: "7px 16px", borderRadius: "6px 6px 0 0", border: `1px solid ${subTab === id ? T.border : "transparent"}`, borderBottom: subTab === id ? `2px solid ${T.accent}` : "1px solid transparent", background: subTab === id ? T.bg : "transparent", color: subTab === id ? T.accent : T.textMuted, fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif", fontWeight: subTab === id ? 700 : 400 }}>{label}</button>
+            <button key={id} onClick={() => setSubTab(id)} style={{ padding: "7px 16px", borderRadius: "6px 6px 0 0", border: `1px solid ${subTab === id ? T.border : "transparent"}`, borderBottom: subTab === id ? `2px solid ${T.accent}` : "1px solid transparent", background: subTab === id ? T.bg : "transparent", color: subTab === id ? T.accent : T.textMuted, fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", fontWeight: subTab === id ? 700 : 400 }}>{label}</button>
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.surfaceAlt, border: `1px solid ${search ? T.accent : T.border}`, borderRadius: 6, padding: "5px 12px", marginBottom: 4, flex: "1 1 220px", maxWidth: 320 }}>
           <span style={{ color: T.textMuted, fontSize: 12 }}>⌕</span>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "Georgia,serif", width: "100%", minWidth: 0 }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "var(--font-body)", width: "100%", minWidth: 0 }} />
           {search && <button onClick={() => setSearch("")} style={{ background: "none", border: "none", color: T.textMuted, cursor: "pointer", fontSize: 11 }}>✕</button>}
         </div>
       </div>
@@ -2334,7 +2494,7 @@ function MediaTab({ dark, onAddToDossier, isInDossier, previewRequest, onHandled
                               e.stopPropagation();
                               onAddToDossier(img, selectedImage?.image_id === img.image_id ? selectedImage.url : "");
                             }}
-                            style={{ marginTop: 7, width: "100%", background: isInDossier?.(img) ? T.accentBg : T.surfaceAlt, color: isInDossier?.(img) ? T.accent : T.textMid, border: `1px solid ${isInDossier?.(img) ? T.accent : T.border}`, borderRadius: 999, padding: "5px 8px", cursor: "pointer", fontSize: 9, fontWeight: 700, fontFamily: "Georgia,serif" }}
+                            style={{ marginTop: 7, width: "100%", background: isInDossier?.(img) ? T.accentBg : T.surfaceAlt, color: isInDossier?.(img) ? T.accent : T.textMid, border: `1px solid ${isInDossier?.(img) ? T.accent : T.border}`, borderRadius: 999, padding: "5px 8px", cursor: "pointer", fontSize: 9, fontWeight: 700, fontFamily: "var(--font-body)" }}
                           >
                             {isInDossier?.(img) ? "Update dossier" : "Add to dossier"}
                           </button>
@@ -2403,12 +2563,12 @@ function MediaTab({ dark, onAddToDossier, isInDossier, previewRequest, onHandled
                   <button
                     type="button"
                     onClick={() => onAddToDossier(selectedImage, selectedImage.url || "")}
-                    style={{ background: isInDossier?.(selectedImage) ? T.accentBg : T.surfaceAlt, color: isInDossier?.(selectedImage) ? T.accent : T.textMid, border: `1px solid ${isInDossier?.(selectedImage) ? T.accent : T.border}`, cursor: "pointer", fontSize: 11, padding: "5px 11px", borderRadius: 999, fontFamily: "Georgia,serif", fontWeight: 700 }}
+                    style={{ background: isInDossier?.(selectedImage) ? T.accentBg : T.surfaceAlt, color: isInDossier?.(selectedImage) ? T.accent : T.textMid, border: `1px solid ${isInDossier?.(selectedImage) ? T.accent : T.border}`, cursor: "pointer", fontSize: 11, padding: "5px 11px", borderRadius: 999, fontFamily: "var(--font-body)", fontWeight: 700 }}
                   >
                     {isInDossier?.(selectedImage) ? "Update dossier" : "Add to dossier"}
                   </button>
                 )}
-                <button onClick={() => setSelectedImage(null)} aria-label="Close image preview" style={{ background: "none", border: `1px solid ${T.border}`, color: T.textMuted, cursor: "pointer", fontSize: 12, padding: "4px 12px", borderRadius: 4, fontFamily: "Georgia,serif" }}>Close</button>
+                <button onClick={() => setSelectedImage(null)} aria-label="Close image preview" style={{ background: "none", border: `1px solid ${T.border}`, color: T.textMuted, cursor: "pointer", fontSize: 12, padding: "4px 12px", borderRadius: 4, fontFamily: "var(--font-body)" }}>Close</button>
               </div>
             </div>
           </div>
@@ -2566,10 +2726,10 @@ function SchemaERD({ dark, T }) {
       ctx.strokeStyle=col+"aa"; ctx.lineWidth=1.5/z; ctx.stroke();
       ctx.beginPath(); ctx.roundRect(p.x,p.y,4,BOX_H,[5,0,0,5]);
       ctx.fillStyle=col; ctx.fill();
-      ctx.font=`bold 10px Georgia,serif`; ctx.fillStyle=dark?"#cdd6e8":"#18150f";
+      ctx.font='bold 10px "Bricolage Grotesque", sans-serif'; ctx.fillStyle=dark?"#fff7ee":"#2c1810";
       ctx.textAlign="left"; ctx.textBaseline="middle";
       ctx.fillText(t.name, p.x+12, p.y+BOX_H/2);
-      ctx.font=`8px Georgia,serif`; ctx.fillStyle=col;
+      ctx.font='8px "Nunito", sans-serif'; ctx.fillStyle=col;
       ctx.textAlign="right"; ctx.fillText("PK", p.x+BOX_W-8, p.y+BOX_H/2);
       ctx.textAlign="left";
     });
@@ -2577,7 +2737,7 @@ function SchemaERD({ dark, T }) {
     ctx.restore();
 
     // HUD
-    ctx.font="10px Georgia,serif"; ctx.fillStyle=dark?"rgba(255,255,255,0.35)":"rgba(0,0,0,0.3)";
+    ctx.font='10px "Nunito", sans-serif'; ctx.fillStyle=dark?"rgba(255,255,255,0.35)":"rgba(0,0,0,0.3)";
     ctx.textAlign="right"; ctx.fillText(`${Math.round(z*100)}% · scroll to zoom · drag to pan`, W-12, H-12);
     ctx.textAlign="left";
   }, [dark, colorMap, positions]);
@@ -2632,7 +2792,7 @@ function SchemaERD({ dark, T }) {
 function AboutTab({ dark, substances, evidenceTotal, companyTotal, associationTotal, linkageTotal, graphAssociationTotal }) {
   const T = dark ? DARK : LIGHT;
   return (
-    <div style={{ height:"100%", overflowY:"auto", fontFamily:"Georgia,serif" }}>
+    <div style={{ height:"100%", overflowY:"auto", fontFamily:"var(--font-body)" }}>
       <div style={{ maxWidth:1100, margin:"0 auto", padding:"32px 32px 64px" }}>
 
         <div style={{ marginBottom:32 }}>
@@ -3139,7 +3299,7 @@ function LegacyScrapeAnalysis({ dark }) {
             <div style={{ color: T.text, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>candidate_evidence_*.csv</div>
             <div style={{ color: T.textMuted, fontSize: 10, marginBottom: 14, lineHeight: 1.6 }}>From cas_synonym_matcher.py — substance matches</div>
             <button onClick={() => fileRef.current?.click()}
-              style={{ background: T.accent, color: "#fff", border: "none", borderRadius: 5, padding: "7px 16px", cursor: "pointer", fontSize: 11, fontFamily: "Georgia,serif", fontWeight: 700 }}>
+              style={{ background: T.accent, color: "#fff", border: "none", borderRadius: 5, padding: "7px 16px", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 700 }}>
               Upload (required)
             </button>
             <input ref={fileRef} type="file" accept=".csv" style={{ display: "none" }} onChange={loadFile} />
@@ -3149,7 +3309,7 @@ function LegacyScrapeAnalysis({ dark }) {
             <div style={{ color: T.text, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>results.csv</div>
             <div style={{ color: T.textMuted, fontSize: 10, marginBottom: 14, lineHeight: 1.6 }}>From scraper output — contact info (phones, emails, addresses)</div>
             <button onClick={() => resultsFileRef2.current?.click()}
-              style={{ background: resultsFile ? (dark ? "#0a2010" : "#f0fdf4") : "none", color: resultsFile ? (dark ? "#34c759" : "#166534") : T.textMuted, border: `1px solid ${resultsFile ? (dark ? "#34c759" : "#166534") : T.border}`, borderRadius: 5, padding: "7px 16px", cursor: "pointer", fontSize: 11, fontFamily: "Georgia,serif" }}>
+              style={{ background: resultsFile ? (dark ? "#0a2010" : "#f0fdf4") : "none", color: resultsFile ? (dark ? "#34c759" : "#166534") : T.textMuted, border: `1px solid ${resultsFile ? (dark ? "#34c759" : "#166534") : T.border}`, borderRadius: 5, padding: "7px 16px", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)" }}>
               {resultsFile ? "✓ Loaded" : "Upload (optional)"}
             </button>
             <input ref={resultsFileRef2} type="file" accept=".csv" style={{ display: "none" }} onChange={loadResultsFile} />
@@ -3178,12 +3338,12 @@ function LegacyScrapeAnalysis({ dark }) {
           {resultsFile && <span style={{ fontSize: 10, color: dark ? "#34c759" : "#166534", alignSelf: "center" }}>+ {resultsFile}</span>}
           {!resultsFile && (
             <button onClick={() => resultsFileRef2.current?.click()}
-              style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 5, padding: "5px 12px", cursor: "pointer", color: T.accent, fontSize: 10, fontFamily: "Georgia,serif" }}>
+              style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 5, padding: "5px 12px", cursor: "pointer", color: T.accent, fontSize: 10, fontFamily: "var(--font-body)" }}>
               + results.csv
             </button>
           )}
           <button onClick={() => { setCsvData([]); setContactData({}); setResultsFile(""); setFileName(""); }}
-            style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 5, padding: "5px 12px", cursor: "pointer", color: T.textMuted, fontSize: 10, fontFamily: "Georgia,serif" }}>
+            style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 5, padding: "5px 12px", cursor: "pointer", color: T.textMuted, fontSize: 10, fontFamily: "var(--font-body)" }}>
             New Files
           </button>
         </div>
@@ -3196,13 +3356,13 @@ function LegacyScrapeAnalysis({ dark }) {
         <div style={{ display: "flex", gap: 4 }}>
           {FILTERS.map(f => (
             <button key={f.key} onClick={() => setActiveFilter(f.key)}
-              style={{ padding: "4px 12px", borderRadius: 4, border: `1px solid ${activeFilter === f.key ? T.accent : T.border}`, background: activeFilter === f.key ? T.accentBg : "transparent", color: activeFilter === f.key ? T.accent : T.textMuted, fontSize: 10, cursor: "pointer", fontFamily: "Georgia,serif" }}>
+              style={{ padding: "4px 12px", borderRadius: 4, border: `1px solid ${activeFilter === f.key ? T.accent : T.border}`, background: activeFilter === f.key ? T.accentBg : "transparent", color: activeFilter === f.key ? T.accent : T.textMuted, fontSize: 10, cursor: "pointer", fontFamily: "var(--font-body)" }}>
               {f.label} {counts[f.key] !== undefined ? `(${counts[f.key]})` : ""}
             </button>
           ))}
         </div>
         <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Filter by company, substance, CAS..."
-          style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 5, padding: "5px 10px", color: T.text, fontSize: 11, fontFamily: "Georgia,serif", flex: 1, maxWidth: 300, outline: "none" }} />
+          style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 5, padding: "5px 10px", color: T.text, fontSize: 11, fontFamily: "var(--font-body)", flex: 1, maxWidth: 300, outline: "none" }} />
       </div>
 
       {/* Table */}
@@ -3213,7 +3373,7 @@ function LegacyScrapeAnalysis({ dark }) {
             Enriching with database...
           </div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: "Georgia,serif" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: "var(--font-body)" }}>
             <thead>
               <tr style={{ background: T.surfaceAlt, position: "sticky", top: 0, zIndex: 2 }}>
                 {["Status","Company","Contact Info","Ingredient","ID / Match","Match Type","Confidence","Context"].map(h => (
@@ -3783,7 +3943,7 @@ function DetailField({ label, value, T, mono = false, wide = false }) {
   return (
     <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 6, padding: "9px 11px", gridColumn: wide ? "1 / -1" : "auto" }}>
       <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
-      <div style={{ color: T.text, fontSize: 12, lineHeight: 1.5, fontFamily: mono ? "monospace" : "Georgia,serif", wordBreak: "break-word" }}>{displayValue(value)}</div>
+      <div style={{ color: T.text, fontSize: 12, lineHeight: 1.5, fontFamily: mono ? "monospace" : "var(--font-body)", wordBreak: "break-word" }}>{displayValue(value)}</div>
     </div>
   );
 }
@@ -3813,7 +3973,7 @@ function ExplorerDetailContent({ tableKey, row, dark, onBuildGraphFromLinkage, o
             <button
               type="button"
               onClick={() => onAddEvidenceToDossier(dossierRow, "Explorer evidence detail")}
-              style={{ background: inDossier ? T.accentBg : T.surface, color: inDossier ? T.accent : T.text, border: `1px solid ${inDossier ? T.accent : T.borderMid}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "Georgia,serif" }}
+              style={{ background: inDossier ? T.accentBg : T.surface, color: inDossier ? T.accent : T.text, border: `1px solid ${inDossier ? T.accent : T.borderMid}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "var(--font-body)" }}
             >
               {inDossier ? "Update dossier item" : "Add to dossier"}
             </button>
@@ -3895,7 +4055,7 @@ function ExplorerDetailContent({ tableKey, row, dark, onBuildGraphFromLinkage, o
           <button
             type="button"
             onClick={() => onBuildGraphFromLinkage({ kind: artifactKind, method: artifactMethodLabel(artifactKind), value: row.LINKAGE_VALUE })}
-            style={{ background: T.accent, color: dark ? "#06110d" : "#fff", border: `1px solid ${T.accent}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "Georgia,serif" }}
+            style={{ background: T.accent, color: dark ? "#06110d" : "#fff", border: `1px solid ${T.accent}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "var(--font-body)" }}
           >
             Build graph from this linkage
           </button>
@@ -3923,7 +4083,7 @@ function ExplorerDetailContent({ tableKey, row, dark, onBuildGraphFromLinkage, o
           <button
             type="button"
             onClick={() => onBuildGraphFromLinkage({ kind: artifactKind, method: artifactMethodLabel(artifactKind), value: row.LINKAGE_VALUE })}
-            style={{ background: T.accent, color: dark ? "#06110d" : "#fff", border: `1px solid ${T.accent}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "Georgia,serif" }}
+            style={{ background: T.accent, color: dark ? "#06110d" : "#fff", border: `1px solid ${T.accent}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "var(--font-body)" }}
           >
             Build graph from this linkage
           </button>
@@ -3977,7 +4137,7 @@ function LinkageArtifactIntelligenceView({ artifact, intelligence, companies, lo
               type="button"
               onClick={() => onBuildArtifactGraph({ kind: artifact.kind, method: artifact.method || artifactKindLabel(artifact.kind), value: artifact.value })}
               disabled={building}
-              style={{ background: building ? T.surfaceAlt : T.accent, color: building ? T.textMuted : (dark ? "#06110d" : "#fff"), border: `1px solid ${building ? T.border : T.accent}`, borderRadius: 999, padding: "7px 12px", cursor: building ? "not-allowed" : "pointer", fontSize: 11, fontWeight: 700, fontFamily: "Georgia,serif" }}
+              style={{ background: building ? T.surfaceAlt : T.accent, color: building ? T.textMuted : (dark ? "#06110d" : "#fff"), border: `1px solid ${building ? T.border : T.accent}`, borderRadius: 999, padding: "7px 12px", cursor: building ? "not-allowed" : "pointer", fontSize: 11, fontWeight: 700, fontFamily: "var(--font-body)" }}
             >
               {building ? "Building graph..." : "Build graph from this"}
             </button>
@@ -3988,7 +4148,7 @@ function LinkageArtifactIntelligenceView({ artifact, intelligence, companies, lo
             <button
               type="button"
               onClick={addArtifactToDossier}
-              style={{ background: isInDossier ? T.accentBg : T.surface, color: isInDossier ? T.accent : T.textMid, border: `1px solid ${isInDossier ? T.accent : T.border}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "Georgia,serif" }}
+              style={{ background: isInDossier ? T.accentBg : T.surface, color: isInDossier ? T.accent : T.textMid, border: `1px solid ${isInDossier ? T.accent : T.border}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "var(--font-body)" }}
             >
               {isInDossier ? "Update dossier item" : "Add to dossier"}
             </button>
@@ -4186,7 +4346,7 @@ function GraphSummaryDetail({ graph, companies, associations, artifactEdges, dar
           <button
             type="button"
             onClick={addGraphSummaryToDossier}
-            style={{ background: isInDossier ? T.accentBg : T.surface, color: isInDossier ? T.accent : T.text, border: `1px solid ${isInDossier ? T.accent : T.borderMid}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "Georgia,serif" }}
+            style={{ background: isInDossier ? T.accentBg : T.surface, color: isInDossier ? T.accent : T.text, border: `1px solid ${isInDossier ? T.accent : T.borderMid}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "var(--font-body)" }}
           >
             {isInDossier ? "Update dossier item" : "Add graph summary to dossier"}
           </button>
@@ -4260,7 +4420,7 @@ function DossierReviewPanel({
                 onChange={e => onTitleChange(e.target.value)}
                 aria-label="Dossier title"
                 placeholder="Untitled dossier"
-                style={{ width: "100%", marginTop: 8, background: T.surfaceAlt, color: T.text, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", fontFamily: "Georgia,serif", fontSize: 22, fontWeight: 700 }}
+                style={{ width: "100%", marginTop: 8, background: T.surfaceAlt, color: T.text, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", fontFamily: "var(--font-body)", fontSize: 22, fontWeight: 700 }}
               />
               <div style={{ color: T.textMuted, fontSize: 11, lineHeight: 1.6, marginTop: 8 }}>
                 Review and organize collected intelligence before export exists. This phase is still local and reference-based on purpose.
@@ -4279,7 +4439,7 @@ function DossierReviewPanel({
                 type="button"
                 onClick={onClear}
                 disabled={items.length === 0 && !globalNote.trim()}
-                style={{ background: "transparent", color: items.length === 0 && !globalNote.trim() ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 10, padding: "11px 12px", cursor: items.length === 0 && !globalNote.trim() ? "not-allowed" : "pointer", fontFamily: "Georgia,serif", fontSize: 11, textAlign: "left" }}
+                style={{ background: "transparent", color: items.length === 0 && !globalNote.trim() ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 10, padding: "11px 12px", cursor: items.length === 0 && !globalNote.trim() ? "not-allowed" : "pointer", fontFamily: "var(--font-body)", fontSize: 11, textAlign: "left" }}
               >
                 <div style={{ fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: T.textMuted, marginBottom: 4 }}>Actions</div>
                 Clear dossier
@@ -4288,7 +4448,7 @@ function DossierReviewPanel({
                 type="button"
                 onClick={onExportJson}
                 disabled={items.length === 0 && !globalNote.trim()}
-                style={{ background: items.length === 0 && !globalNote.trim() ? "transparent" : T.accentBg, color: items.length === 0 && !globalNote.trim() ? T.textMuted : T.accent, border: `1px solid ${items.length === 0 && !globalNote.trim() ? T.border : T.accent}`, borderRadius: 10, padding: "11px 12px", cursor: items.length === 0 && !globalNote.trim() ? "not-allowed" : "pointer", fontFamily: "Georgia,serif", fontSize: 11, textAlign: "left" }}
+                style={{ background: items.length === 0 && !globalNote.trim() ? "transparent" : T.accentBg, color: items.length === 0 && !globalNote.trim() ? T.textMuted : T.accent, border: `1px solid ${items.length === 0 && !globalNote.trim() ? T.border : T.accent}`, borderRadius: 10, padding: "11px 12px", cursor: items.length === 0 && !globalNote.trim() ? "not-allowed" : "pointer", fontFamily: "var(--font-body)", fontSize: 11, textAlign: "left" }}
               >
                 <div style={{ fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: T.textMuted, marginBottom: 4 }}>Export</div>
                 Download JSON
@@ -4297,12 +4457,12 @@ function DossierReviewPanel({
                 type="button"
                 onClick={onViewReport}
                 disabled={items.length === 0 && !globalNote.trim()}
-                style={{ background: items.length === 0 && !globalNote.trim() ? "transparent" : T.surface, color: items.length === 0 && !globalNote.trim() ? T.textMuted : T.text, border: `1px solid ${T.border}`, borderRadius: 10, padding: "11px 12px", cursor: items.length === 0 && !globalNote.trim() ? "not-allowed" : "pointer", fontFamily: "Georgia,serif", fontSize: 11, textAlign: "left" }}
+                style={{ background: items.length === 0 && !globalNote.trim() ? "transparent" : T.surface, color: items.length === 0 && !globalNote.trim() ? T.textMuted : T.text, border: `1px solid ${T.border}`, borderRadius: 10, padding: "11px 12px", cursor: items.length === 0 && !globalNote.trim() ? "not-allowed" : "pointer", fontFamily: "var(--font-body)", fontSize: 11, textAlign: "left" }}
               >
                 <div style={{ fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: T.textMuted, marginBottom: 4 }}>Report</div>
                 View report
               </button>
-              <div style={{ background: T.surfaceAlt, color: T.textMuted, border: `1px solid ${T.border}`, borderRadius: 10, padding: "11px 12px", fontFamily: "Georgia,serif", fontSize: 11, textAlign: "left" }}>
+              <div style={{ background: T.surfaceAlt, color: T.textMuted, border: `1px solid ${T.border}`, borderRadius: 10, padding: "11px 12px", fontFamily: "var(--font-body)", fontSize: 11, textAlign: "left" }}>
                 <div style={{ fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>PDF</div>
                 Prepare structure next
               </div>
@@ -4315,7 +4475,7 @@ function DossierReviewPanel({
               value={globalNote}
               onChange={e => onGlobalNoteChange(e.target.value)}
               placeholder="Capture the packet-level narrative, scope, or review notes here."
-              style={{ width: "100%", minHeight: 92, resize: "vertical", background: T.surfaceAlt, color: T.text, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", fontFamily: "Georgia,serif", fontSize: 12, lineHeight: 1.6 }}
+              style={{ width: "100%", minHeight: 92, resize: "vertical", background: T.surfaceAlt, color: T.text, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", fontFamily: "var(--font-body)", fontSize: 12, lineHeight: 1.6 }}
             />
           </div>
         </div>
@@ -4342,7 +4502,7 @@ function DossierReviewPanel({
                     type="button"
                     onClick={() => onMoveSection(sectionId, "up")}
                     disabled={sectionIndex === 0}
-                    style={{ background: "transparent", color: sectionIndex === 0 ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: sectionIndex === 0 ? "not-allowed" : "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                    style={{ background: "transparent", color: sectionIndex === 0 ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: sectionIndex === 0 ? "not-allowed" : "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                   >
                     ↑ Section
                   </button>
@@ -4350,7 +4510,7 @@ function DossierReviewPanel({
                     type="button"
                     onClick={() => onMoveSection(sectionId, "down")}
                     disabled={sectionIndex === sectionOrder.length - 1}
-                    style={{ background: "transparent", color: sectionIndex === sectionOrder.length - 1 ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: sectionIndex === sectionOrder.length - 1 ? "not-allowed" : "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                    style={{ background: "transparent", color: sectionIndex === sectionOrder.length - 1 ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: sectionIndex === sectionOrder.length - 1 ? "not-allowed" : "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                   >
                     ↓ Section
                   </button>
@@ -4401,7 +4561,7 @@ function DossierReviewPanel({
                           type="button"
                           onClick={() => onMoveItem(item.id, "up")}
                           disabled={itemIndex === 0}
-                          style={{ background: "transparent", color: itemIndex === 0 ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: itemIndex === 0 ? "not-allowed" : "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                          style={{ background: "transparent", color: itemIndex === 0 ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: itemIndex === 0 ? "not-allowed" : "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                         >
                           ↑
                         </button>
@@ -4409,7 +4569,7 @@ function DossierReviewPanel({
                           type="button"
                           onClick={() => onMoveItem(item.id, "down")}
                           disabled={itemIndex === sectionItems.length - 1}
-                          style={{ background: "transparent", color: itemIndex === sectionItems.length - 1 ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: itemIndex === sectionItems.length - 1 ? "not-allowed" : "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                          style={{ background: "transparent", color: itemIndex === sectionItems.length - 1 ? T.textMuted : T.textMid, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: itemIndex === sectionItems.length - 1 ? "not-allowed" : "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                         >
                           ↓
                         </button>
@@ -4417,7 +4577,7 @@ function DossierReviewPanel({
                           <button
                             type="button"
                             onClick={() => onOpenSourceView(item)}
-                            style={{ background: T.surface, color: T.accent, border: `1px solid ${T.accent}44`, borderRadius: 999, padding: "5px 9px", cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                            style={{ background: T.surface, color: T.accent, border: `1px solid ${T.accent}44`, borderRadius: 999, padding: "5px 9px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                           >
                             Open source view
                           </button>
@@ -4425,7 +4585,7 @@ function DossierReviewPanel({
                         <button
                           type="button"
                           onClick={() => onRemove(item.id)}
-                          style={{ background: "transparent", color: T.textMuted, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                          style={{ background: "transparent", color: T.textMuted, border: `1px solid ${T.border}`, borderRadius: 999, padding: "5px 9px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
                         >
                           Remove
                         </button>
@@ -4450,7 +4610,7 @@ function DossierReviewPanel({
                           {item.sourceIds.map(reference => (
                             <div key={`${item.id}:${reference.label}:${reference.value}`} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 6, padding: "8px 10px" }}>
                               <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 0.8 }}>{reference.label}</div>
-                              <div style={{ color: T.text, fontSize: 11, marginTop: 4, fontFamily: reference.mono ? "monospace" : "Georgia,serif", wordBreak: "break-word" }}>{reference.value}</div>
+                              <div style={{ color: T.text, fontSize: 11, marginTop: 4, fontFamily: reference.mono ? "monospace" : "var(--font-body)", wordBreak: "break-word" }}>{reference.value}</div>
                             </div>
                           ))}
                         </div>
@@ -4469,7 +4629,7 @@ function DossierReviewPanel({
                               {reference.href ? (
                                 <a href={reference.href} target="_blank" rel="noreferrer" style={{ color: T.accent, fontSize: 11, marginTop: 4, display: "inline-block", wordBreak: "break-all" }}>{reference.value}</a>
                               ) : (
-                                <div style={{ color: T.text, fontSize: 11, marginTop: 4, fontFamily: reference.mono ? "monospace" : "Georgia,serif", wordBreak: "break-word" }}>{reference.value}</div>
+                                <div style={{ color: T.text, fontSize: 11, marginTop: 4, fontFamily: reference.mono ? "monospace" : "var(--font-body)", wordBreak: "break-word" }}>{reference.value}</div>
                               )}
                             </div>
                           ))}
@@ -4485,7 +4645,7 @@ function DossierReviewPanel({
                         value={item.note || ""}
                         onChange={e => onUpdateItemNote(item.id, e.target.value)}
                         placeholder="Add a short note about why this item belongs in the packet."
-                        style={{ width: "100%", minHeight: 72, resize: "vertical", background: T.surface, color: T.text, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 11px", fontFamily: "Georgia,serif", fontSize: 12, lineHeight: 1.55 }}
+                        style={{ width: "100%", minHeight: 72, resize: "vertical", background: T.surface, color: T.text, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 11px", fontFamily: "var(--font-body)", fontSize: 12, lineHeight: 1.55 }}
                       />
                     </div>
                   </article>
@@ -4537,7 +4697,7 @@ function DossierReportView({ items, mode, title, globalNote, sectionOrder, gener
   };
 
   return (
-    <div style={{ height: "100vh", overflowY: "auto", background: "#f5f1e8", color: T.text, fontFamily: "Georgia,serif" }}>
+    <div style={{ height: "100vh", overflowY: "auto", background: "#f5f1e8", color: T.text, fontFamily: "var(--font-body)" }}>
       <style>{`
         @media print {
           body { background: #ffffff !important; }
@@ -4552,14 +4712,14 @@ function DossierReportView({ items, mode, title, globalNote, sectionOrder, gener
           <button
             type="button"
             onClick={onBack}
-            style={{ background: T.surface, color: T.text, border: `1px solid ${T.border}`, borderRadius: 999, padding: "8px 14px", cursor: "pointer", fontFamily: "Georgia,serif", fontSize: 12 }}
+            style={{ background: T.surface, color: T.text, border: `1px solid ${T.border}`, borderRadius: 999, padding: "8px 14px", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 12 }}
           >
             Back to dossier
           </button>
           <button
             type="button"
             onClick={onPrint}
-            style={{ background: T.accentBg, color: T.accent, border: `1px solid ${T.accent}`, borderRadius: 999, padding: "8px 14px", cursor: "pointer", fontFamily: "Georgia,serif", fontSize: 12, fontWeight: 700 }}
+            style={{ background: T.accentBg, color: T.accent, border: `1px solid ${T.accent}`, borderRadius: 999, padding: "8px 14px", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 700 }}
           >
             Print / Save as PDF
           </button>
@@ -4662,7 +4822,7 @@ function DossierReportView({ items, mode, title, globalNote, sectionOrder, gener
                         {item.sourceIds?.length ? item.sourceIds.map(reference => (
                           <div key={`${item.id}:report-source:${reference.label}:${reference.value}`} style={{ marginBottom: 7 }}>
                             <div style={{ color: T.textMuted, fontSize: 9 }}>{reference.label}</div>
-                            <div style={{ color: T.text, fontSize: 11, fontFamily: reference.mono ? "monospace" : "Georgia,serif", wordBreak: "break-word" }}>{reference.value}</div>
+                            <div style={{ color: T.text, fontSize: 11, fontFamily: reference.mono ? "monospace" : "var(--font-body)", wordBreak: "break-word" }}>{reference.value}</div>
                           </div>
                         )) : <div style={{ color: T.textMuted, fontSize: 11, lineHeight: 1.6 }}>{dossierSourceIdsEmptyCopy(item.type)}</div>}
                       </div>
@@ -4674,7 +4834,7 @@ function DossierReportView({ items, mode, title, globalNote, sectionOrder, gener
                             {reference.href ? (
                               <div style={{ color: T.text, fontSize: 11, wordBreak: "break-word" }}>{reference.value}</div>
                             ) : (
-                              <div style={{ color: T.text, fontSize: 11, fontFamily: reference.mono ? "monospace" : "Georgia,serif", wordBreak: "break-word" }}>{reference.value}</div>
+                              <div style={{ color: T.text, fontSize: 11, fontFamily: reference.mono ? "monospace" : "var(--font-body)", wordBreak: "break-word" }}>{reference.value}</div>
                             )}
                           </div>
                         )) : <div style={{ color: T.textMuted, fontSize: 11, lineHeight: 1.6 }}>{dossierProvenanceEmptyCopy(item.type)}</div>}
@@ -5002,12 +5162,12 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
   const activeDetailSupported = DETAIL_TABLE_KEYS.has(activeTable.key);
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", fontFamily: "Georgia,serif" }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)" }}>
       <div style={{ padding: "14px 24px 0", borderBottom: `1px solid ${T.border}`, background: T.surface, overflowX: "auto" }}>
         <div style={{ display: "flex", gap: 2, minWidth: "max-content" }}>
           {EXPLORER_TABLES.map(tbl => (
               <button key={tbl.key} onClick={() => handleTableChange(tbl)}
-                style={{ padding: "7px 14px", borderRadius: "6px 6px 0 0", border: `1px solid ${activeTable.key === tbl.key ? T.border : "transparent"}`, borderBottom: activeTable.key === tbl.key ? `2px solid ${T.accent}` : "1px solid transparent", background: activeTable.key === tbl.key ? T.bg : "transparent", color: activeTable.key === tbl.key ? T.accent : T.textMuted, fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif", fontWeight: activeTable.key === tbl.key ? 700 : 400, whiteSpace: "nowrap" }}>{tbl.label}</button>
+                style={{ padding: "7px 14px", borderRadius: "6px 6px 0 0", border: `1px solid ${activeTable.key === tbl.key ? T.border : "transparent"}`, borderBottom: activeTable.key === tbl.key ? `2px solid ${T.accent}` : "1px solid transparent", background: activeTable.key === tbl.key ? T.bg : "transparent", color: activeTable.key === tbl.key ? T.accent : T.textMuted, fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", fontWeight: activeTable.key === tbl.key ? 700 : 400, whiteSpace: "nowrap" }}>{tbl.label}</button>
           ))}
         </div>
       </div>
@@ -5015,7 +5175,7 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.surface, border: `1px solid ${searchQ ? T.accent : T.border}`, borderRadius: 6, padding: "6px 12px", flex: 1, maxWidth: 400 }}>
           <span style={{ color: T.textMuted, fontSize: 13 }}>⌕</span>
             <input value={searchQ} onChange={e => handleSearchChange(e.target.value)} placeholder={activeTable.searchCol ? `Search by ${activeTable.searchCol}...` : "No search available"} disabled={!activeTable.searchCol}
-              style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "Georgia,serif", flex: 1 }} />
+              style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "var(--font-body)", flex: 1 }} />
             {searchQ && <button onClick={() => handleSearchChange("")} style={{ background: "none", border: "none", color: T.textMuted, cursor: "pointer", fontSize: 12 }}>✕</button>}
         </div>
         <div style={{ color: T.textMuted, fontSize: 11 }}>{total.toLocaleString()} rows{searchQ ? " (filtered)" : ""}</div>
@@ -5030,12 +5190,12 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
             type="button"
             onClick={addSelectedEvidenceRowsToDossier}
             disabled={!selectedEvidenceRowIds.length}
-            style={{ background: selectedEvidenceRowIds.length ? T.surface : T.surfaceAlt, border: `1px solid ${selectedEvidenceRowIds.length ? T.accent : T.border}`, color: selectedEvidenceRowIds.length ? T.accent : T.textMuted, padding: "6px 14px", borderRadius: 999, cursor: selectedEvidenceRowIds.length ? "pointer" : "not-allowed", fontSize: 11, fontFamily: "Georgia,serif", fontWeight: 700 }}
+            style={{ background: selectedEvidenceRowIds.length ? T.surface : T.surfaceAlt, border: `1px solid ${selectedEvidenceRowIds.length ? T.accent : T.border}`, color: selectedEvidenceRowIds.length ? T.accent : T.textMuted, padding: "6px 14px", borderRadius: 999, cursor: selectedEvidenceRowIds.length ? "pointer" : "not-allowed", fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 700 }}
           >
             Add selected evidence to dossier
           </button>
         )}
-        <button onClick={handleExport} style={{ background: T.accentBg, border: `1px solid ${T.accent}44`, color: T.accent, padding: "6px 16px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontFamily: "Georgia,serif", fontWeight: 600 }}>↓ Export CSV</button>
+        <button onClick={handleExport} style={{ background: T.accentBg, border: `1px solid ${T.accent}44`, color: T.accent, padding: "6px 16px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 600 }}>↓ Export CSV</button>
       </div>
       <div style={{ flex: 1, overflow: "auto" }}>
         {loading ? (
@@ -5049,7 +5209,7 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
         ) : (
           <>
             {TABLE_DESCRIPTIONS[activeTable.from] && (
-              <div style={{ padding: "10px 18px", background: T.accentBg, borderBottom: `1px solid ${T.border}`, fontSize: 12, color: T.textMid, fontFamily: "Georgia,serif" }}>
+              <div style={{ padding: "10px 18px", background: T.accentBg, borderBottom: `1px solid ${T.border}`, fontSize: 12, color: T.textMid, fontFamily: "var(--font-body)" }}>
                 <span style={{ color: T.accent, fontWeight: 700, marginRight: 8 }}>ⓘ</span>{TABLE_DESCRIPTIONS[activeTable.from]}
               </div>
             )}
@@ -5148,7 +5308,7 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
         <div style={{ color: T.textMuted, fontSize: 11 }}>Page {page + 1} of {Math.max(totalPages, 1)} · {rows.length} of {total.toLocaleString()} rows</div>
         <div style={{ display: "flex", gap: 6 }}>
           {[["«", () => setPage(0), page === 0], ["‹", () => setPage(p => Math.max(0, p - 1)), page === 0], ["›", () => setPage(p => Math.min(totalPages - 1, p + 1)), page >= totalPages - 1], ["»", () => setPage(totalPages - 1), page >= totalPages - 1]].map(([label, action, disabled]) => (
-            <button key={label} onClick={action} disabled={disabled} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, color: disabled ? T.textMuted : T.text, padding: "4px 12px", borderRadius: 4, cursor: disabled ? "default" : "pointer", fontSize: 11, fontFamily: "Georgia,serif", opacity: disabled ? 0.5 : 1 }}>{label}</button>
+            <button key={label} onClick={action} disabled={disabled} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, color: disabled ? T.textMuted : T.text, padding: "4px 12px", borderRadius: 4, cursor: disabled ? "default" : "pointer", fontSize: 11, fontFamily: "var(--font-body)", opacity: disabled ? 0.5 : 1 }}>{label}</button>
           ))}
         </div>
       </div>
@@ -5166,31 +5326,28 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
 }
 
 // ── Stats Bar ──────────────────────────────────────────────────────────────
-function StatsBar({ substances, evidenceTotal, companyTotal, associationTotal, linkageTotal, dark }) {
+function StatsBar({ substances, evidenceTotal, companyTotal, sourcePageTotal, networkLinkTotal, dark }) {
   const T = dark ? DARK : LIGHT;
   const stats = [
-    { label: "COMPANIES", value: companyTotal > 0 ? companyTotal.toLocaleString() : "…" },
-    { label: "INGREDIENTS", value: substances.length },
-    {
-      label: "RAW ASSOCIATION RECORDS",
-      value: associationTotal > 0 ? associationTotal.toLocaleString() : "…",
-      help: "These are raw database rows and may include duplicate or repeated infrastructure observations. Deduplicated metrics are planned after schema cleanup.",
-    },
-    {
-      label: "RAW LINKAGE RECORDS",
-      value: linkageTotal > 0 ? linkageTotal.toLocaleString() : "…",
-      help: "These are raw database rows and may include duplicate or repeated infrastructure observations. Deduplicated metrics are planned after schema cleanup.",
-    },
-    { label: "TOTAL EVIDENCE", value: evidenceTotal > 0 ? evidenceTotal.toLocaleString() : "…" },
+    { label: "Companies", value: companyTotal > 0 ? companyTotal.toLocaleString() : "…", accent: T.raspberry, bg: T.raspberryBg, icon: "🏪", help: "Synthetic bakery, supplier, and logistics entities in the demo." },
+    { label: "Ingredients", value: substances.length, accent: T.butter, bg: T.butterBg, icon: "🍪", help: "Ingredient references relabeled from SUBSTANCE_REFERENCE in the UI." },
+    { label: "Evidence rows", value: evidenceTotal > 0 ? evidenceTotal.toLocaleString() : "…", accent: T.chocolate, bg: T.chocolateBg, icon: "🧾", help: "Source-bearing evidence rows that support provenance and drilldowns." },
+    { label: "Source pages", value: sourcePageTotal > 0 ? sourcePageTotal.toLocaleString() : "…", accent: T.navy, bg: dark ? "#1e2a3f" : "#e1ebff", icon: "📄", help: "Distinct demo source pages and source records visible through the local adapter." },
+    { label: "Network links", value: networkLinkTotal > 0 ? networkLinkTotal.toLocaleString() : "…", accent: T.pistachio, bg: T.pistachioBg, icon: "🕸️", help: "Visible graph links across company associations and contact artifacts." },
   ];
   return (
-    <div style={{ display: "flex", background: T.surface, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
-      {stats.map((s, i) => (
-        <div key={s.label} title={s.help || ""} style={{ flex: 1, padding: "10px 20px", borderRight: i < stats.length - 1 ? `1px solid ${T.border}` : "none" }}>
-          <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1.5 }}>{s.label}</div>
-          <div style={{ color: s.color || T.text, fontSize: 20, fontWeight: 700, fontFamily: "Georgia,serif", marginTop: 1 }}>{s.value}</div>
-        </div>
-      ))}
+    <div style={{ padding: "14px clamp(12px, 2vw, 24px) 12px", background: `linear-gradient(180deg, ${T.bgAlt} 0%, transparent 100%)`, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
+        {stats.map(s => (
+          <div key={s.label} title={s.help || ""} style={{ ...getRecipeCardStyle(T, dark, s.accent), padding: "12px 14px", minHeight: 94 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+              <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 800 }}>{s.label}</div>
+              <div style={{ width: 34, height: 34, borderRadius: 12, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{s.icon}</div>
+            </div>
+            <div style={{ color: s.accent, fontSize: 28, fontWeight: 800, fontFamily: "var(--font-display)", marginTop: 8 }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -5200,8 +5357,8 @@ function AccessDeniedPanel({ dark, title = "Not authorized", message = "Your cur
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "26px clamp(16px, 3vw, 34px)" }}>
       <div style={{ maxWidth: 820, margin: "0 auto" }}>
-        <section style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 24 }}>
-          <div style={{ color: T.text, fontSize: 22, fontWeight: 700 }}>{title}</div>
+        <section style={{ ...getRecipeCardStyle(T, dark, T.raspberry), padding: 24 }}>
+          <div style={{ color: T.text, fontSize: 22, fontWeight: 800, fontFamily: "var(--font-display)" }}>{title}</div>
           <div style={{ color: T.textMid, fontSize: 13, lineHeight: 1.7, marginTop: 10, maxWidth: 620 }}>
             {message}
           </div>
@@ -5281,15 +5438,20 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "26px clamp(16px, 3vw, 34px)" }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <section style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 18, boxShadow: dark ? "0 12px 36px rgba(0,0,0,0.24)" : "0 12px 30px rgba(24,21,15,0.08)" }}>
+        <section style={{ ...getRecipeCardStyle(T, dark, T.butter), padding: 22, background: `radial-gradient(circle at top right, ${dark ? "rgba(255,209,102,0.18)" : "rgba(255,209,102,0.26)"} 0%, transparent 28%), linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)` }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div>
-              <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>Workflow mode</div>
-              <div style={{ color: T.text, fontSize: 18, fontWeight: 700 }}>{isInvestigator ? "Operations launchpad" : "Overview launchpad"}</div>
+              <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>Welcome to Scrape &amp; Bake</div>
+              <div style={{ color: T.text, fontSize: 26, fontWeight: 800, fontFamily: "var(--font-display)" }}>{isInvestigator ? "Operations launchpad" : "Overview launchpad"}</div>
               <div style={{ color: T.textMid, fontSize: 12, lineHeight: 1.5, marginTop: 4, maxWidth: 620 }}>
                 {isInvestigator
                   ? "Use the cards below to move quickly into search, row-level source review, graph pivots, and dossier building."
                   : "Use the cards below to move quickly into search, company signals, network structure, ingredient patterns, and packet review."}
+              </div>
+              <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <StickerBadge label="Synthetic dataset" palette={{ color: T.raspberry, bg: T.raspberryBg, border: `${T.raspberry}44` }} />
+                <StickerBadge label="Local mock adapter" palette={{ color: T.navy, bg: dark ? "#1e2a3f" : "#dde8fb", border: dark ? "#4f6a9a" : "#9cb8e7" }} />
+                <StickerBadge label="Source-first provenance" palette={{ color: T.pistachio, bg: T.pistachioBg, border: `${T.pistachio}44` }} />
               </div>
             </div>
             {canToggleMode ? (
@@ -5302,7 +5464,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
                       type="button"
                       onClick={() => onModeChange(value)}
                       aria-pressed={active}
-                      style={{ background: active ? T.accent : "transparent", color: active ? (dark ? "#06131d" : "#ffffff") : T.text, border: "none", borderRadius: 999, padding: "8px 12px", cursor: "pointer", fontSize: 11, fontFamily: "Georgia,serif", fontWeight: 700 }}
+                      style={{ background: active ? T.accent : "transparent", color: active ? (dark ? "#06131d" : "#ffffff") : T.text, border: "none", borderRadius: 999, padding: "8px 12px", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 700 }}
                     >
                       {option.label}
                     </button>
@@ -5323,7 +5485,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
               key={card.name}
               type="button"
               onClick={() => handleCardAction(card)}
-              style={{ textAlign: "left", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 17, cursor: "pointer", color: T.text, fontFamily: "Georgia,serif", minHeight: 176 }}
+              style={{ textAlign: "left", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 17, cursor: "pointer", color: T.text, fontFamily: "var(--font-body)", minHeight: 176 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.transform = "translateY(-1px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.transform = "translateY(0)"; }}
             >
@@ -5535,6 +5697,11 @@ export default function App() {
     : artifactGraphLoadingKey === `${graphSelectedSeed?.kind}:${String(graphSelectedSeed?.value || "").toLowerCase()}`;
   const graphBuildInFlight = Boolean(companyGraphLoadingId || artifactGraphLoadingKey);
   const hasLoadedAppData = companies.length > 0 || substances.length > 0 || evidenceTypes.length > 0 || evidenceTotal > 0 || companyTotal > 0 || associationTotal > 0;
+  const sourcePageTotal = useMemo(
+    () => new Set(substanceDataSources.map(row => `${row.data_source_name}|${row.data_source_type}`)).size,
+    [substanceDataSources],
+  );
+  const networkLinkTotal = activeGraphAssociations.length + activeGraphArtifactEdges.length;
 
   const openArtifactEntity = useCallback((artifact) => {
     const entity = buildArtifactEntity(artifact);
@@ -6252,15 +6419,22 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: T.bg, color: T.text, display: "flex", flexDirection: "column", fontFamily: "Georgia,serif", overflow: "hidden" }}>
-      <div style={{ padding: "10px clamp(12px, 2vw, 24px)", background: T.surface, borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexShrink: 0, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flex: "1 1 260px", minWidth: 220 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 6, background: T.navy, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", background: dark ? "#ff3b30" : "#ef4444" }} />
+    <div style={{ width: "100vw", height: "100vh", background: `linear-gradient(180deg, ${T.bg} 0%, ${T.bgAlt} 100%)`, color: T.text, display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", overflow: "hidden" }}>
+      <div style={{ padding: "14px clamp(12px, 2vw, 24px)", background: `radial-gradient(circle at top left, ${dark ? "rgba(255,209,102,0.18)" : "rgba(255,209,102,0.26)"} 0%, transparent 30%), linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)`, borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexShrink: 0, flexWrap: "wrap", boxShadow: T.shadow }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14, flex: "1 1 360px", minWidth: 260 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${T.navy} 0%, ${T.accent} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.28)" }}>
+            <div style={{ width: 15, height: 15, borderRadius: "50%", background: T.butter, boxShadow: "0 0 0 4px rgba(255,255,255,0.14)" }} />
           </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1.8, color: T.text }}>SCRAPE &amp; BAKE</div>
-            <div style={{ fontSize: 9, color: T.textMuted, letterSpacing: 1 }}>COOKIE INGREDIENT SUPPLY CHAIN DEMO</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 0.8, color: T.text, fontFamily: "var(--font-display)" }}>Scrape &amp; Bake</div>
+            <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 1.4, textTransform: "uppercase", marginTop: 2 }}>Playful cookie ingredient supply-chain demo</div>
+            <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.55, marginTop: 8, maxWidth: 580 }}>
+              A playful demo of source collection, ingredient evidence, provenance, and supply-chain networks.
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+              <StickerBadge label="Synthetic public-demo data" palette={{ color: T.raspberry, bg: T.raspberryBg, border: `${T.raspberry}44` }} />
+              <StickerBadge label="Local mock adapter" palette={{ color: T.pistachio, bg: T.pistachioBg, border: `${T.pistachio}44` }} />
+            </div>
           </div>
         </div>
         <SearchBar query={searchQuery} onChange={setSearchQuery} T={T} dark={dark} mode={effectiveMode} filter={searchFilter} onFilterChange={setSearchFilter} results={displayedSearchResults} resultCounts={searchResultCounts} rawResultCount={filteredSearchResultCount} searched={searchResolvedQuery === searchQuery} onSelectResult={handleSearchSelect} onViewMore={setExpandedSearchType} onBuildGraphFromResult={handleBuildGraphFromSearchResult} loading={searchLoading} inputRef={globalSearchInputRef} />
@@ -6284,7 +6458,7 @@ export default function App() {
                 cursor: "pointer",
                 color: view === tab.id || (tab.id === "dossier" && dossierItems.length) ? T.accent : T.textMuted,
                 fontSize: 10,
-                fontFamily: "Georgia,serif",
+                fontFamily: "var(--font-body)",
                 whiteSpace: "nowrap",
               }}
             >
@@ -6296,7 +6470,7 @@ export default function App() {
               )}
             </button>
           ))}
-          <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 20, padding: "4px 8px 4px 12px", color: activeSecondaryTab ? T.accent : T.textMuted, fontSize: 10, fontFamily: "Georgia,serif", background: activeSecondaryTab ? T.accentBg : T.surfaceAlt }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 20, padding: "4px 8px 4px 12px", color: activeSecondaryTab ? T.accent : T.textMuted, fontSize: 10, fontFamily: "var(--font-body)", background: activeSecondaryTab ? T.accentBg : T.surfaceAlt }}>
             <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>Views</span>
             <select
               value={activeSecondaryTab?.id || ""}
@@ -6305,7 +6479,7 @@ export default function App() {
                 handleViewChange(e.target.value);
               }}
               aria-label="Open secondary feature view"
-              style={{ background: T.surface, border: `1px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 14, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif", padding: "3px 8px", minWidth: 160 }}
+              style={{ background: T.surface, border: `1px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 14, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "3px 8px", minWidth: 160 }}
             >
               <option value="">Open view...</option>
               {secondaryTabs.map(tab => (
@@ -6318,18 +6492,18 @@ export default function App() {
           <button
             type="button"
             onClick={() => setRefreshNonce(current => current + 1)}
-            style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 20, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "Georgia,serif" }}
+            style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 20, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "var(--font-body)" }}
           >
             ↻ Refresh data
           </button>
           {canToggleMode && (
-            <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${T.border}`, borderRadius: 20, padding: "4px 8px 4px 12px", color: T.textMuted, fontSize: 10, fontFamily: "Georgia,serif", background: T.surfaceAlt }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${T.border}`, borderRadius: 20, padding: "4px 8px 4px 12px", color: T.textMuted, fontSize: 10, fontFamily: "var(--font-body)", background: T.surfaceAlt }}>
               <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>Mode</span>
               <select
                 value={effectiveMode}
                 onChange={e => setMode(e.target.value)}
                 aria-label="Workflow mode"
-                style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif", padding: "3px 8px" }}
+                style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "3px 8px" }}
               >
                 {Object.entries(APP_MODES).map(([value, option]) => (
                   <option key={value} value={value}>{option.label}</option>
@@ -6338,14 +6512,14 @@ export default function App() {
               <span style={{ fontSize: 9, color: T.textMuted }}>{APP_MODES[effectiveMode].hint}</span>
             </label>
           )}
-          <button onClick={() => setDark(d => !d)} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 20, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "Georgia,serif" }}>
+          <button onClick={() => setDark(d => !d)} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 20, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "var(--font-body)" }}>
             <span>{dark ? "☀" : "☾"}</span>{dark ? "Light" : "Dark"}
           </button>
-          <button onClick={() => signOut()} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 4, padding: "4px 10px", cursor: "pointer", color: T.textMuted, fontSize: 10, fontFamily: "Georgia,serif" }}>Sign Out</button>
+          <button onClick={() => signOut()} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 4, padding: "4px 10px", cursor: "pointer", color: T.textMuted, fontSize: 10, fontFamily: "var(--font-body)" }}>Sign Out</button>
         </div>
       </div>
 
-      <StatsBar substances={substances} evidenceTotal={evidenceTotal} companyTotal={companyTotal} associationTotal={associationTotal} linkageTotal={linkageTotal} dark={dark} />
+      <StatsBar substances={substances} evidenceTotal={evidenceTotal} companyTotal={companyTotal} sourcePageTotal={sourcePageTotal} networkLinkTotal={networkLinkTotal} dark={dark} />
       {error && <div style={{ background: "#2a0a08", border: "1px solid #ff3b30", color: "#ff3b30", padding: "10px 24px", fontSize: 12, fontFamily: "monospace", flexShrink: 0 }}>⚠ {error}</div>}
 
       <div style={{ flex: 1, overflow: "hidden", position: "relative", minHeight: 0 }}>
@@ -6403,7 +6577,7 @@ export default function App() {
 	                      }}
 	                      placeholder="Search a company, email, or phone..."
 	                      aria-label="Search for a company, email, or phone to build a graph"
-	                      style={{ flex: 1, minWidth: 0, background: T.surfaceAlt, color: T.text, border: `1px solid ${T.border}`, borderRadius: 5, padding: "7px 9px", fontFamily: "Georgia, serif", fontSize: 12 }}
+	                      style={{ flex: 1, minWidth: 0, background: T.surfaceAlt, color: T.text, border: `1px solid ${T.border}`, borderRadius: 5, padding: "7px 9px", fontFamily: "var(--font-body)", fontSize: 12 }}
 	                    />
 	                    <button
 	                      type="button"
@@ -6432,7 +6606,7 @@ export default function App() {
 	                          key={result.data?.id || result.label}
 	                          type="button"
 	                          onClick={() => selectGraphSeedMatch(result)}
-	                          style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", color: T.text, border: 0, borderBottom: `1px solid ${T.border}`, padding: "7px 9px", cursor: "pointer", fontFamily: "Georgia, serif" }}
+	                          style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", color: T.text, border: 0, borderBottom: `1px solid ${T.border}`, padding: "7px 9px", cursor: "pointer", fontFamily: "var(--font-body)" }}
 	                        >
 	                          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
 	                            <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 2, fontWeight: 700, background: style.bg, color: style.color }}>{graphSeedTypeLabel(seed).toUpperCase()}</span>
@@ -6510,11 +6684,22 @@ export default function App() {
                   dark={dark}
                 />
               )}
-              <div style={{ position: "absolute", bottom: 18, left: 18, zIndex: 4, background: dark ? "rgba(10,14,20,0.92)" : "rgba(255,255,255,0.94)", border: `1px solid ${T.border}`, padding: "13px 16px", borderRadius: 8 }}>
+              <div style={{ position: "absolute", bottom: 18, left: 18, zIndex: 4, background: dark ? "rgba(47,28,28,0.94)" : "rgba(255,250,242,0.96)", border: `1px solid ${T.border}`, padding: "14px 16px", borderRadius: 16, boxShadow: T.shadow }}>
                 <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginBottom: 9 }}>LINKAGE TYPE</div>
                 {[["IP Address", linkCol("IP Address", dark)], ["Email", linkCol("Email", dark)], ["Phone", linkCol("Phone", dark)]].map(([k, v]) => (
                   <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
                     <div style={{ width: 20, height: 2, background: v, borderRadius: 1 }} /><span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
+                  </div>
+                ))}
+                <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>COMPANY TYPE ACCENT</div>
+                {[
+                  getCompanyTypePresentation("Bakery", dark),
+                  getCompanyTypePresentation("Ingredient Supplier", dark),
+                  getCompanyTypePresentation("Distributor", dark),
+                  getCompanyTypePresentation("Source Entity", dark),
+                ].map(type => (
+                  <div key={type.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                    <div style={{ width: 11, height: 11, borderRadius: "50%", background: type.color }} /><span style={{ color: T.textMid, fontSize: 10 }}>{type.label}</span>
                   </div>
                 ))}
                 <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>{GRAPH_PRIORITY_LABEL.toUpperCase()}</div>
@@ -6593,6 +6778,9 @@ export default function App() {
             {view === "about" && <AboutTab dark={dark} substances={substances} evidenceTotal={evidenceTotal} companyTotal={companyTotal} associationTotal={associationTotal} linkageTotal={linkageTotal} graphAssociationTotal={activeGraphAssociations.length} />}
           </>
         )}
+      </div>
+      <div style={{ flexShrink: 0, padding: "10px 18px", background: `linear-gradient(180deg, ${T.surfaceAlt} 0%, ${T.surface} 100%)`, borderTop: `1px solid ${T.border}`, color: T.textMid, fontSize: 11, lineHeight: 1.5 }}>
+        Synthetic public-demo dataset only. Source evidence, ingredient labels, and network views are included for traceability and UI demonstration, not live operational analysis.
       </div>
 
       <BottomDrawer open={!!selectedCompany} onClose={() => setSelectedCompany(null)} title={selectedCompany?.name || ""} subtitle={selectedCompany?.chineseName || null} dark={dark} bodyScroll={false}>

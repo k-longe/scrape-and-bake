@@ -2,14 +2,14 @@ import { useState } from "react";
 import { signIn } from "../lib/auth";
 
 const DARK = {
-  bg: "#070b10", surface: "#0a0e14", surfaceAlt: "#0f1520",
-  border: "#1a2233", text: "#cdd6e8", textMid: "#7a90a8",
-  textMuted: "#4a6080", navy: "#0f1f35", accent: "#007aff", accentBg: "#0f2040",
+  bg: "#1c1111", surface: "#2f1c1c", surfaceAlt: "#392322",
+  border: "#6f4d45", text: "#fff7ee", textMid: "#efd9c6",
+  textMuted: "#caa88f", navy: "#243249", accent: "#ef476f", accentBg: "#512433", butter: "#ffd166",
 };
 const LIGHT = {
-  bg: "#f2f0eb", surface: "#ffffff", surfaceAlt: "#f8f6f2",
-  border: "#e0dbd2", text: "#18150f", textMid: "#52493c",
-  textMuted: "#96897a", navy: "#1b2d4f", accent: "#1b56a5", accentBg: "#eaf0fb",
+  bg: "#f7ead8", surface: "#fffaf2", surfaceAlt: "#fff1dd",
+  border: "#d9b99c", text: "#2c1810", textMid: "#674636",
+  textMuted: "#8d6b5a", navy: "#22324f", accent: "#d64067", accentBg: "#ffe2eb", butter: "#f2b940",
 };
 
 export default function Login({ dark, onLogin }) {
@@ -33,18 +33,21 @@ export default function Login({ dark, onLogin }) {
   };
 
   return (
-    <div style={{ width: "100%", height: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif" }}>
-      <div style={{ width: 400, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "40px 40px", boxShadow: dark ? "0 24px 64px rgba(0,0,0,0.5)" : "0 12px 40px rgba(0,0,0,0.1)" }}>
+    <div style={{ width: "100%", height: "100vh", background: `radial-gradient(circle at top left, ${dark ? "rgba(255,209,102,0.16)" : "rgba(255,209,102,0.24)"} 0%, transparent 28%), linear-gradient(180deg, ${T.bg} 0%, ${dark ? "#251616" : "#fff1df"} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)", padding: 18 }}>
+      <div style={{ width: 440, maxWidth: "100%", background: `linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)`, border: `1px solid ${T.border}`, borderRadius: 24, padding: "34px 32px", boxShadow: dark ? "0 28px 70px rgba(0,0,0,0.44)" : "0 18px 44px rgba(79,48,24,0.15)" }}>
 
         {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 36 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 8, background: T.navy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <div style={{ width: 11, height: 11, borderRadius: "50%", background: dark ? "#ff3b30" : "#ef4444" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 14, background: `linear-gradient(135deg, ${T.navy} 0%, ${T.accent} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ width: 14, height: 14, borderRadius: "50%", background: T.butter, boxShadow: "0 0 0 4px rgba(255,255,255,0.16)" }} />
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: 2.5, color: T.text }}>SCRAPE &amp; BAKE</div>
-            <div style={{ fontSize: 9, color: T.textMuted, letterSpacing: 1 }}>COOKIE INGREDIENT SUPPLY CHAIN DEMO</div>
+            <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: 0.4, color: T.text, fontFamily: "var(--font-display)" }}>Scrape &amp; Bake</div>
+            <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 1.2, textTransform: "uppercase" }}>Cookie ingredient supply-chain demo</div>
           </div>
+        </div>
+        <div style={{ color: T.textMid, fontSize: 13, lineHeight: 1.6, marginBottom: 24 }}>
+          A playful demo of source collection, ingredient evidence, provenance, and supply-chain networks.
         </div>
 
         {/* Fields */}
@@ -56,7 +59,7 @@ export default function Login({ dark, onLogin }) {
             onChange={e => setEmail(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
             placeholder="your@email.com"
-            style={{ width: "100%", background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 6, padding: "10px 14px", color: T.text, fontSize: 13, fontFamily: "Georgia,serif", outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", background: dark ? "rgba(255,255,255,0.04)" : "#fffdf9", border: `1px solid ${T.border}`, borderRadius: 14, padding: "12px 14px", color: T.text, fontSize: 14, outline: "none", boxSizing: "border-box" }}
           />
         </div>
 
@@ -68,7 +71,7 @@ export default function Login({ dark, onLogin }) {
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
             placeholder="••••••••"
-            style={{ width: "100%", background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 6, padding: "10px 14px", color: T.text, fontSize: 13, fontFamily: "Georgia,serif", outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", background: dark ? "rgba(255,255,255,0.04)" : "#fffdf9", border: `1px solid ${T.border}`, borderRadius: 14, padding: "12px 14px", color: T.text, fontSize: 14, outline: "none", boxSizing: "border-box" }}
           />
         </div>
 
@@ -81,12 +84,12 @@ export default function Login({ dark, onLogin }) {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          style={{ width: "100%", background: T.accent, border: "none", borderRadius: 7, padding: "12px", color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: 1.5, fontFamily: "Georgia,serif", cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1, transition: "opacity 0.15s" }}>
-          {loading ? "SIGNING IN..." : "SIGN IN"}
+          style={{ width: "100%", background: `linear-gradient(135deg, ${T.accent} 0%, ${T.navy} 100%)`, border: "none", borderRadius: 16, padding: "13px", color: "#fff", fontSize: 14, fontWeight: 800, letterSpacing: 1.1, cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1, transition: "opacity 0.15s, transform 0.15s", boxShadow: "0 12px 24px rgba(0,0,0,0.16)" }}>
+          {loading ? "SIGNING IN…" : "ENTER THE DEMO"}
         </button>
 
-        <div style={{ color: T.textMuted, fontSize: 10, textAlign: "center", marginTop: 20, lineHeight: 1.6 }}>
-          Demo access uses a local mock session.<br />Any email and password will open the workspace.
+        <div style={{ color: T.textMuted, fontSize: 11, textAlign: "center", marginTop: 18, lineHeight: 1.6 }}>
+          Demo access uses a local mock session.<br />Any email and password will open the synthetic public-demo workspace.
         </div>
       </div>
     </div>
