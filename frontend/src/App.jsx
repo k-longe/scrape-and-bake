@@ -152,6 +152,7 @@ const getInitialMode = () => {
 };
 const DEFAULT_VIEWER_MODE = "investigator";
 const SHOW_SCRAPE_ANALYSIS = false;
+const SHOW_INTERNAL_ABOUT_SECTIONS = false;
 const ADMIN_ONLY_VIEWS = new Set(["scrape"]);
 let APP_DATA_CACHE = null;
 
@@ -2752,7 +2753,7 @@ function AboutTab({ dark, substances, evidenceTotal, companyTotal, associationTo
             ))}
           </div>
         </Accordion>
-
+        {SHOW_INTERNAL_ABOUT_SECTIONS && (
         <Accordion title="Data Dictionary" icon="⊞" T={T}>
           <p style={{ color:T.textMid, fontSize:13, lineHeight:1.7, marginBottom:20 }}>All tables and columns in the demo database, organized by domain. PK = Primary Key, FK = Foreign Key.</p>
           {SCHEMA_GROUPS.map(group => (
@@ -2787,7 +2788,9 @@ function AboutTab({ dark, substances, evidenceTotal, companyTotal, associationTo
             </div>
           ))}
         </Accordion>
+        )}
 
+       {SHOW_INTERNAL_ABOUT_SECTIONS && (
         <Accordion title="Schema Diagram" icon="⬡" T={T}>
           <p style={{ color:T.textMid, fontSize:13, lineHeight:1.7, marginBottom:16 }}>Entity-relationship diagram showing all tables and foreign key references. Colors correspond to domain groups. Dashed lines indicate FK relationships.</p>
           <div style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
@@ -2812,6 +2815,7 @@ function AboutTab({ dark, substances, evidenceTotal, companyTotal, associationTo
             </div>
           </div>
         </Accordion>
+       )}
 
         <Accordion title="Contact & Attribution" icon="◎" T={T}>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
