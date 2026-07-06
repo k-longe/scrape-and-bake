@@ -1,12 +1,13 @@
 :root {
-  --font-display: "Bricolage Grotesque", "Trebuchet MS", "Avenir Next", sans-serif;
+  --font-display: "Fraunces", "Bricolage Grotesque", "Cooper Black", "Georgia", serif;
   --font-body: "Nunito", "Avenir Next", "Segoe UI", sans-serif;
   --font-mono: "SFMono-Regular", "SF Mono", "Consolas", "Liberation Mono", monospace;
-  --focus-ring: #ffb703;
+  --focus-ring: #233d8b;
   --page-bg:
-    radial-gradient(circle at top left, rgba(255, 209, 102, 0.34), transparent 28%),
-    radial-gradient(circle at top right, rgba(239, 71, 111, 0.18), transparent 24%),
-    linear-gradient(180deg, #fff7ea 0%, #f5ebdb 48%, #efe1ca 100%);
+    radial-gradient(circle at 12% 10%, rgba(255, 209, 102, 0.5), transparent 24%),
+    radial-gradient(circle at 88% 16%, rgba(233, 75, 127, 0.18), transparent 20%),
+    radial-gradient(circle at 76% 78%, rgba(143, 209, 143, 0.16), transparent 18%),
+    linear-gradient(180deg, #fff7eb 0%, #fff4df 55%, #fff0d0 100%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,14 +20,14 @@ body,
 }
 
 html {
-  background: #f5ebdb;
+  background: #fff4df;
 }
 
 body {
   overflow: hidden;
   font-family: var(--font-body);
   background: var(--page-bg);
-  color: #2b1811;
+  color: #2d1810;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -52,7 +53,7 @@ a {
 }
 
 ::selection {
-  background: rgba(239, 71, 111, 0.24);
+  background: rgba(233, 75, 127, 0.24);
   color: inherit;
 }
 

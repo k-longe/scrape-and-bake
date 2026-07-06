@@ -5,59 +5,59 @@ import { DEFAULT_APP_ROLE, getSession, isAuthVerificationPending, signOut, verif
 
 // ── Themes ─────────────────────────────────────────────────────────────────
 const DARK = {
-  bg: "#1c1111",
-  bgAlt: "#251616",
-  surface: "#2f1c1c",
-  surfaceAlt: "#392322",
-  surfaceSoft: "#472b29",
-  border: "#6f4d45",
-  borderMid: "#8e665c",
+  bg: "#2b170f",
+  bgAlt: "#351d13",
+  surface: "#43251a",
+  surfaceAlt: "#5a3223",
+  surfaceSoft: "#70402d",
+  border: "#a15b41",
+  borderMid: "#c1785d",
   text: "#fff7ee",
-  textMid: "#efd9c6",
-  textMuted: "#caa88f",
-  navy: "#243249",
-  accent: "#ef476f",
-  accentBg: "#512433",
+  textMid: "#f4dcc2",
+  textMuted: "#d9b395",
+  navy: "#3856b5",
+  accent: "#ff6f9f",
+  accentBg: "#6a2742",
   butter: "#ffd166",
-  butterBg: "#4a3517",
-  pistachio: "#8ecf7a",
-  pistachioBg: "#203926",
-  chocolate: "#b46a42",
-  chocolateBg: "#4a2b1d",
+  butterBg: "#5d4511",
+  pistachio: "#98dd95",
+  pistachioBg: "#2f5a37",
+  chocolate: "#ff9b55",
+  chocolateBg: "#6c3720",
   raspberry: "#ff7aa2",
-  raspberryBg: "#552335",
+  raspberryBg: "#69233d",
   cream: "#fff4e2",
   espresso: "#170d0d",
-  shadow: "0 22px 54px rgba(0,0,0,0.38)",
+  shadow: "0 10px 24px rgba(15,6,2,0.18)",
 };
 const LIGHT = {
-  bg: "#f7ead8",
-  bgAlt: "#fff5e9",
-  surface: "#fffaf2",
-  surfaceAlt: "#fff1dd",
-  surfaceSoft: "#ffe3c2",
-  border: "#d9b99c",
-  borderMid: "#bb8d6e",
-  text: "#2c1810",
-  textMid: "#674636",
-  textMuted: "#8d6b5a",
-  navy: "#22324f",
-  accent: "#d64067",
-  accentBg: "#ffe2eb",
-  butter: "#f2b940",
-  butterBg: "#fff1c6",
-  pistachio: "#4d8f4a",
-  pistachioBg: "#e5f3dd",
-  chocolate: "#9a5d36",
-  chocolateBg: "#f6e0cf",
-  raspberry: "#c72e59",
-  raspberryBg: "#ffd6e2",
-  cream: "#fff7ea",
-  espresso: "#2b1811",
-  shadow: "0 18px 38px rgba(79,48,24,0.16)",
+  bg: "#fff7eb",
+  bgAlt: "#fff1d8",
+  surface: "#fffdf6",
+  surfaceAlt: "#ffe9b7",
+  surfaceSoft: "#ffdcb5",
+  border: "#f1a45b",
+  borderMid: "#d66d47",
+  text: "#2d1810",
+  textMid: "#684231",
+  textMuted: "#8a5c45",
+  navy: "#233d8b",
+  accent: "#e94b7f",
+  accentBg: "#ffd5e3",
+  butter: "#ffd166",
+  butterBg: "#fff1b3",
+  pistachio: "#4f8d56",
+  pistachioBg: "#d8efc8",
+  chocolate: "#7b3f2a",
+  chocolateBg: "#f6d2bb",
+  raspberry: "#e94b7f",
+  raspberryBg: "#ffd7e7",
+  cream: "#fffaf0",
+  espresso: "#2d1810",
+  shadow: "0 8px 18px rgba(123,63,42,0.08)",
 };
 
-const CARD_RADIUS = 18;
+const CARD_RADIUS = 20;
 const formatSourceTypeLabel = value => String(value || "")
   .replace(/[_-]+/g, " ")
   .replace(/\b\w/g, match => match.toUpperCase()) || "Source Page";
@@ -105,20 +105,18 @@ const getIngredientChipStyle = (T, dark, active = false) => ({
   display: "inline-flex",
   alignItems: "center",
   gap: 6,
-  padding: "5px 11px",
+  padding: "7px 13px",
   borderRadius: 999,
-  background: active ? T.accentBg : T.butterBg,
-  color: active ? T.accent : (dark ? T.butter : T.chocolate),
-  border: `1px solid ${active ? T.accent : dark ? T.butter : T.chocolate}55`,
+  background: active ? T.accent : T.butterBg,
+  color: active ? (dark ? T.espresso : "#fffdf9") : (dark ? T.butter : T.chocolate),
+  border: `3px solid ${active ? T.accent : dark ? T.butter : T.chocolate}`,
   fontSize: 11,
   fontWeight: 800,
-  boxShadow: dark ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "inset 0 1px 0 rgba(255,255,255,0.75)",
 });
 const getRecipeCardStyle = (T, dark, accent = T.accent) => ({
-  background: `linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)`,
-  border: `1px solid ${accent}44`,
+  background: T.surface,
+  border: `3px solid ${accent}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: dark ? "0 20px 44px rgba(0,0,0,0.26)" : "0 14px 30px rgba(93,55,29,0.12)",
 });
 
 const getPriorityCategory = s => (s >= 85 ? "critical" : s >= 65 ? "high" : s >= 45 ? "medium" : "low");
@@ -548,16 +546,15 @@ function StickerBadge({ label, palette, style = {} }) {
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        padding: "4px 10px",
+        padding: "7px 12px",
         borderRadius: 999,
         background: palette.bg,
         color: palette.color,
-        border: `1px solid ${palette.border || `${palette.color}55`}`,
+        border: `3px solid ${palette.border || palette.color}`,
         fontSize: 10,
         fontWeight: 800,
         letterSpacing: 0.6,
         textTransform: "uppercase",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22)",
         ...style,
       }}
     >
@@ -573,7 +570,7 @@ function IngredientBadge({ label, T, dark, active = false, style = {} }) {
 function GraphLoadingOverlay({ dark }) {
   const T = dark ? DARK : LIGHT;
   return (
-    <div style={{ position: "absolute", inset: 0, zIndex: 4, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "auto", background: dark ? "rgba(28,17,17,0.34)" : "rgba(247,234,216,0.42)", backdropFilter: "blur(6px)" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 4, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "auto", background: dark ? "rgba(43,23,15,0.32)" : "rgba(255,247,235,0.58)", backdropFilter: "blur(4px)" }}>
       <div style={{ ...getRecipeCardStyle(T, dark, T.butter), padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, maxWidth: 420 }}>
         <div style={{ display: "flex", gap: 4 }} aria-hidden="true">
           {[0, 1, 2].map(i => <span key={i} className="graph-pulse-dot" style={{ animationDelay: `${i * 0.14}s`, background: T.accent }} />)}
@@ -673,8 +670,7 @@ function BottomDrawer({ open, onClose, title, subtitle, dark, children, bodyScro
       {open && <div onClick={onClose} aria-hidden="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 40 }} />}
       <div ref={drawerRef} role="dialog" aria-modal="true" aria-label={title || "Detail drawer"} tabIndex={-1} style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
-        height, background: `linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)`, borderTop: `3px solid ${T.butter}`,
-        boxShadow: dark ? "0 -18px 46px rgba(0,0,0,0.48)" : "0 -14px 38px rgba(79,48,24,0.16)",
+        height, background: T.surface, borderTop: `6px solid ${T.butter}`,
         transform: open ? "translateY(0)" : "translateY(100%)",
         transition: isDragging ? "none" : "transform 0.26s cubic-bezier(0.4,0,0.2,1)",
         outline: "none",
@@ -683,9 +679,9 @@ function BottomDrawer({ open, onClose, title, subtitle, dark, children, bodyScro
         {/* Drag handle */}
         <div ref={dragRef} onMouseDown={onDragStart}
           style={{ height: 6, background: "transparent", cursor: "ns-resize", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: 60, height: 6, background: `linear-gradient(90deg, ${T.butter} 0%, ${T.accent} 100%)`, borderRadius: 999 }} />
+          <div style={{ width: 70, height: 10, background: T.butter, borderRadius: 999, border: `3px solid ${T.chocolate}` }} />
         </div>
-        <div style={{ padding: "10px 24px 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, background: `linear-gradient(135deg, ${T.surfaceAlt} 0%, ${T.bgAlt} 100%)` }}>
+        <div style={{ padding: "12px 24px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, background: dark ? T.surfaceSoft : T.surfaceAlt }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div>
               <div style={{ color: T.text, fontWeight: 800, fontSize: 18, fontFamily: "var(--font-display)" }}>{title}</div>
@@ -697,11 +693,11 @@ function BottomDrawer({ open, onClose, title, subtitle, dark, children, bodyScro
               onClick={() => setHeight(isExpanded ? defaultHeight : expandedHeight)}
               title={isExpanded ? "Switch to partial drawer height" : "Expand drawer"}
               aria-label={isExpanded ? "Switch to partial drawer height" : "Expand drawer"}
-              style={{ background: "none", border: `1px solid ${T.border}`, color: T.textMuted, cursor: "pointer", fontSize: 10, padding: "4px 8px", borderRadius: 4, fontFamily: "var(--font-body)", minWidth: 62 }}
+              style={{ background: T.butterBg, border: `3px solid ${T.butter}`, color: dark ? T.butter : T.chocolate, cursor: "pointer", fontSize: 10, padding: "6px 10px", borderRadius: 999, fontFamily: "var(--font-body)", minWidth: 72, fontWeight: 800 }}
             >
               {isExpanded ? "Partial" : "Expand"}
             </button>
-            <button onClick={onClose} aria-label="Close drawer" style={{ background: "none", border: `1px solid ${T.border}`, color: T.textMuted, cursor: "pointer", fontSize: 15, width: 30, height: 30, borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            <button onClick={onClose} aria-label="Close drawer" style={{ background: T.raspberryBg, border: `3px solid ${T.raspberry}`, color: T.raspberry, cursor: "pointer", fontSize: 15, width: 36, height: 36, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>✕</button>
           </div>
         </div>
         <div style={{ flex: 1, overflowY: bodyScroll ? "auto" : "hidden", overflowX: "hidden", minHeight: 0 }}>
@@ -715,9 +711,9 @@ function BottomDrawer({ open, onClose, title, subtitle, dark, children, bodyScro
 // ── Drawer Column ──────────────────────────────────────────────────────────
 function DrawerCol({ label, T, children, minWidth = 240 }) {
   return (
-    <div style={{ minWidth, flex: 1, borderRight: `1px dashed ${T.border}`, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ padding: "12px 18px 10px", borderBottom: `1px solid ${T.border}`, flexShrink: 0, background: `linear-gradient(135deg, ${T.surfaceAlt} 0%, ${T.bgAlt} 100%)` }}>
-        <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.3, fontWeight: 800 }}>{label}</div>
+    <div style={{ minWidth, flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", paddingRight: 10 }}>
+      <div style={{ padding: "12px 18px 10px", flexShrink: 0 }}>
+        <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.3, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 8, background: T.surfaceAlt, borderRadius: 999, padding: "7px 12px" }}>{label}</div>
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
         {children}
@@ -735,7 +731,7 @@ function EvidenceProvenancePanel({ title, summary, rows, loading, loaded, error,
   ) : null;
 
   return (
-    <div style={{ marginTop: 18, borderTop: `1px solid ${T.border}`, paddingTop: 14 }}>
+    <div style={{ marginTop: 18, paddingTop: 6 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
         <div>
           <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.2 }}>{title}</div>
@@ -744,7 +740,7 @@ function EvidenceProvenancePanel({ title, summary, rows, loading, loaded, error,
         <button
           onClick={onLoad}
           disabled={loading}
-          style={{ background: T.accentBg, border: `1px solid ${T.accent}44`, color: T.accent, padding: "7px 12px", borderRadius: 999, cursor: loading ? "default" : "pointer", fontSize: 10, fontWeight: 800, flexShrink: 0 }}
+          style={{ background: T.accentBg, border: `3px solid ${T.accent}`, color: T.accent, padding: "8px 13px", borderRadius: 999, cursor: loading ? "default" : "pointer", fontSize: 10, fontWeight: 800, flexShrink: 0 }}
         >
           {loading ? "Loading…" : loaded ? "Refresh cards" : "Load recipe cards"}
         </button>
@@ -765,7 +761,7 @@ function EvidenceProvenancePanel({ title, summary, rows, loading, loaded, error,
                 <button
                   type="button"
                   onClick={() => onAddRow(row)}
-                  style={{ background: isRowInDossier?.(row) ? T.accentBg : T.surface, color: isRowInDossier?.(row) ? T.accent : T.textMid, border: `1px solid ${isRowInDossier?.(row) ? T.accent : T.border}`, borderRadius: 999, padding: "5px 10px", cursor: "pointer", fontSize: 10, fontWeight: 800 }}
+                  style={{ background: isRowInDossier?.(row) ? T.accentBg : T.cream, color: isRowInDossier?.(row) ? T.accent : T.textMid, border: `3px solid ${isRowInDossier?.(row) ? T.accent : T.border}`, borderRadius: 999, padding: "6px 11px", cursor: "pointer", fontSize: 10, fontWeight: 800 }}
                 >
                   {isRowInDossier?.(row) ? "Update dossier" : "Add to dossier"}
                 </button>
@@ -1752,19 +1748,17 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
 
   return (
     <div style={{ position: "relative", flex: "2 1 460px", minWidth: 260, maxWidth: 680 }}>
-      <div style={{ background: T.surfaceAlt, border: `1px solid ${query ? T.accent : T.border}`, borderRadius: 8, padding: "7px 10px" }}>
+      <div style={{ background: T.cream, border: `3px solid ${query ? T.accent : T.border}`, borderRadius: 16, padding: "10px 12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ color: loading ? T.accent : T.textMuted, fontSize: 13 }}>{loading ? "⟳" : "⌕"}</span>
-          <span style={{ color: T.accent, background: T.accentBg, border: `1px solid ${T.border}`, borderRadius: 999, fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase", padding: "3px 7px", whiteSpace: "nowrap" }}>{copy.label}</span>
-          <input ref={inputRef} value={query} onChange={e => onChange(e.target.value)} placeholder={copy.placeholder}
-            style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "var(--font-body)", flex: "1 1 220px", minWidth: 140 }} />
+          <input ref={inputRef} value={query} onChange={e => onChange(e.target.value)} placeholder="Search"
+            style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 13, fontFamily: "var(--font-body)", flex: "1 1 220px", minWidth: 140 }} />
           <label style={{ display: "flex", alignItems: "center", gap: 5, color: T.textMuted, fontSize: 9, letterSpacing: 0.7, textTransform: "uppercase", whiteSpace: "nowrap" }}>
-            Scope
             <select
               value={filter}
               onChange={e => onFilterChange(e.target.value)}
               aria-label="Search scope"
-              style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 999, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "3px 8px", maxWidth: 150 }}
+              style={{ background: T.surface, border: `3px solid ${T.border}`, borderRadius: 12, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "5px 10px", maxWidth: 150, appearance: "none" }}
             >
               {SEARCH_FILTERS.map(item => (
                 <option key={item.id} value={item.id}>{item.label}</option>
@@ -1775,13 +1769,13 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
         </div>
       </div>
       {open && (
-        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 6, marginTop: 4, maxHeight: 400, overflowY: "auto", boxShadow: dark ? "0 8px 32px rgba(0,0,0,0.6)" : "0 8px 24px rgba(0,0,0,0.12)", width: "min(420px, calc(100vw - 32px))" }}>
+        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, zIndex: 100, background: T.surface, border: `3px solid ${T.border}`, borderRadius: 18, marginTop: 4, maxHeight: 400, overflowY: "auto", width: "min(440px, calc(100vw - 32px))" }}>
           {loading && results.length === 0 && (
             <div style={{ padding: "14px", color: T.textMuted, fontSize: 11, textAlign: "center" }}>Searching across all tables...</div>
           )}
           {results.length > 0 && (
             <>
-              <div style={{ padding: "7px 14px", color: T.textMuted, fontSize: 10, borderBottom: `1px solid ${T.border}` }}>
+              <div style={{ padding: "10px 14px", color: T.textMuted, fontSize: 10 }}>
                 Preview suggestions only. Use view-more actions for fuller scoped results.
               </div>
               {searchGroupOrder(mode).map(type => {
@@ -1791,18 +1785,18 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
                 const total = resultCounts[type] || group.length;
                 return (
                   <div key={type}>
-                    <div style={{ padding: "6px 14px 3px", fontSize: 9, letterSpacing: 1.2, color: T.textMuted, background: T.surfaceAlt, borderBottom: `1px solid ${T.border}`, fontWeight: 700 }}>
+                    <div style={{ padding: "7px 14px 5px", fontSize: 9, letterSpacing: 1.2, color: T.textMuted, background: T.surfaceAlt, fontWeight: 700 }}>
                       {searchTypeLabel(type).toUpperCase()} ({group.length < total ? `${group.length} OF ${total}` : total})
                     </div>
                     {group.map((r, i) => {
                       const artifactSeed = getSearchResultArtifactSeed(r);
                       return (
                         <div key={i} role="button" tabIndex={0} onClick={() => handleSelect(r)} onKeyDown={onKeyboardActivate(() => handleSelect(r))}
-                          style={{ padding: "9px 14px", cursor: "pointer", borderBottom: `1px solid ${T.border}` }}
-                          onMouseEnter={e => e.currentTarget.style.background = T.surfaceAlt}
+                          style={{ padding: "11px 14px", cursor: "pointer", borderTop: `3px solid ${i === 0 ? "transparent" : T.surfaceAlt}` }}
+                          onMouseEnter={e => e.currentTarget.style.background = T.cream}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 2, fontWeight: 700, background: s.bg, color: s.color, whiteSpace: "nowrap" }}>{searchTypeLabel(type).toUpperCase()}</span>
+                            <span style={{ fontSize: 9, padding: "4px 8px", borderRadius: 10, fontWeight: 700, background: s.bg, color: s.color, whiteSpace: "nowrap", border: `2px solid ${s.color}` }}>{searchTypeLabel(type).toUpperCase()}</span>
                             <span style={{ color: T.text, fontSize: 12, fontWeight: 600 }}>{r.label}</span>
                           </div>
                           {r.sublabel && <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3, marginLeft: 46 }}>{r.sublabel}</div>}
@@ -1814,7 +1808,7 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
                                 onBuildGraphFromResult(r);
                                 onChange("");
                               }}
-                              style={{ marginTop: 7, marginLeft: 46, background: T.surfaceAlt, color: T.accent, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "4px 9px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
+                              style={{ marginTop: 7, marginLeft: 46, background: T.butterBg, color: T.chocolate, border: `3px solid ${T.butter}`, borderRadius: 12, padding: "5px 10px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", fontWeight: 800 }}
                             >
                               Build graph from this
                             </button>
@@ -1826,7 +1820,7 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
                       <button
                         type="button"
                         onClick={() => onViewMore(type)}
-                        style={{ width: "100%", textAlign: "left", padding: "8px 14px", background: T.surfaceAlt, border: "none", borderBottom: `1px solid ${T.border}`, color: T.accent, cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)" }}
+                        style={{ width: "100%", textAlign: "left", padding: "10px 14px 14px", background: T.surfaceAlt, border: "none", color: T.accent, cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 800 }}
                       >
                         View all {total} {searchTypeLabel(type)} results
                       </button>
@@ -1838,7 +1832,7 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
           )}
           {!loading && searched && results.length === 0 && query.length > 1 && (
             <div style={{ padding: "14px", color: T.textMuted, fontSize: 11, textAlign: "center" }}>
-              {copy.empty} for "{query}" in {activeFilter.label}. Try All if you want the broad result set.
+              {copy.empty} for "{query}" in {activeFilter.label}.
             </div>
           )}
         </div>
@@ -1865,12 +1859,12 @@ function SearchResultsPanel({ query, type, results, onSelect, onBuildGraphFromRe
               tabIndex={0}
               onClick={() => onSelect(result)}
               onKeyDown={onKeyboardActivate(() => onSelect(result))}
-              style={{ textAlign: "left", background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12, cursor: "pointer", color: T.text, fontFamily: "var(--font-body)" }}
+              style={{ textAlign: "left", background: i % 2 ? T.cream : T.surface, border: `3px solid ${i % 2 ? T.butter : T.border}`, borderRadius: 24, padding: 14, cursor: "pointer", color: T.text, fontFamily: "var(--font-body)" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = i % 2 ? T.butter : T.border; }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 2, fontWeight: 700, background: s.bg, color: s.color }}>{searchTypeLabel(result.type).toUpperCase()}</span>
+                <span style={{ fontSize: 9, padding: "4px 8px", borderRadius: 999, fontWeight: 700, background: s.bg, color: s.color, border: `2px solid ${s.color}` }}>{searchTypeLabel(result.type).toUpperCase()}</span>
                 <span style={{ color: T.text, fontSize: 13, fontWeight: 700 }}>{result.label}</span>
               </div>
               {result.sublabel && <div style={{ color: T.textMuted, fontSize: 11, marginTop: 5 }}>{result.sublabel}</div>}
@@ -1881,7 +1875,7 @@ function SearchResultsPanel({ query, type, results, onSelect, onBuildGraphFromRe
                     e.stopPropagation();
                     onBuildGraphFromResult(result);
                   }}
-                  style={{ marginTop: 9, background: T.surface, color: T.accent, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "5px 10px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)" }}
+                  style={{ marginTop: 9, background: T.butterBg, color: T.chocolate, border: `3px solid ${T.butter}`, borderRadius: 999, padding: "6px 11px", cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", fontWeight: 800 }}
                 >
                   Build graph from this
                 </button>
@@ -2018,7 +2012,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
           for (let x = 0; x < W / z; x += 40) { ctx.beginPath(); ctx.moveTo(x, -py/z); ctx.lineTo(x, (H - py) / z); ctx.stroke(); }
           for (let y = 0; y < H / z; y += 40) { ctx.beginPath(); ctx.moveTo(-px/z, y); ctx.lineTo((W - px) / z, y); ctx.stroke(); }
         } else {
-          ctx.fillStyle = "rgba(154,93,54,0.12)";
+          ctx.fillStyle = "rgba(255,138,61,0.14)";
           for (let x = 0; x < W / z + Math.abs(px/z); x += 24) for (let y = 0; y < H / z + Math.abs(py/z); y += 24) { ctx.beginPath(); ctx.arc(x - (px%24)/z, y - (py%24)/z, 0.8/z, 0, Math.PI * 2); ctx.fill(); }
         }
       edgesRef.current.forEach(e => {
@@ -2026,7 +2020,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
           const col = linkCol(e.method, isDark);
           ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y);
           ctx.strokeStyle = col + (e.edgeType === "artifact" ? "99" : "66"); ctx.lineWidth = (e.edgeType === "artifact" ? 1.6 : 2.1) / z;
-          if (!isDark) ctx.setLineDash([5/z, 5/z]); ctx.stroke(); ctx.setLineDash([]);
+          if (!isDark) ctx.setLineDash([8/z, 7/z]); ctx.stroke(); ctx.setLineDash([]);
         });
       nodesRef.current.forEach(n => {
         if (n.kind === "artifact") {
@@ -2052,7 +2046,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
           } else {
             ctx.beginPath(); ctx.roundRect(-r * 0.72, -r * 0.72, r * 1.44, r * 1.44, 4);
           }
-          ctx.fillStyle = isDark ? "rgba(47,28,28,0.95)" : "rgba(255,250,242,0.98)";
+          ctx.fillStyle = isDark ? "rgba(67,37,26,0.95)" : "rgba(255,248,235,0.98)";
           ctx.strokeStyle = col;
           ctx.lineWidth = (isHov || isSelectedArtifact || isSeed ? 2.7 : 1.6) / z;
           ctx.fill(); ctx.stroke();
@@ -2087,9 +2081,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
         const showLabel = companies.length <= 10 || sel || isHov || isSeed || isAnchor;
         if (sel || isHov || isSeed) { ctx.beginPath(); ctx.arc(n.x, n.y, r + (sel || isSeed ? 10 : 6), 0, Math.PI * 2); ctx.strokeStyle = col + (sel || isSeed ? "66" : "33"); ctx.lineWidth = (sel || isSeed ? 3 : 2) / z; ctx.stroke(); }
         if (isDark && (sel || isHov || isSeed)) { const grd = ctx.createRadialGradient(n.x, n.y, r * 0.5, n.x, n.y, r * 3); grd.addColorStop(0, col + "22"); grd.addColorStop(1, "transparent"); ctx.beginPath(); ctx.arc(n.x, n.y, r * 3, 0, Math.PI * 2); ctx.fillStyle = grd; ctx.fill(); }
-        if (!isDark) { ctx.shadowColor = "rgba(0,0,0,0.10)"; ctx.shadowBlur = sel ? 14 : 5; ctx.shadowOffsetY = 2; }
         ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fillStyle = sel ? col : bg; ctx.fill();
-        ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
         ctx.strokeStyle = col; ctx.lineWidth = (sel || isSeed ? 2.7 : 1.5) / z; ctx.stroke();
         ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(3.5, r * 0.28), 0, Math.PI * 2);
         ctx.fillStyle = companyType.color;
@@ -2110,7 +2102,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
             ? `${prefix}${nameLabel} · ${visualMetrics.displayedCountLabel}: ${visualMetrics.sharedInfrastructureLinks} · ${GRAPH_PRIORITY_LABEL}: ${visualMetrics.priorityLabel}`
             : nameLabel;
           const lw = ctx.measureText(lbl).width;
-          ctx.fillStyle = isDark ? "rgba(7,11,16,0.88)" : "rgba(242,240,235,0.92)";
+          ctx.fillStyle = isDark ? "rgba(29,18,14,0.9)" : "rgba(255,248,235,0.95)";
           ctx.fillRect(n.x - lw / 2 - 3, n.y + r + 3, lw + 6, 14);
           ctx.fillStyle = Th.textMid; ctx.fillText(lbl, n.x, n.y + r + 4);
           ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
@@ -2145,7 +2137,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
   const hit = (wx, wy) => nodesRef.current.find(n => Math.hypot(n.x - wx, n.y - wy) < (n.kind === "artifact" ? 18 : 12 + Math.min(n.degree || 0, 12) * 1.6 + 8));
 
   return (
-    <canvas ref={canvasRef} style={{ width: "100%", height: "100%", cursor: "default" }}
+    <canvas ref={canvasRef} style={{ width: "100%", height: "100%", cursor: "default", background: dark ? "radial-gradient(circle at top, rgba(255,209,102,0.08), transparent 25%), linear-gradient(180deg, #351d13 0%, #2b170f 100%)" : "radial-gradient(circle at top left, rgba(255,209,102,0.34), transparent 24%), radial-gradient(circle at bottom right, rgba(143,209,143,0.24), transparent 24%), linear-gradient(180deg, #fffaf0 0%, #fff4df 100%)", borderRadius: 28 } }
       onMouseMove={e => {
         const p = pt(e), n = hit(p.x, p.y);
         hovRef.current = n?.id || null;
@@ -2186,10 +2178,9 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
 // ── Section Header ─────────────────────────────────────────────────────────
 function SectionHeader({ label, T }) {
   return (
-    <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.5, marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ width: 14, height: 14, borderRadius: 4, background: `linear-gradient(135deg, ${T.butter} 0%, ${T.accent} 100%)`, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)" }} />
-      <span style={{ fontWeight: 800 }}>{label}</span>
-      <div style={{ flex: 1, height: 2, borderRadius: 999, background: `linear-gradient(90deg, ${T.borderMid} 0%, transparent 100%)` }} />
+    <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.5, marginBottom: 16, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <div style={{ width: 18, height: 18, borderRadius: 999, background: T.butter, border: `3px solid ${T.chocolate}` }} />
+      <span style={{ fontWeight: 800, background: T.surfaceAlt, color: T.text, borderRadius: 999, padding: "7px 12px" }}>{label}</span>
     </div>
   );
 }
@@ -2214,7 +2205,7 @@ function SubstanceMatrix({ substances, evidenceSummary, companies, onSelectSubst
           const sourcePalette = getCompanyTypePresentation(topCos[0]?.type, dark);
           return (
             <div key={s.id} role="button" tabIndex={0} aria-label={`Open ingredient ${s.name}`} onClick={() => onSelectSubstance(s)} onKeyDown={onKeyboardActivate(() => onSelectSubstance(s))}
-              style={{ ...getRecipeCardStyle(T, dark, isSel ? T.accent : sourcePalette.color), padding: "18px 18px 16px", cursor: "pointer", transition: "transform 0.18s, border-color 0.18s, box-shadow 0.18s", transform: isSel ? "translateY(-2px)" : "none" }}
+              style={{ ...getRecipeCardStyle(T, dark, isSel ? T.accent : sourcePalette.color), padding: "18px 18px 16px", cursor: "pointer", transition: "transform 0.18s, border-color 0.18s", transform: isSel ? "translateY(-2px)" : "none", background: isSel ? T.cream : T.surface }}
               onMouseEnter={e => { if (!isSel) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.transform = "translateY(-2px)"; } }}
               onMouseLeave={e => { if (!isSel) { e.currentTarget.style.borderColor = `${sourcePalette.color}44`; e.currentTarget.style.transform = "translateY(0)"; } }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
@@ -2278,14 +2269,14 @@ function FlagsTable({ companies, onSelect, selectedId, dark, getCompanyGraphMetr
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <SectionHeader label="TOP COMPANY SIGNALS — RANKED BY V2 SCORE" T={T} />
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ background: T.accentBg, border: `1px solid ${T.accent}33`, borderRadius: 5, padding: "4px 12px", fontSize: 10, color: T.accent, fontWeight: 600 }}>● LIVE SCORE v2</div>
-          <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 5, padding: "4px 12px", fontSize: 10, color: T.textMuted }}>○ LEGACY (reference only)</div>
+          <div style={{ background: T.accentBg, border: `3px solid ${T.accent}`, borderRadius: 999, padding: "6px 12px", fontSize: 10, color: T.accent, fontWeight: 700 }}>● LIVE SCORE v2</div>
+          <div style={{ background: T.surfaceAlt, border: `3px solid ${T.border}`, borderRadius: 999, padding: "6px 12px", fontSize: 10, color: T.textMuted }}>○ LEGACY (reference only)</div>
         </div>
       </div>
       <div style={{ ...getRecipeCardStyle(T, dark, T.accent), overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--font-body)", fontSize: 12 }}>
           <thead>
-            <tr style={{ background: T.surfaceAlt, borderBottom: `1px solid ${T.border}` }}>
+            <tr style={{ background: T.surfaceAlt }}>
               {["RANK", "COMPANY", "TYPE", "SCORE BREAKDOWN", "V2 SCORE", "LEGACY", "SHARED LINKS", "PRIORITY"].map(h => (
                 <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: T.textMuted, fontSize: 9, letterSpacing: 1.2, fontWeight: 700, whiteSpace: "nowrap" }}>{h}</th>
               ))}
@@ -2300,9 +2291,9 @@ function FlagsTable({ companies, onSelect, selectedId, dark, getCompanyGraphMetr
               return (
                 <tr key={c.id} tabIndex={0} onClick={() => onSelect(c)} onKeyDown={onKeyboardActivate(() => onSelect(c))}
                   aria-label={`Open company ${c.name}`}
-                  style={{ borderBottom: `1px solid ${T.border}`, cursor: "pointer", background: isSel ? T.accentBg : "transparent" }}
+                  style={{ borderTop: `8px solid ${i === 0 ? "transparent" : T.surface}`, cursor: "pointer", background: isSel ? T.accentBg : i % 2 ? T.cream : "transparent" }}
                   onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = T.surfaceAlt; }}
-                  onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}>
+                  onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = i % 2 ? T.cream : "transparent"; }}>
                   <td style={{ padding: "10px 14px", color: T.textMuted, fontSize: 11, fontWeight: 700, width: 40 }}>#{i + 1}</td>
                   <td style={{ padding: "10px 14px", minWidth: 200 }}>
                     <div style={{ color: T.text, fontWeight: 600 }}>{c.name}</div>
@@ -2327,10 +2318,10 @@ function FlagsTable({ companies, onSelect, selectedId, dark, getCompanyGraphMetr
                     )}
                   </td>
                   <td style={{ padding: "10px 14px" }}>
-                    <span title={`${visualMetrics.sharedInfrastructureLinks.toLocaleString()} ${GRAPH_NODE_METRIC_LABEL.toLowerCase()}`} style={{ color: T.accent, background: T.accentBg, padding: "2px 8px", borderRadius: 3, fontSize: 11, fontWeight: 600 }}>{visualMetrics.displayedCountText}</span>
+                    <span title={`${visualMetrics.sharedInfrastructureLinks.toLocaleString()} ${GRAPH_NODE_METRIC_LABEL.toLowerCase()}`} style={{ color: T.accent, background: T.accentBg, padding: "5px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: `2px solid ${T.accent}` }}>{visualMetrics.displayedCountText}</span>
                   </td>
                   <td style={{ padding: "10px 14px" }}>
-                    <span title={`${GRAPH_PRIORITY_LABEL}: ${visualMetrics.priorityLabel}`} style={{ background: visualMetrics.priorityBg, color: visualMetrics.priorityColor, border: `1px solid ${visualMetrics.priorityColor}55`, padding: "2px 9px", borderRadius: 3, fontSize: 12, fontWeight: 700 }}>{visualMetrics.priorityLabel} · {visualMetrics.priorityScore}</span>
+                    <span title={`${GRAPH_PRIORITY_LABEL}: ${visualMetrics.priorityLabel}`} style={{ background: visualMetrics.priorityBg, color: visualMetrics.priorityColor, border: `2px solid ${visualMetrics.priorityColor}`, padding: "5px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700 }}>{visualMetrics.priorityLabel} · {visualMetrics.priorityScore}</span>
                   </td>
                 </tr>
               );
@@ -2338,7 +2329,7 @@ function FlagsTable({ companies, onSelect, selectedId, dark, getCompanyGraphMetr
           </tbody>
         </table>
       </div>
-      <div style={{ marginTop: 12, padding: "10px 14px", background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 11, color: T.textMuted, lineHeight: 1.6 }}>
+      <div style={{ marginTop: 12, padding: "12px 16px", background: T.surfaceAlt, border: `3px solid ${T.border}`, borderRadius: 24, fontSize: 11, color: T.textMuted, lineHeight: 1.6 }}>
         <span style={{ color: T.accent, fontWeight: 600 }}>Score v2 methodology: </span>
         Source Evidence Score (sum of evidence record weights) + Ingredient Score (ingredient reference weights across linked rows) + Company Tag Score (benign analyst-assigned tags). Legacy score is preserved only for compatibility reference.
       </div>
@@ -5336,15 +5327,15 @@ function StatsBar({ substances, evidenceTotal, companyTotal, sourcePageTotal, ne
     { label: "Network links", value: networkLinkTotal > 0 ? networkLinkTotal.toLocaleString() : "…", accent: T.pistachio, bg: T.pistachioBg, icon: "🕸️", help: "Visible graph links across company associations and contact artifacts." },
   ];
   return (
-    <div style={{ padding: "14px clamp(12px, 2vw, 24px) 12px", background: `linear-gradient(180deg, ${T.bgAlt} 0%, transparent 100%)`, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+    <div style={{ padding: "18px clamp(14px, 2vw, 24px) 14px", background: "transparent", flexShrink: 0 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
         {stats.map(s => (
-          <div key={s.label} title={s.help || ""} style={{ ...getRecipeCardStyle(T, dark, s.accent), padding: "12px 14px", minHeight: 94 }}>
+          <div key={s.label} title={s.help || ""} style={{ ...getRecipeCardStyle(T, dark, s.accent), padding: "11px 13px", minHeight: 82, background: s.bg, borderRadius: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-              <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 800 }}>{s.label}</div>
-              <div style={{ width: 34, height: 34, borderRadius: 12, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{s.icon}</div>
+              <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1.1, textTransform: "uppercase", fontWeight: 800 }}>{s.label}</div>
+              <div style={{ width: 30, height: 30, borderRadius: 10, background: T.surface, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, border: `3px solid ${s.accent}` }}>{s.icon}</div>
             </div>
-            <div style={{ color: s.accent, fontSize: 28, fontWeight: 800, fontFamily: "var(--font-display)", marginTop: 8 }}>{s.value}</div>
+            <div style={{ color: s.accent, fontSize: 23, fontWeight: 800, fontFamily: "var(--font-display)", marginTop: 6, lineHeight: 1 }}>{s.value}</div>
           </div>
         ))}
       </div>
@@ -5357,7 +5348,7 @@ function AccessDeniedPanel({ dark, title = "Not authorized", message = "Your cur
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "26px clamp(16px, 3vw, 34px)" }}>
       <div style={{ maxWidth: 820, margin: "0 auto" }}>
-        <section style={{ ...getRecipeCardStyle(T, dark, T.raspberry), padding: 24 }}>
+        <section style={{ ...getRecipeCardStyle(T, dark, T.raspberry), padding: 24, background: T.raspberryBg }}>
           <div style={{ color: T.text, fontSize: 22, fontWeight: 800, fontFamily: "var(--font-display)" }}>{title}</div>
           <div style={{ color: T.textMid, fontSize: 13, lineHeight: 1.7, marginTop: 10, maxWidth: 620 }}>
             {message}
@@ -5438,24 +5429,24 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "26px clamp(16px, 3vw, 34px)" }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <section style={{ ...getRecipeCardStyle(T, dark, T.butter), padding: 22, background: `radial-gradient(circle at top right, ${dark ? "rgba(255,209,102,0.18)" : "rgba(255,209,102,0.26)"} 0%, transparent 28%), linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)` }}>
+        <section style={{ ...getRecipeCardStyle(T, dark, T.butter), padding: 24, background: `radial-gradient(circle at top right, ${dark ? "rgba(255,209,102,0.18)" : "rgba(255,209,102,0.28)"} 0%, transparent 28%), radial-gradient(circle at 16% 16%, ${dark ? "rgba(255,111,159,0.18)" : "rgba(233,75,127,0.18)"} 0%, transparent 22%), ${dark ? T.surface : T.cream}` }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div>
               <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>Welcome to Scrape &amp; Bake</div>
-              <div style={{ color: T.text, fontSize: 26, fontWeight: 800, fontFamily: "var(--font-display)" }}>{isInvestigator ? "Operations launchpad" : "Overview launchpad"}</div>
+              <div style={{ color: T.text, fontSize: 34, fontWeight: 800, fontFamily: "var(--font-display)", lineHeight: 1.1 }}>{isInvestigator ? "Pick a path into the pantry map" : "Tour the pantry map"}</div>
               <div style={{ color: T.textMid, fontSize: 12, lineHeight: 1.5, marginTop: 4, maxWidth: 620 }}>
                 {isInvestigator
                   ? "Use the cards below to move quickly into search, row-level source review, graph pivots, and dossier building."
                   : "Use the cards below to move quickly into search, company signals, network structure, ingredient patterns, and packet review."}
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <StickerBadge label="Synthetic dataset" palette={{ color: T.raspberry, bg: T.raspberryBg, border: `${T.raspberry}44` }} />
-                <StickerBadge label="Local mock adapter" palette={{ color: T.navy, bg: dark ? "#1e2a3f" : "#dde8fb", border: dark ? "#4f6a9a" : "#9cb8e7" }} />
-                <StickerBadge label="Source-first provenance" palette={{ color: T.pistachio, bg: T.pistachioBg, border: `${T.pistachio}44` }} />
+                <StickerBadge label="Synthetic dataset" palette={{ color: T.raspberry, bg: T.raspberryBg, border: T.raspberry }} />
+                <StickerBadge label="Local mock adapter" palette={{ color: T.navy, bg: dark ? "#1f2f64" : "#dbe5ff", border: T.navy }} />
+                <StickerBadge label="Source-first provenance" palette={{ color: T.pistachio, bg: T.pistachioBg, border: T.pistachio }} />
               </div>
             </div>
             {canToggleMode ? (
-              <div style={{ display: "inline-flex", background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 999, padding: 4, gap: 4 }}>
+              <div style={{ display: "inline-flex", background: T.surfaceAlt, border: `3px solid ${T.border}`, borderRadius: 999, padding: 5, gap: 4 }}>
                 {Object.entries(APP_MODES).map(([value, option]) => {
                   const active = mode === value;
                   return (
@@ -5464,7 +5455,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
                       type="button"
                       onClick={() => onModeChange(value)}
                       aria-pressed={active}
-                      style={{ background: active ? T.accent : "transparent", color: active ? (dark ? "#06131d" : "#ffffff") : T.text, border: "none", borderRadius: 999, padding: "8px 12px", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 700 }}
+                      style={{ background: active ? T.accent : "transparent", color: active ? (dark ? "#06131d" : "#ffffff") : T.text, border: "none", borderRadius: 999, padding: "8px 14px", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 700 }}
                     >
                       {option.label}
                     </button>
@@ -5472,7 +5463,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
                 })}
               </div>
             ) : (
-              <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 999, padding: "8px 12px", color: T.textMuted, fontSize: 11 }}>
+              <div style={{ background: T.surfaceAlt, border: `3px solid ${T.border}`, borderRadius: 999, padding: "8px 12px", color: T.textMuted, fontSize: 11 }}>
                 {APP_MODES[mode]?.label || APP_MODES[DEFAULT_VIEWER_MODE].label}
               </div>
             )}
@@ -5485,7 +5476,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
               key={card.name}
               type="button"
               onClick={() => handleCardAction(card)}
-              style={{ textAlign: "left", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 17, cursor: "pointer", color: T.text, fontFamily: "var(--font-body)", minHeight: 176 }}
+              style={{ textAlign: "left", background: T.surface, border: `3px solid ${card.view === "network" ? T.navy : card.view === "substances" ? T.pistachio : card.view === "flags" ? T.raspberry : T.butter}`, borderRadius: 28, padding: 18, cursor: "pointer", color: T.text, fontFamily: "var(--font-body)", minHeight: 176 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.transform = "translateY(-1px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.transform = "translateY(0)"; }}
             >
@@ -6419,21 +6410,16 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: `linear-gradient(180deg, ${T.bg} 0%, ${T.bgAlt} 100%)`, color: T.text, display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", overflow: "hidden" }}>
-      <div style={{ padding: "14px clamp(12px, 2vw, 24px)", background: `radial-gradient(circle at top left, ${dark ? "rgba(255,209,102,0.18)" : "rgba(255,209,102,0.26)"} 0%, transparent 30%), linear-gradient(180deg, ${T.surface} 0%, ${T.surfaceAlt} 100%)`, borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexShrink: 0, flexWrap: "wrap", boxShadow: T.shadow }}>
+    <div style={{ width: "100vw", height: "100vh", background: dark ? `linear-gradient(180deg, ${T.bg} 0%, ${T.bgAlt} 100%)` : "linear-gradient(180deg, #fff7eb 0%, #fff4df 100%)", color: T.text, display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", overflow: "hidden" }}>
+      <div style={{ padding: "18px clamp(14px, 2.4vw, 28px) 16px", background: dark ? T.surface : "radial-gradient(circle at top left, rgba(255,209,102,0.36) 0%, transparent 32%), radial-gradient(circle at 82% 18%, rgba(233,75,127,0.18) 0%, transparent 22%), linear-gradient(180deg, #fffdf6 0%, #fff6e5 100%)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexShrink: 0, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 14, flex: "1 1 360px", minWidth: 260 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${T.navy} 0%, ${T.accent} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.28)" }}>
-            <div style={{ width: 15, height: 15, borderRadius: "50%", background: T.butter, boxShadow: "0 0 0 4px rgba(255,255,255,0.14)" }} />
+          <div style={{ width: 58, height: 58, borderRadius: 20, background: `linear-gradient(135deg, ${T.navy} 0%, ${T.accent} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", border: `4px solid ${T.butter}` }}>
+            <div style={{ width: 19, height: 19, borderRadius: "50%", background: T.butter, border: `4px solid ${dark ? T.surface : "#fffdf6"}` }} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 0.8, color: T.text, fontFamily: "var(--font-display)" }}>Scrape &amp; Bake</div>
-            <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 1.4, textTransform: "uppercase", marginTop: 2 }}>Playful cookie ingredient supply-chain demo</div>
-            <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.55, marginTop: 8, maxWidth: 580 }}>
-              A playful demo of source collection, ingredient evidence, provenance, and supply-chain networks.
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-              <StickerBadge label="Synthetic public-demo data" palette={{ color: T.raspberry, bg: T.raspberryBg, border: `${T.raspberry}44` }} />
-              <StickerBadge label="Local mock adapter" palette={{ color: T.pistachio, bg: T.pistachioBg, border: `${T.pistachio}44` }} />
+            <div style={{ fontSize: 44, fontWeight: 800, color: T.text, fontFamily: "var(--font-display)", lineHeight: 0.95 }}>Scrape &amp; Bake</div>
+            <div style={{ fontSize: 15, color: T.textMid, lineHeight: 1.55, marginTop: 10, maxWidth: 620 }}>
+              It's not just for cookies...
             </div>
           </div>
         </div>
@@ -6451,26 +6437,27 @@ export default function App() {
                 display: "flex",
                 alignItems: "center",
                 gap: tab.id === "dossier" ? 8 : 0,
-                background: view === tab.id ? T.accentBg : tab.id === "dossier" && dossierItems.length ? T.accentBg : T.surfaceAlt,
-                border: `1px solid ${view === tab.id || (tab.id === "dossier" && dossierItems.length) ? T.accent : T.border}`,
-                borderRadius: 20,
-                padding: "5px 12px",
+                border: `3px solid ${view === tab.id || (tab.id === "dossier" && dossierItems.length) ? T.accent : T.border}`,
+                borderRadius: 14,
+                padding: "7px 14px",
                 cursor: "pointer",
                 color: view === tab.id || (tab.id === "dossier" && dossierItems.length) ? T.accent : T.textMuted,
                 fontSize: 10,
                 fontFamily: "var(--font-body)",
                 whiteSpace: "nowrap",
+                background: view === tab.id ? T.accentBg : T.surface,
+                fontWeight: 800,
               }}
             >
               <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>{tab.id === "dossier" ? "Dossier" : tab.label}</span>
               {tab.id === "dossier" && (
-                <span style={{ background: dossierItems.length ? T.accent : T.surface, color: dossierItems.length ? (dark ? "#06110d" : "#fff") : T.textMuted, borderRadius: 999, padding: "2px 8px", fontSize: 10, fontWeight: 700, minWidth: 24, textAlign: "center" }}>
+                <span style={{ background: dossierItems.length ? T.accent : T.surfaceAlt, color: dossierItems.length ? (dark ? "#06110d" : "#fff") : T.textMuted, borderRadius: 999, padding: "2px 8px", fontSize: 10, fontWeight: 700, minWidth: 24, textAlign: "center" }}>
                   {dossierItems.length}
                 </span>
               )}
             </button>
           ))}
-          <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 20, padding: "4px 8px 4px 12px", color: activeSecondaryTab ? T.accent : T.textMuted, fontSize: 10, fontFamily: "var(--font-body)", background: activeSecondaryTab ? T.accentBg : T.surfaceAlt }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 7, border: `3px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 14, padding: "5px 9px 5px 13px", color: activeSecondaryTab ? T.accent : T.textMuted, fontSize: 10, fontFamily: "var(--font-body)", background: activeSecondaryTab ? T.accentBg : T.surface }}>
             <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>Views</span>
             <select
               value={activeSecondaryTab?.id || ""}
@@ -6479,7 +6466,7 @@ export default function App() {
                 handleViewChange(e.target.value);
               }}
               aria-label="Open secondary feature view"
-              style={{ background: T.surface, border: `1px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 14, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "3px 8px", minWidth: 160 }}
+              style={{ background: T.cream, border: `3px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 12, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "5px 10px", minWidth: 160, appearance: "none" }}
             >
               <option value="">Open view...</option>
               {secondaryTabs.map(tab => (
@@ -6492,18 +6479,18 @@ export default function App() {
           <button
             type="button"
             onClick={() => setRefreshNonce(current => current + 1)}
-            style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 20, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "var(--font-body)" }}
+            style={{ background: T.butterBg, border: `3px solid ${T.butter}`, borderRadius: 14, padding: "7px 15px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: dark ? T.butter : T.chocolate, fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 800 }}
           >
             ↻ Refresh data
           </button>
           {canToggleMode && (
-            <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${T.border}`, borderRadius: 20, padding: "4px 8px 4px 12px", color: T.textMuted, fontSize: 10, fontFamily: "var(--font-body)", background: T.surfaceAlt }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 7, border: `3px solid ${T.border}`, borderRadius: 14, padding: "5px 9px 5px 13px", color: T.textMuted, fontSize: 10, fontFamily: "var(--font-body)", background: T.surface }}>
               <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>Mode</span>
               <select
                 value={effectiveMode}
                 onChange={e => setMode(e.target.value)}
                 aria-label="Workflow mode"
-                style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "3px 8px" }}
+                style={{ background: T.cream, border: `3px solid ${T.border}`, borderRadius: 12, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "var(--font-body)", padding: "5px 10px", appearance: "none" }}
               >
                 {Object.entries(APP_MODES).map(([value, option]) => (
                   <option key={value} value={value}>{option.label}</option>
@@ -6512,10 +6499,10 @@ export default function App() {
               <span style={{ fontSize: 9, color: T.textMuted }}>{APP_MODES[effectiveMode].hint}</span>
             </label>
           )}
-          <button onClick={() => setDark(d => !d)} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 20, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "var(--font-body)" }}>
+          <button onClick={() => setDark(d => !d)} style={{ background: T.surface, border: `3px solid ${T.border}`, borderRadius: 14, padding: "7px 15px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "var(--font-body)", fontWeight: 800 }}>
             <span>{dark ? "☀" : "☾"}</span>{dark ? "Light" : "Dark"}
           </button>
-          <button onClick={() => signOut()} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 4, padding: "4px 10px", cursor: "pointer", color: T.textMuted, fontSize: 10, fontFamily: "var(--font-body)" }}>Sign Out</button>
+          <button onClick={() => signOut()} style={{ background: T.surface, border: `3px solid ${T.border}`, borderRadius: 14, padding: "7px 13px", cursor: "pointer", color: T.textMuted, fontSize: 10, fontFamily: "var(--font-body)", fontWeight: 800 }}>Sign Out</button>
         </div>
       </div>
 
@@ -6542,8 +6529,8 @@ export default function App() {
             )}
 
             <div style={{ height: "100%", position: "relative", display: view === "network" ? "block" : "none" }}>
-              <div style={{ position: "absolute", top: 14, left: 18, zIndex: 5, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, maxWidth: "min(680px, calc(100% - 36px))" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "fit-content", maxWidth: "100%", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 999, padding: "6px 12px", fontSize: 10, color: T.textMuted, boxShadow: dark ? "0 10px 26px rgba(0,0,0,0.24)" : "0 10px 22px rgba(54,45,31,0.08)" }}>
+              <div style={{ position: "absolute", top: 14, left: 18, zIndex: 5, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10, width: "min(360px, calc(100% - 36px))", maxHeight: "calc(100% - 28px)", overflowY: "auto", paddingRight: 2 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "100%", background: T.surface, border: `3px solid ${T.border}`, borderRadius: 16, padding: "10px 12px", fontSize: 10, color: T.textMuted }}>
                   <span>
                     {companyGraph
                       ? `${companyGraph.seed?.type === "linkage_artifact" ? "Linkage-seeded" : "Company-seeded"} · ${companyGraph.seed?.label || "Selected seed"} · ${activeGraphCompanies.length} companies · ${activeGraphAssociations.length} visible graph associations`
@@ -6551,16 +6538,16 @@ export default function App() {
                   </span>
 	                  {companyGraph && (
 	                    <>
-	                      <button type="button" onClick={() => { setSelectedCompany(null); setSelectedArtifactEntity(null); setSearchDetailRecord(null); setShowGraphSummary(true); }} style={{ background: T.accentBg, color: T.accent, border: `1px solid ${T.accent}55`, borderRadius: 999, padding: "3px 8px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap" }}>
+	                      <button type="button" onClick={() => { setSelectedCompany(null); setSelectedArtifactEntity(null); setSearchDetailRecord(null); setShowGraphSummary(true); }} style={{ background: T.accentBg, color: T.accent, border: `3px solid ${T.accent}`, borderRadius: 12, padding: "5px 9px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap", fontWeight: 800 }}>
 	                        View summary
 	                      </button>
-	                      <button type="button" onClick={resetCompanyGraph} style={{ background: "transparent", color: T.textMid, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "3px 8px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap" }}>
+	                      <button type="button" onClick={resetCompanyGraph} style={{ background: T.cream, color: T.textMid, border: `3px solid ${T.borderMid}`, borderRadius: 12, padding: "5px 9px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap", fontWeight: 800 }}>
 	                        Return to top 25
 	                      </button>
 	                    </>
 	                  )}
 	                </div>
-	                <div style={{ position: "relative", width: "min(520px, calc(100vw - 72px))", background: dark ? "rgba(10,14,20,0.94)" : "rgba(255,255,255,0.96)", border: `1px solid ${T.border}`, borderRadius: 8, padding: 10, boxShadow: dark ? "0 18px 40px rgba(0,0,0,0.25)" : "0 18px 34px rgba(54,45,31,0.12)" }}>
+	                <div style={{ position: "relative", width: "100%", background: dark ? T.surface : T.cream, border: `3px solid ${T.border}`, borderRadius: 16, padding: 14 }}>
 	                  <label htmlFor="company-graph-search" style={{ display: "block", color: T.textMuted, fontSize: 9, letterSpacing: 1.1, marginBottom: 6, textTransform: "uppercase" }}>Build graph from company, email, or phone</label>
 	                  <div style={{ display: "flex", gap: 8 }}>
 	                    <input
@@ -6575,21 +6562,21 @@ export default function App() {
 	                          buildSelectedGraphSeed();
 	                        }
 	                      }}
-	                      placeholder="Search a company, email, or phone..."
+	                      placeholder="Search"
 	                      aria-label="Search for a company, email, or phone to build a graph"
-	                      style={{ flex: 1, minWidth: 0, background: T.surfaceAlt, color: T.text, border: `1px solid ${T.border}`, borderRadius: 5, padding: "7px 9px", fontFamily: "var(--font-body)", fontSize: 12 }}
+	                      style={{ flex: 1, minWidth: 0, background: T.surface, color: T.text, border: `3px solid ${T.border}`, borderRadius: 12, padding: "9px 12px", fontFamily: "var(--font-body)", fontSize: 12 }}
 	                    />
 	                    <button
 	                      type="button"
 	                      onClick={buildSelectedGraphSeed}
 	                      disabled={!graphSelectedSeed || graphBuildInFlight}
-	                      style={{ background: graphSelectedSeed && !graphBuildInFlight ? T.accent : T.surfaceAlt, color: graphSelectedSeed && !graphBuildInFlight ? (dark ? "#06110d" : "#fff") : T.textMuted, border: `1px solid ${graphSelectedSeed && !graphBuildInFlight ? T.accent : T.border}`, borderRadius: 5, padding: "7px 10px", fontSize: 11, fontWeight: 700, cursor: graphSelectedSeed && !graphBuildInFlight ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
+	                      style={{ background: graphSelectedSeed && !graphBuildInFlight ? T.accent : T.surfaceAlt, color: graphSelectedSeed && !graphBuildInFlight ? (dark ? "#06110d" : "#fff") : T.textMuted, border: `3px solid ${graphSelectedSeed && !graphBuildInFlight ? T.accent : T.border}`, borderRadius: 12, padding: "8px 12px", fontSize: 11, fontWeight: 700, cursor: graphSelectedSeed && !graphBuildInFlight ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
 	                    >
 	                      {selectedGraphSeedLoading ? "Building..." : "Build"}
 	                    </button>
 	                  </div>
 	                  {graphSelectedSeed && (
-	                    <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 7, background: T.accentBg, border: `1px solid ${T.accent}33`, color: T.textMid, borderRadius: 999, padding: "4px 8px", fontSize: 10 }}>
+	                    <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 7, background: T.accentBg, border: `3px solid ${T.accent}`, color: T.textMid, borderRadius: 12, padding: "5px 9px", fontSize: 10 }}>
 	                      <span style={{ color: T.accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8 }}>{graphSeedTypeLabel(graphSelectedSeed)}</span>
 	                      <span>{graphSelectedSeed.label}</span>
 	                    </div>
@@ -6597,7 +6584,7 @@ export default function App() {
 	                  {graphCompanySearchLoading && <div style={{ color: T.textMuted, fontSize: 10, marginTop: 7 }}>Searching companies, emails, and phones...</div>}
                   {companyGraphError && <div style={{ color: dark ? "#fecaca" : "#991b1b", background: dark ? "rgba(74,20,20,0.5)" : "rgba(254,242,242,0.9)", border: `1px solid ${dark ? "#7f1d1d" : "#fecaca"}`, borderRadius: 5, padding: "6px 8px", fontSize: 10, marginTop: 8 }}>{companyGraphError}</div>}
                   {graphCompanyMatches.length > 0 && (
-                    <div style={{ position: "relative", zIndex: 9, marginTop: 8, border: `1px solid ${T.border}`, borderRadius: 6, overflow: "hidden", background: T.surface }}>
+                    <div style={{ position: "relative", zIndex: 9, marginTop: 8, border: `3px solid ${T.border}`, borderRadius: 16, overflow: "hidden", background: T.surface }}>
 	                      {graphCompanyMatches.map(result => {
 	                        const seed = getGraphSeedFromSearchResult(result);
 	                        const style = SEARCH_TYPE_STYLE(result.type, dark);
@@ -6606,10 +6593,10 @@ export default function App() {
 	                          key={result.data?.id || result.label}
 	                          type="button"
 	                          onClick={() => selectGraphSeedMatch(result)}
-	                          style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", color: T.text, border: 0, borderBottom: `1px solid ${T.border}`, padding: "7px 9px", cursor: "pointer", fontFamily: "var(--font-body)" }}
+	                          style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", color: T.text, border: 0, borderTop: `6px solid ${T.surfaceAlt}`, padding: "8px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}
 	                        >
 	                          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-	                            <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 2, fontWeight: 700, background: style.bg, color: style.color }}>{graphSeedTypeLabel(seed).toUpperCase()}</span>
+	                            <span style={{ fontSize: 9, padding: "4px 8px", borderRadius: 10, fontWeight: 700, background: style.bg, color: style.color, border: `2px solid ${style.color}` }}>{graphSeedTypeLabel(seed).toUpperCase()}</span>
 	                            <span style={{ fontSize: 12, fontWeight: 700 }}>{seed?.label || result.label}</span>
 	                          </div>
 	                          <div style={{ color: T.textMuted, fontSize: 10, marginTop: 2 }}>{seed?.sublabel || result.sublabel}</div>
@@ -6617,7 +6604,7 @@ export default function App() {
 	                      );})}
                     </div>
                   )}
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, paddingTop: 9, borderTop: `1px solid ${T.border}` }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, paddingTop: 9 }}>
                     {!companyGraph && (
                       <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", width: "100%" }}>
                         <span style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginRight: 2 }}>Companies</span>
@@ -6626,7 +6613,7 @@ export default function App() {
                             key={limit}
                             type="button"
                             onClick={() => setDefaultGraphNodeLimit(limit)}
-                            style={{ background: defaultGraphNodeLimit === limit ? T.accentBg : T.surfaceAlt, color: defaultGraphNodeLimit === limit ? T.accent : T.textMuted, border: `1px solid ${defaultGraphNodeLimit === limit ? T.accent : T.border}`, borderRadius: 999, padding: "4px 8px", fontSize: 10, fontWeight: 700, cursor: "pointer" }}
+                            style={{ background: defaultGraphNodeLimit === limit ? T.accentBg : T.surfaceAlt, color: defaultGraphNodeLimit === limit ? T.accent : T.textMuted, border: `3px solid ${defaultGraphNodeLimit === limit ? T.accent : T.border}`, borderRadius: 12, padding: "5px 9px", fontSize: 10, fontWeight: 700, cursor: "pointer" }}
                           >
                             {limit}
                           </button>
@@ -6640,7 +6627,7 @@ export default function App() {
                           key={threshold}
                           type="button"
                           onClick={() => setGraphArtifactMinCompanies(threshold)}
-                          style={{ background: graphArtifactMinCompanies === threshold ? T.accentBg : T.surfaceAlt, color: graphArtifactMinCompanies === threshold ? T.accent : T.textMuted, border: `1px solid ${graphArtifactMinCompanies === threshold ? T.accent : T.border}`, borderRadius: 999, padding: "4px 8px", fontSize: 10, fontWeight: 700, cursor: "pointer" }}
+                          style={{ background: graphArtifactMinCompanies === threshold ? T.accentBg : T.surfaceAlt, color: graphArtifactMinCompanies === threshold ? T.accent : T.textMuted, border: `3px solid ${graphArtifactMinCompanies === threshold ? T.accent : T.border}`, borderRadius: 12, padding: "5px 9px", fontSize: 10, fontWeight: 700, cursor: "pointer" }}
                         >
                           {threshold}+
                         </button>
@@ -6658,11 +6645,45 @@ export default function App() {
                         type="button"
                         onClick={() => toggleGraphLayer(kind)}
                         disabled={!graphArtifactCounts[kind]}
-                        style={{ background: graphLayers[kind] ? `${linkCol(method, dark)}22` : T.surfaceAlt, color: graphLayers[kind] ? linkCol(method, dark) : T.textMuted, border: `1px solid ${graphLayers[kind] ? linkCol(method, dark) : T.border}`, borderRadius: 999, padding: "5px 9px", fontSize: 10, fontWeight: 700, cursor: graphArtifactCounts[kind] ? "pointer" : "not-allowed" }}
+                        style={{ background: graphLayers[kind] ? `${linkCol(method, dark)}22` : T.surfaceAlt, color: graphLayers[kind] ? linkCol(method, dark) : T.textMuted, border: `3px solid ${graphLayers[kind] ? linkCol(method, dark) : T.border}`, borderRadius: 12, padding: "5px 9px", fontSize: 10, fontWeight: 700, cursor: graphArtifactCounts[kind] ? "pointer" : "not-allowed" }}
                       >
                         {label} {graphArtifactCounts[kind] ? `(${graphArtifactCounts[kind]})` : ""}
                       </button>
                     ))}
+                  </div>
+                </div>
+                <div style={{ width: "100%", background: dark ? T.surface : T.cream, border: `3px solid ${T.border}`, padding: "14px 16px", borderRadius: 16 }}>
+                  <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginBottom: 9 }}>LINKAGE TYPE</div>
+                  {[["IP Address", linkCol("IP Address", dark)], ["Email", linkCol("Email", dark)], ["Phone", linkCol("Phone", dark)]].map(([k, v]) => (
+                    <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                      <div style={{ width: 22, height: 6, background: v, borderRadius: 999 }} /><span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
+                    </div>
+                  ))}
+                  <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>COMPANY TYPE ACCENT</div>
+                  {[
+                    getCompanyTypePresentation("Bakery", dark),
+                    getCompanyTypePresentation("Ingredient Supplier", dark),
+                    getCompanyTypePresentation("Distributor", dark),
+                    getCompanyTypePresentation("Source Entity", dark),
+                  ].map(type => (
+                    <div key={type.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                      <div style={{ width: 11, height: 11, borderRadius: "50%", background: type.color }} /><span style={{ color: T.textMid, fontSize: 10 }}>{type.label}</span>
+                    </div>
+                  ))}
+                  <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>{GRAPH_PRIORITY_LABEL.toUpperCase()}</div>
+                  {[[90, "≥85 Critical"], [70, "65–84 High"], [50, "45–64 Medium"], [30, "<45 Low"]].map(([sc, k]) => (
+                    <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                      <div style={{ width: 11, height: 11, borderRadius: "50%", background: riskBg(sc, dark), border: `1.5px solid ${riskColor(sc, dark)}` }} /><span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
+                    </div>
+                  ))}
+                  <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>NODE TYPE</div>
+                  {[["Company", "circle", T.textMid], ["Email artifact", "diamond", linkCol("Email", dark)], ["Phone artifact", "square", linkCol("Phone", dark)]].map(([label, shape, color]) => (
+                    <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                      <div style={{ width: 11, height: 11, transform: shape === "diamond" ? "rotate(45deg)" : "none", borderRadius: shape === "circle" ? "50%" : 2, border: `1.5px solid ${color}`, background: shape === "circle" ? color : "transparent" }} /><span style={{ color: T.textMid, fontSize: 10 }}>{label}</span>
+                    </div>
+                  ))}
+                  <div style={{ color: T.textMuted, fontSize: 9, lineHeight: 1.45, marginTop: 10 }}>
+                    Node size reflects {GRAPH_NODE_METRIC_LABEL.toLowerCase()}. Color reflects {GRAPH_PRIORITY_LABEL.toLowerCase()}. Selected node numbers show the shared-link count.
                   </div>
                 </div>
               </div>
@@ -6684,40 +6705,6 @@ export default function App() {
                   dark={dark}
                 />
               )}
-              <div style={{ position: "absolute", bottom: 18, left: 18, zIndex: 4, background: dark ? "rgba(47,28,28,0.94)" : "rgba(255,250,242,0.96)", border: `1px solid ${T.border}`, padding: "14px 16px", borderRadius: 16, boxShadow: T.shadow }}>
-                <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginBottom: 9 }}>LINKAGE TYPE</div>
-                {[["IP Address", linkCol("IP Address", dark)], ["Email", linkCol("Email", dark)], ["Phone", linkCol("Phone", dark)]].map(([k, v]) => (
-                  <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <div style={{ width: 20, height: 2, background: v, borderRadius: 1 }} /><span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
-                  </div>
-                ))}
-                <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>COMPANY TYPE ACCENT</div>
-                {[
-                  getCompanyTypePresentation("Bakery", dark),
-                  getCompanyTypePresentation("Ingredient Supplier", dark),
-                  getCompanyTypePresentation("Distributor", dark),
-                  getCompanyTypePresentation("Source Entity", dark),
-                ].map(type => (
-                  <div key={type.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <div style={{ width: 11, height: 11, borderRadius: "50%", background: type.color }} /><span style={{ color: T.textMid, fontSize: 10 }}>{type.label}</span>
-                  </div>
-                ))}
-                <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>{GRAPH_PRIORITY_LABEL.toUpperCase()}</div>
-                {[[90, "≥85 Critical"], [70, "65–84 High"], [50, "45–64 Medium"], [30, "<45 Low"]].map(([sc, k]) => (
-                  <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <div style={{ width: 11, height: 11, borderRadius: "50%", background: riskBg(sc, dark), border: `1.5px solid ${riskColor(sc, dark)}` }} /><span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
-                  </div>
-                ))}
-                <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>NODE TYPE</div>
-                {[["Company", "circle", T.textMid], ["Email artifact", "diamond", linkCol("Email", dark)], ["Phone artifact", "square", linkCol("Phone", dark)]].map(([label, shape, color]) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <div style={{ width: 11, height: 11, transform: shape === "diamond" ? "rotate(45deg)" : "none", borderRadius: shape === "circle" ? "50%" : 2, border: `1.5px solid ${color}`, background: shape === "circle" ? color : "transparent" }} /><span style={{ color: T.textMid, fontSize: 10 }}>{label}</span>
-                  </div>
-                ))}
-                <div style={{ color: T.textMuted, fontSize: 9, lineHeight: 1.45, marginTop: 10, maxWidth: 190 }}>
-                  Node size reflects {GRAPH_NODE_METRIC_LABEL.toLowerCase()}. Color reflects {GRAPH_PRIORITY_LABEL.toLowerCase()}. Selected node numbers show the shared-link count.
-                </div>
-              </div>
             </div>
 
             {view === "substances" && (
@@ -6779,8 +6766,8 @@ export default function App() {
           </>
         )}
       </div>
-      <div style={{ flexShrink: 0, padding: "10px 18px", background: `linear-gradient(180deg, ${T.surfaceAlt} 0%, ${T.surface} 100%)`, borderTop: `1px solid ${T.border}`, color: T.textMid, fontSize: 11, lineHeight: 1.5 }}>
-        Synthetic public-demo dataset only. Source evidence, ingredient labels, and network views are included for traceability and UI demonstration, not live operational analysis.
+      <div style={{ flexShrink: 0, padding: "12px 18px", background: dark ? T.surface : T.butterBg, color: T.textMid, fontSize: 11, lineHeight: 1.5, borderTop: `3px solid ${T.butter}` }}>
+        Demo dataset only — baked from synthetic source pages for public walkthroughs.
       </div>
 
       <BottomDrawer open={!!selectedCompany} onClose={() => setSelectedCompany(null)} title={selectedCompany?.name || ""} subtitle={selectedCompany?.chineseName || null} dark={dark} bodyScroll={false}>
