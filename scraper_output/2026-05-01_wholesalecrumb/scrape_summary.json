@@ -1,0 +1,18 @@
+{
+  "scrape_run_id": "2026-05-01_wholesalecrumb",
+  "platform": "WholesaleCrumb",
+  "run_date": "2026-05-01",
+  "total_targets": 1,
+  "successful_targets": 1,
+  "failed_targets": 0,
+  "evidence_rows_produced": 5,
+  "notes": "Synthetic fixture output for public walkthroughs.",
+  "source_pages": [
+    {
+      "data_source_name": "WholesaleCrumb route sheet",
+      "source_platform": "WholesaleCrumb",
+      "source_url": "https://cookie-demo.example/wholesalecrumb/route-sheet",
+      "raw_html_file": "raw_html/wholesalecrumb_route_sheet.html"
+    }
+  ]
+}

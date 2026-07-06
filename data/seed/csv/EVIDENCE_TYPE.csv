@@ -1,6 +1,6 @@
 EVIDENCE_TYPE_ID,EVIDENCE_TYPE_NAME
-1,Catalog listing
-2,Ingredient spec sheet
-3,Bakery menu
+1,Bakery menu
+2,Supplier catalog
+3,Ingredient spec sheet
 4,Distributor listing
-5,Supplier profile
+5,Public claim registry

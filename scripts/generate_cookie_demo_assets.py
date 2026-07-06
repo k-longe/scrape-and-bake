@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Generate a benign, schema-compatible Scrape & Bake demo dataset.
+"""Generate a multi-run synthetic Scrape & Bake demo dataset.
 
 This script writes:
-- seed CSVs for core and support tables
+- seed CSVs for schema-compatible core and support tables
 - SQL seed and compatibility view files
-- a frontend demo data module used by the static demo adapter
+- a frontend demo data module used by the local mock adapter
+- synthetic scrape fixture output folders for public walkthroughs
 """
 
 from __future__ import annotations
@@ -12,7 +13,6 @@ from __future__ import annotations
 import csv
 import json
 from collections import Counter, defaultdict
-from datetime import date, timedelta
 from pathlib import Path
 
 
@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CSV_DIR = ROOT / "data" / "seed" / "csv"
 SQL_DIR = ROOT / "data" / "seed" / "sql"
 FRONTEND_DATA_FILE = ROOT / "frontend" / "src" / "data" / "demoData.js"
+SCRAPER_OUTPUT_DIR = ROOT / "scraper_output"
 
 
 def sql_literal(value):
@@ -31,6 +32,47 @@ def sql_literal(value):
         return str(value)
     return "'" + str(value).replace("'", "''") + "'"
 
+
+SCRAPE_RUNS = [
+    {
+        "id": "2026-04-01_bakeryboard",
+        "date": "2026-04-01",
+        "platform": "BakeryBoard",
+        "label": "2026-04-01 BakeryBoard",
+        "narrative": "BakeryBoard established the initial bakery-product ingredient map.",
+    },
+    {
+        "id": "2026-04-15_ingredienthub",
+        "date": "2026-04-15",
+        "platform": "IngredientHub",
+        "label": "2026-04-15 IngredientHub",
+        "narrative": "IngredientHub added supplier-side evidence for vanilla, flour, chocolate, oats, butter, and sugar.",
+    },
+    {
+        "id": "2026-05-01_wholesalecrumb",
+        "date": "2026-05-01",
+        "platform": "WholesaleCrumb",
+        "label": "2026-05-01 WholesaleCrumb",
+        "narrative": "WholesaleCrumb connected bakeries and suppliers through one shared distributor.",
+    },
+    {
+        "id": "2026-05-20_certibake_registry",
+        "date": "2026-05-20",
+        "platform": "CertiBake Registry",
+        "label": "2026-05-20 CertiBake Registry",
+        "narrative": "CertiBake Registry added public claim and allergen statement evidence.",
+    },
+    {
+        "id": "2026-06-10_bakeryboard_refresh",
+        "date": "2026-06-10",
+        "platform": "BakeryBoard Refresh",
+        "label": "2026-06-10 BakeryBoard Refresh",
+        "narrative": "BakeryBoard Refresh added new bakery evidence and made Golden Grain Supply more central.",
+    },
+]
+
+RUN_BY_ID = {run["id"]: run for run in SCRAPE_RUNS}
+RUN_INDEX = {run["id"]: index for index, run in enumerate(SCRAPE_RUNS)}
 
 COMPANIES = [
     {
@@ -49,82 +91,10 @@ COMPANIES = [
         "ACTIVE_INACTIVE": "Active",
         "BUSINESS_TYPE": "Bakery",
         "PRC_HOME_BASE": "Northeast",
-        "GOV_COMPLICITY": "Regional bakery",
+        "GOV_COMPLICITY": "Neighborhood bakery",
     },
     {
         "COMPANY_ID": 3,
-        "COMPANY_NAME": "Sunfield Flour Mills",
-        "CHINESE_NAME": "",
-        "ACTIVE_INACTIVE": "Active",
-        "BUSINESS_TYPE": "Ingredient Supplier",
-        "PRC_HOME_BASE": "Great Lakes",
-        "GOV_COMPLICITY": "Flour mill",
-    },
-    {
-        "COMPANY_ID": 4,
-        "COMPANY_NAME": "Orchard Vanilla Imports",
-        "CHINESE_NAME": "",
-        "ACTIVE_INACTIVE": "Active",
-        "BUSINESS_TYPE": "Importer",
-        "PRC_HOME_BASE": "East Coast",
-        "GOV_COMPLICITY": "Flavor importer",
-    },
-    {
-        "COMPANY_ID": 5,
-        "COMPANY_NAME": "Northwind Butter Works",
-        "CHINESE_NAME": "",
-        "ACTIVE_INACTIVE": "Active",
-        "BUSINESS_TYPE": "Dairy Processor",
-        "PRC_HOME_BASE": "Wisconsin",
-        "GOV_COMPLICITY": "Butter supplier",
-    },
-    {
-        "COMPANY_ID": 6,
-        "COMPANY_NAME": "Cacao Coast Ingredients",
-        "CHINESE_NAME": "",
-        "ACTIVE_INACTIVE": "Active",
-        "BUSINESS_TYPE": "Ingredient Supplier",
-        "PRC_HOME_BASE": "West Coast",
-        "GOV_COMPLICITY": "Chocolate ingredient supplier",
-    },
-    {
-        "COMPANY_ID": 7,
-        "COMPANY_NAME": "Spruce Street Packing",
-        "CHINESE_NAME": "",
-        "ACTIVE_INACTIVE": "Active",
-        "BUSINESS_TYPE": "Co-Packer",
-        "PRC_HOME_BASE": "Midwest",
-        "GOV_COMPLICITY": "Packaging partner",
-    },
-    {
-        "COMPANY_ID": 8,
-        "COMPANY_NAME": "Golden Crate Logistics",
-        "CHINESE_NAME": "",
-        "ACTIVE_INACTIVE": "Active",
-        "BUSINESS_TYPE": "Distributor",
-        "PRC_HOME_BASE": "National",
-        "GOV_COMPLICITY": "Distribution partner",
-    },
-    {
-        "COMPANY_ID": 9,
-        "COMPANY_NAME": "Clover Cane Sugars",
-        "CHINESE_NAME": "",
-        "ACTIVE_INACTIVE": "Active",
-        "BUSINESS_TYPE": "Ingredient Supplier",
-        "PRC_HOME_BASE": "Gulf Coast",
-        "GOV_COMPLICITY": "Sugar refiner",
-    },
-    {
-        "COMPANY_ID": 10,
-        "COMPANY_NAME": "Copper Kettle Kitchen",
-        "CHINESE_NAME": "",
-        "ACTIVE_INACTIVE": "Active",
-        "BUSINESS_TYPE": "Contract Bakery",
-        "PRC_HOME_BASE": "South",
-        "GOV_COMPLICITY": "Private-label bakery",
-    },
-    {
-        "COMPANY_ID": 11,
         "COMPANY_NAME": "Bluebird Oven Foods",
         "CHINESE_NAME": "",
         "ACTIVE_INACTIVE": "Active",
@@ -133,80 +103,228 @@ COMPANIES = [
         "GOV_COMPLICITY": "Regional bakery",
     },
     {
-        "COMPANY_ID": 12,
+        "COMPANY_ID": 4,
         "COMPANY_NAME": "Seaside Biscuit Works",
         "CHINESE_NAME": "",
         "ACTIVE_INACTIVE": "Active",
         "BUSINESS_TYPE": "Bakery",
         "PRC_HOME_BASE": "Southeast",
-        "GOV_COMPLICITY": "Retail bakery",
+        "GOV_COMPLICITY": "Coastal bakery",
+    },
+    {
+        "COMPANY_ID": 5,
+        "COMPANY_NAME": "Golden Grain Supply",
+        "CHINESE_NAME": "",
+        "ACTIVE_INACTIVE": "Active",
+        "BUSINESS_TYPE": "Ingredient Supplier",
+        "PRC_HOME_BASE": "Great Lakes",
+        "GOV_COMPLICITY": "Flour supplier",
+    },
+    {
+        "COMPANY_ID": 6,
+        "COMPANY_NAME": "Orchard Vanilla Imports",
+        "CHINESE_NAME": "",
+        "ACTIVE_INACTIVE": "Active",
+        "BUSINESS_TYPE": "Ingredient Supplier",
+        "PRC_HOME_BASE": "East Coast",
+        "GOV_COMPLICITY": "Vanilla importer",
+    },
+    {
+        "COMPANY_ID": 7,
+        "COMPANY_NAME": "Northwind Butter Works",
+        "CHINESE_NAME": "",
+        "ACTIVE_INACTIVE": "Active",
+        "BUSINESS_TYPE": "Ingredient Supplier",
+        "PRC_HOME_BASE": "Wisconsin",
+        "GOV_COMPLICITY": "Butter producer",
+    },
+    {
+        "COMPANY_ID": 8,
+        "COMPANY_NAME": "Cacao Coast Ingredients",
+        "CHINESE_NAME": "",
+        "ACTIVE_INACTIVE": "Active",
+        "BUSINESS_TYPE": "Ingredient Supplier",
+        "PRC_HOME_BASE": "West Coast",
+        "GOV_COMPLICITY": "Chocolate supplier",
+    },
+    {
+        "COMPANY_ID": 9,
+        "COMPANY_NAME": "Clover Cane Sugars",
+        "CHINESE_NAME": "",
+        "ACTIVE_INACTIVE": "Active",
+        "BUSINESS_TYPE": "Ingredient Supplier",
+        "PRC_HOME_BASE": "Gulf Coast",
+        "GOV_COMPLICITY": "Sugar supplier",
+    },
+    {
+        "COMPANY_ID": 10,
+        "COMPANY_NAME": "Meadow Oat Collective",
+        "CHINESE_NAME": "",
+        "ACTIVE_INACTIVE": "Active",
+        "BUSINESS_TYPE": "Ingredient Supplier",
+        "PRC_HOME_BASE": "Upper Midwest",
+        "GOV_COMPLICITY": "Oat supplier",
+    },
+    {
+        "COMPANY_ID": 11,
+        "COMPANY_NAME": "Golden Crate Logistics",
+        "CHINESE_NAME": "",
+        "ACTIVE_INACTIVE": "Active",
+        "BUSINESS_TYPE": "Distributor",
+        "PRC_HOME_BASE": "National",
+        "GOV_COMPLICITY": "Wholesale distributor",
+    },
+    {
+        "COMPANY_ID": 12,
+        "COMPANY_NAME": "CertiBake Registry",
+        "CHINESE_NAME": "",
+        "ACTIVE_INACTIVE": "Active",
+        "BUSINESS_TYPE": "Source Entity",
+        "PRC_HOME_BASE": "National",
+        "GOV_COMPLICITY": "Public claims registry",
     },
 ]
 
 CONSOLIDATED_COMPANY = [
-    {"CONSOLIDATED_NAME_ID": 1, "CONSOLIDATED_NAME": "Bakehouse Collective"},
-    {"CONSOLIDATED_NAME_ID": 2, "CONSOLIDATED_NAME": "Pantry Inputs Cooperative"},
-    {"CONSOLIDATED_NAME_ID": 3, "CONSOLIDATED_NAME": "Packing & Fulfillment Partners"},
+    {"CONSOLIDATED_NAME_ID": 1, "CONSOLIDATED_NAME": "Bakery Network"},
+    {"CONSOLIDATED_NAME_ID": 2, "CONSOLIDATED_NAME": "Ingredient Partners"},
+    {"CONSOLIDATED_NAME_ID": 3, "CONSOLIDATED_NAME": "Movement & Registry"},
 ]
 
 COMPANY_CONSOLIDATED_MAP = [
     {"CONSOLIDATED_COMPANY_ID": 1, "COMPANY_ID": 1},
     {"CONSOLIDATED_COMPANY_ID": 1, "COMPANY_ID": 2},
-    {"CONSOLIDATED_COMPANY_ID": 1, "COMPANY_ID": 10},
-    {"CONSOLIDATED_COMPANY_ID": 1, "COMPANY_ID": 11},
-    {"CONSOLIDATED_COMPANY_ID": 1, "COMPANY_ID": 12},
-    {"CONSOLIDATED_COMPANY_ID": 2, "COMPANY_ID": 3},
-    {"CONSOLIDATED_COMPANY_ID": 2, "COMPANY_ID": 4},
+    {"CONSOLIDATED_COMPANY_ID": 1, "COMPANY_ID": 3},
+    {"CONSOLIDATED_COMPANY_ID": 1, "COMPANY_ID": 4},
     {"CONSOLIDATED_COMPANY_ID": 2, "COMPANY_ID": 5},
     {"CONSOLIDATED_COMPANY_ID": 2, "COMPANY_ID": 6},
+    {"CONSOLIDATED_COMPANY_ID": 2, "COMPANY_ID": 7},
+    {"CONSOLIDATED_COMPANY_ID": 2, "COMPANY_ID": 8},
     {"CONSOLIDATED_COMPANY_ID": 2, "COMPANY_ID": 9},
-    {"CONSOLIDATED_COMPANY_ID": 3, "COMPANY_ID": 7},
-    {"CONSOLIDATED_COMPANY_ID": 3, "COMPANY_ID": 8},
+    {"CONSOLIDATED_COMPANY_ID": 2, "COMPANY_ID": 10},
+    {"CONSOLIDATED_COMPANY_ID": 3, "COMPANY_ID": 11},
+    {"CONSOLIDATED_COMPANY_ID": 3, "COMPANY_ID": 12},
 ]
 
 SUBSTANCE_TYPE = [
-    {"SUBSTANCE_TYPE_ID": 1, "SUBSTANCE_TYPE_TITLE": "Flour", "SUBSTANCE_TYPE_DESCRIPTION": "Foundational flour ingredients used in cookie dough."},
-    {"SUBSTANCE_TYPE_ID": 2, "SUBSTANCE_TYPE_TITLE": "Sweetener", "SUBSTANCE_TYPE_DESCRIPTION": "Sugars and sweet ingredients used for structure and flavor."},
-    {"SUBSTANCE_TYPE_ID": 3, "SUBSTANCE_TYPE_TITLE": "Fat", "SUBSTANCE_TYPE_DESCRIPTION": "Butter and related fats that affect texture and shelf life."},
-    {"SUBSTANCE_TYPE_ID": 4, "SUBSTANCE_TYPE_TITLE": "Flavor", "SUBSTANCE_TYPE_DESCRIPTION": "Flavoring ingredients such as vanilla and cinnamon."},
-    {"SUBSTANCE_TYPE_ID": 5, "SUBSTANCE_TYPE_TITLE": "Inclusion", "SUBSTANCE_TYPE_DESCRIPTION": "Mix-ins such as chocolate chips, oats, and nuts."},
+    {
+        "SUBSTANCE_TYPE_ID": 1,
+        "SUBSTANCE_TYPE_TITLE": "Flour",
+        "SUBSTANCE_TYPE_DESCRIPTION": "Flour ingredients used across cookie dough bases.",
+    },
+    {
+        "SUBSTANCE_TYPE_ID": 2,
+        "SUBSTANCE_TYPE_TITLE": "Flavor",
+        "SUBSTANCE_TYPE_DESCRIPTION": "Flavor ingredients used for aroma and profile notes.",
+    },
+    {
+        "SUBSTANCE_TYPE_ID": 3,
+        "SUBSTANCE_TYPE_TITLE": "Inclusion",
+        "SUBSTANCE_TYPE_DESCRIPTION": "Ingredient inclusions mixed into finished cookie dough.",
+    },
+    {
+        "SUBSTANCE_TYPE_ID": 4,
+        "SUBSTANCE_TYPE_TITLE": "Fat",
+        "SUBSTANCE_TYPE_DESCRIPTION": "Butter and other fat ingredients used for texture.",
+    },
+    {
+        "SUBSTANCE_TYPE_ID": 5,
+        "SUBSTANCE_TYPE_TITLE": "Sweetener",
+        "SUBSTANCE_TYPE_DESCRIPTION": "Sweet ingredients used in dough and finish blends.",
+    },
 ]
 
 SUBSTANCE_REFERENCE = [
-    {"SUBSTANCE_REFERENCE_ID": 1, "SUBSTANCE_NAME": "All-purpose flour", "SUBSTANCE_ID": "ING-FLOUR-AP", "SUBSTANCE_WEIGHT": 24, "SUBSTANCE_DESCRIPTION": "Primary flour used across house cookie bases.", "SUBSTANCE_TYPE_ID": 1},
-    {"SUBSTANCE_REFERENCE_ID": 2, "SUBSTANCE_NAME": "Brown sugar", "SUBSTANCE_ID": "ING-SUGAR-BROWN", "SUBSTANCE_WEIGHT": 18, "SUBSTANCE_DESCRIPTION": "Moisture-retaining sweetener used in classic cookie dough.", "SUBSTANCE_TYPE_ID": 2},
-    {"SUBSTANCE_REFERENCE_ID": 3, "SUBSTANCE_NAME": "Cultured butter", "SUBSTANCE_ID": "ING-BUTTER-CULTURED", "SUBSTANCE_WEIGHT": 20, "SUBSTANCE_DESCRIPTION": "Premium butter used in rich dough and laminated inclusions.", "SUBSTANCE_TYPE_ID": 3},
-    {"SUBSTANCE_REFERENCE_ID": 4, "SUBSTANCE_NAME": "Madagascar vanilla extract", "SUBSTANCE_ID": "ING-VANILLA-MDG", "SUBSTANCE_WEIGHT": 15, "SUBSTANCE_DESCRIPTION": "High-aroma vanilla extract used in signature cookie lines.", "SUBSTANCE_TYPE_ID": 4},
-    {"SUBSTANCE_REFERENCE_ID": 5, "SUBSTANCE_NAME": "Semisweet chocolate chips", "SUBSTANCE_ID": "ING-CHOC-SEMI", "SUBSTANCE_WEIGHT": 22, "SUBSTANCE_DESCRIPTION": "Core inclusion for chocolate chip and double chocolate cookies.", "SUBSTANCE_TYPE_ID": 5},
-    {"SUBSTANCE_REFERENCE_ID": 6, "SUBSTANCE_NAME": "Sea salt", "SUBSTANCE_ID": "ING-SALT-SEA", "SUBSTANCE_WEIGHT": 8, "SUBSTANCE_DESCRIPTION": "Finishing and balance ingredient used in sweet-savory blends.", "SUBSTANCE_TYPE_ID": 4},
-    {"SUBSTANCE_REFERENCE_ID": 7, "SUBSTANCE_NAME": "Rolled oats", "SUBSTANCE_ID": "ING-OATS-ROLLED", "SUBSTANCE_WEIGHT": 14, "SUBSTANCE_DESCRIPTION": "Textural inclusion used in oatmeal cookie programs.", "SUBSTANCE_TYPE_ID": 5},
-    {"SUBSTANCE_REFERENCE_ID": 8, "SUBSTANCE_NAME": "Cinnamon", "SUBSTANCE_ID": "ING-CINNAMON", "SUBSTANCE_WEIGHT": 11, "SUBSTANCE_DESCRIPTION": "Warm spice used in snickerdoodle and seasonal cookies.", "SUBSTANCE_TYPE_ID": 4},
-    {"SUBSTANCE_REFERENCE_ID": 9, "SUBSTANCE_NAME": "Almond flour", "SUBSTANCE_ID": "ING-FLOUR-ALMOND", "SUBSTANCE_WEIGHT": 17, "SUBSTANCE_DESCRIPTION": "Alternative flour used in gluten-aware cookie lines.", "SUBSTANCE_TYPE_ID": 1},
-    {"SUBSTANCE_REFERENCE_ID": 10, "SUBSTANCE_NAME": "Molasses", "SUBSTANCE_ID": "ING-MOLASSES", "SUBSTANCE_WEIGHT": 13, "SUBSTANCE_DESCRIPTION": "Dark sweetener used for ginger and chewy brown cookies.", "SUBSTANCE_TYPE_ID": 2},
+    {
+        "SUBSTANCE_REFERENCE_ID": 1,
+        "SUBSTANCE_NAME": "All-purpose flour",
+        "SUBSTANCE_ID": "ING-FLOUR-AP",
+        "SUBSTANCE_WEIGHT": 24,
+        "SUBSTANCE_DESCRIPTION": "Core flour used in classic cookie dough.",
+        "SUBSTANCE_TYPE_ID": 1,
+    },
+    {
+        "SUBSTANCE_REFERENCE_ID": 2,
+        "SUBSTANCE_NAME": "Madagascar vanilla extract",
+        "SUBSTANCE_ID": "ING-VANILLA-MDG",
+        "SUBSTANCE_WEIGHT": 16,
+        "SUBSTANCE_DESCRIPTION": "Vanilla ingredient used in bakery and supplier pages.",
+        "SUBSTANCE_TYPE_ID": 2,
+    },
+    {
+        "SUBSTANCE_REFERENCE_ID": 3,
+        "SUBSTANCE_NAME": "Semisweet chocolate chips",
+        "SUBSTANCE_ID": "ING-CHOC-SEMI",
+        "SUBSTANCE_WEIGHT": 22,
+        "SUBSTANCE_DESCRIPTION": "Chocolate inclusion used across multiple cookie lines.",
+        "SUBSTANCE_TYPE_ID": 3,
+    },
+    {
+        "SUBSTANCE_REFERENCE_ID": 4,
+        "SUBSTANCE_NAME": "Cultured butter",
+        "SUBSTANCE_ID": "ING-BUTTER-CULTURED",
+        "SUBSTANCE_WEIGHT": 20,
+        "SUBSTANCE_DESCRIPTION": "Butter ingredient used for richer doughs and shortbread styles.",
+        "SUBSTANCE_TYPE_ID": 4,
+    },
+    {
+        "SUBSTANCE_REFERENCE_ID": 5,
+        "SUBSTANCE_NAME": "Brown sugar",
+        "SUBSTANCE_ID": "ING-SUGAR-BROWN",
+        "SUBSTANCE_WEIGHT": 18,
+        "SUBSTANCE_DESCRIPTION": "Sweetener used in chewy cookie profiles.",
+        "SUBSTANCE_TYPE_ID": 5,
+    },
+    {
+        "SUBSTANCE_REFERENCE_ID": 6,
+        "SUBSTANCE_NAME": "Rolled oats",
+        "SUBSTANCE_ID": "ING-OATS-ROLLED",
+        "SUBSTANCE_WEIGHT": 14,
+        "SUBSTANCE_DESCRIPTION": "Oat inclusion used in bakery and supplier pages.",
+        "SUBSTANCE_TYPE_ID": 3,
+    },
+    {
+        "SUBSTANCE_REFERENCE_ID": 7,
+        "SUBSTANCE_NAME": "Sea salt",
+        "SUBSTANCE_ID": "ING-SALT-SEA",
+        "SUBSTANCE_WEIGHT": 9,
+        "SUBSTANCE_DESCRIPTION": "Finishing salt used in sweet-savory cookie pages.",
+        "SUBSTANCE_TYPE_ID": 2,
+    },
+    {
+        "SUBSTANCE_REFERENCE_ID": 8,
+        "SUBSTANCE_NAME": "Almond flour",
+        "SUBSTANCE_ID": "ING-FLOUR-ALMOND",
+        "SUBSTANCE_WEIGHT": 17,
+        "SUBSTANCE_DESCRIPTION": "Alternative flour used in specialty cookie batches.",
+        "SUBSTANCE_TYPE_ID": 1,
+    },
 ]
 
 SUBSTANCE_SOURCING_TYPE = [
-    {"SUBSTANCE_SOURCING_TYPE_ID": 1, "SUBSTANCE_SOURCING_TYPE_TITLE": "Catalog family", "SUBSTANCE_SOURCING_TYPE_DESCRIPTION": "High-level family or assortment name used in catalogs."},
-    {"SUBSTANCE_SOURCING_TYPE_ID": 2, "SUBSTANCE_SOURCING_TYPE_TITLE": "Supplier alias", "SUBSTANCE_SOURCING_TYPE_DESCRIPTION": "Localized supplier phrasing used on spec sheets or profiles."},
-    {"SUBSTANCE_SOURCING_TYPE_ID": 3, "SUBSTANCE_SOURCING_TYPE_TITLE": "Recipe phrasing", "SUBSTANCE_SOURCING_TYPE_DESCRIPTION": "Phrasing used on bakery menus or ingredient lists."},
+    {
+        "SUBSTANCE_SOURCING_TYPE_ID": 1,
+        "SUBSTANCE_SOURCING_TYPE_TITLE": "Catalog family",
+        "SUBSTANCE_SOURCING_TYPE_DESCRIPTION": "High-level family phrasing used in catalog pages.",
+    },
+    {
+        "SUBSTANCE_SOURCING_TYPE_ID": 2,
+        "SUBSTANCE_SOURCING_TYPE_TITLE": "Supplier alias",
+        "SUBSTANCE_SOURCING_TYPE_DESCRIPTION": "Supplier-facing local phrasing or shorthand.",
+    },
+    {
+        "SUBSTANCE_SOURCING_TYPE_ID": 3,
+        "SUBSTANCE_SOURCING_TYPE_TITLE": "Recipe phrasing",
+        "SUBSTANCE_SOURCING_TYPE_DESCRIPTION": "Bakery-facing ingredient phrasing used in menus and labels.",
+    },
 ]
 
 EVIDENCE_TYPE = [
-    {"EVIDENCE_TYPE_ID": 1, "EVIDENCE_TYPE_NAME": "Catalog listing"},
-    {"EVIDENCE_TYPE_ID": 2, "EVIDENCE_TYPE_NAME": "Ingredient spec sheet"},
-    {"EVIDENCE_TYPE_ID": 3, "EVIDENCE_TYPE_NAME": "Bakery menu"},
+    {"EVIDENCE_TYPE_ID": 1, "EVIDENCE_TYPE_NAME": "Bakery menu"},
+    {"EVIDENCE_TYPE_ID": 2, "EVIDENCE_TYPE_NAME": "Supplier catalog"},
+    {"EVIDENCE_TYPE_ID": 3, "EVIDENCE_TYPE_NAME": "Ingredient spec sheet"},
     {"EVIDENCE_TYPE_ID": 4, "EVIDENCE_TYPE_NAME": "Distributor listing"},
-    {"EVIDENCE_TYPE_ID": 5, "EVIDENCE_TYPE_NAME": "Supplier profile"},
-]
-
-DATA_SOURCE = [
-    {"DATA_SOURCE_ID": 1, "DATA_SOURCE_NAME": "Harbor Batch seasonal cookie menu", "DATA_SOURCE_TYPE": "bakery_menu", "URL": "https://cookie-demo.example/sources/harbor-batch-menu", "DATE_LOGGED": "2026-06-03", "PARENT_DATA_SOURCE_ID": "", "SCRAPE_RUN_ID": "cookie-demo-run-001"},
-    {"DATA_SOURCE_ID": 2, "DATA_SOURCE_NAME": "Pantry inputs wholesale catalog", "DATA_SOURCE_TYPE": "catalog", "URL": "https://cookie-demo.example/sources/pantry-inputs-catalog", "DATE_LOGGED": "2026-06-05", "PARENT_DATA_SOURCE_ID": "", "SCRAPE_RUN_ID": "cookie-demo-run-002"},
-    {"DATA_SOURCE_ID": 3, "DATA_SOURCE_NAME": "Northwind butter spec sheet", "DATA_SOURCE_TYPE": "ingredient_sheet", "URL": "https://cookie-demo.example/sources/northwind-butter-sheet", "DATE_LOGGED": "2026-06-08", "PARENT_DATA_SOURCE_ID": "", "SCRAPE_RUN_ID": "cookie-demo-run-003"},
-    {"DATA_SOURCE_ID": 4, "DATA_SOURCE_NAME": "Maple & Main online ingredient panel", "DATA_SOURCE_TYPE": "bakery_menu", "URL": "https://cookie-demo.example/sources/maple-main-panel", "DATE_LOGGED": "2026-06-10", "PARENT_DATA_SOURCE_ID": "", "SCRAPE_RUN_ID": "cookie-demo-run-004"},
-    {"DATA_SOURCE_ID": 5, "DATA_SOURCE_NAME": "Cacao Coast supplier profile", "DATA_SOURCE_TYPE": "supplier_profile", "URL": "https://cookie-demo.example/sources/cacao-coast-profile", "DATE_LOGGED": "2026-06-12", "PARENT_DATA_SOURCE_ID": "", "SCRAPE_RUN_ID": "cookie-demo-run-005"},
-    {"DATA_SOURCE_ID": 6, "DATA_SOURCE_NAME": "Golden Crate distribution roster", "DATA_SOURCE_TYPE": "distributor_listing", "URL": "https://cookie-demo.example/sources/golden-crate-roster", "DATE_LOGGED": "2026-06-15", "PARENT_DATA_SOURCE_ID": "", "SCRAPE_RUN_ID": "cookie-demo-run-006"},
-    {"DATA_SOURCE_ID": 7, "DATA_SOURCE_NAME": "Bluebird seasonal recipe archive", "DATA_SOURCE_TYPE": "recipe_archive", "URL": "https://cookie-demo.example/sources/bluebird-archive", "DATE_LOGGED": "2026-06-18", "PARENT_DATA_SOURCE_ID": "", "SCRAPE_RUN_ID": "cookie-demo-run-007"},
+    {"EVIDENCE_TYPE_ID": 5, "EVIDENCE_TYPE_NAME": "Public claim registry"},
 ]
 
 WEIGHTING_TAG_TYPE = [
@@ -214,375 +332,584 @@ WEIGHTING_TAG_TYPE = [
 ]
 
 WEIGHTING_TAG_CATEGORY = [
-    {"WEIGHTING_TAG_CATEGORY_ID": 1, "WEIGHTING_TAG_CATEGORY_TITLE": "Product profile", "WEIGHTING_TAG_TYPE_ID": 1},
-    {"WEIGHTING_TAG_CATEGORY_ID": 2, "WEIGHTING_TAG_CATEGORY_TITLE": "Operational note", "WEIGHTING_TAG_TYPE_ID": 1},
-    {"WEIGHTING_TAG_CATEGORY_ID": 3, "WEIGHTING_TAG_CATEGORY_TITLE": "Seasonality", "WEIGHTING_TAG_TYPE_ID": 1},
+    {"WEIGHTING_TAG_CATEGORY_ID": 1, "WEIGHTING_TAG_CATEGORY_TITLE": "Product line", "WEIGHTING_TAG_TYPE_ID": 1},
+    {"WEIGHTING_TAG_CATEGORY_ID": 2, "WEIGHTING_TAG_CATEGORY_TITLE": "Handling note", "WEIGHTING_TAG_TYPE_ID": 1},
+    {"WEIGHTING_TAG_CATEGORY_ID": 3, "WEIGHTING_TAG_CATEGORY_TITLE": "Public claim", "WEIGHTING_TAG_TYPE_ID": 1},
 ]
 
 WEIGHTING_TAG = [
-    {"WEIGHTING_TAG_ID": 1, "WEIGHTING_TAG_TITLE": "Signature cookie line", "WEIGHTING_TAG_WEIGHT": 10, "WEIGHTING_TAG_DESCRIPTION": "Appears in a highlighted or signature product line.", "WEIGHTING_TAG_CATEGORY_ID": 1},
-    {"WEIGHTING_TAG_ID": 2, "WEIGHTING_TAG_TITLE": "Cold-chain handling", "WEIGHTING_TAG_WEIGHT": 8, "WEIGHTING_TAG_DESCRIPTION": "Requires careful storage or temperature handling.", "WEIGHTING_TAG_CATEGORY_ID": 2},
-    {"WEIGHTING_TAG_ID": 3, "WEIGHTING_TAG_TITLE": "Private-label partner", "WEIGHTING_TAG_WEIGHT": 7, "WEIGHTING_TAG_DESCRIPTION": "Supports co-manufacturing or private-label output.", "WEIGHTING_TAG_CATEGORY_ID": 2},
-    {"WEIGHTING_TAG_ID": 4, "WEIGHTING_TAG_TITLE": "Seasonal rotation", "WEIGHTING_TAG_WEIGHT": 5, "WEIGHTING_TAG_DESCRIPTION": "Referenced in seasonal or limited-run assortment pages.", "WEIGHTING_TAG_CATEGORY_ID": 3},
-    {"WEIGHTING_TAG_ID": 5, "WEIGHTING_TAG_TITLE": "Organic positioning", "WEIGHTING_TAG_WEIGHT": 6, "WEIGHTING_TAG_DESCRIPTION": "Markets an organic or specialty sourcing claim.", "WEIGHTING_TAG_CATEGORY_ID": 1},
+    {
+        "WEIGHTING_TAG_ID": 1,
+        "WEIGHTING_TAG_TITLE": "Signature batch",
+        "WEIGHTING_TAG_WEIGHT": 10,
+        "WEIGHTING_TAG_DESCRIPTION": "Appears in a featured or signature product line.",
+        "WEIGHTING_TAG_CATEGORY_ID": 1,
+    },
+    {
+        "WEIGHTING_TAG_ID": 2,
+        "WEIGHTING_TAG_TITLE": "Cold-chain handling",
+        "WEIGHTING_TAG_WEIGHT": 7,
+        "WEIGHTING_TAG_DESCRIPTION": "Requires chilled handling or careful storage.",
+        "WEIGHTING_TAG_CATEGORY_ID": 2,
+    },
+    {
+        "WEIGHTING_TAG_ID": 3,
+        "WEIGHTING_TAG_TITLE": "Organic claim",
+        "WEIGHTING_TAG_WEIGHT": 6,
+        "WEIGHTING_TAG_DESCRIPTION": "Appears with an organic or ingredient-origin claim.",
+        "WEIGHTING_TAG_CATEGORY_ID": 3,
+    },
 ]
 
 COMPANY_WEIGHTING_TAG = [
     {"COMPANY_WEIGHTING_TAG_ID": 1, "COMPANY_ID": 1, "WEIGHTING_TAG_ID": 1},
-    {"COMPANY_WEIGHTING_TAG_ID": 2, "COMPANY_ID": 2, "WEIGHTING_TAG_ID": 4},
-    {"COMPANY_WEIGHTING_TAG_ID": 3, "COMPANY_ID": 5, "WEIGHTING_TAG_ID": 2},
-    {"COMPANY_WEIGHTING_TAG_ID": 4, "COMPANY_ID": 7, "WEIGHTING_TAG_ID": 3},
-    {"COMPANY_WEIGHTING_TAG_ID": 5, "COMPANY_ID": 10, "WEIGHTING_TAG_ID": 3},
-    {"COMPANY_WEIGHTING_TAG_ID": 6, "COMPANY_ID": 11, "WEIGHTING_TAG_ID": 5},
-    {"COMPANY_WEIGHTING_TAG_ID": 7, "COMPANY_ID": 12, "WEIGHTING_TAG_ID": 1},
+    {"COMPANY_WEIGHTING_TAG_ID": 2, "COMPANY_ID": 3, "WEIGHTING_TAG_ID": 1},
+    {"COMPANY_WEIGHTING_TAG_ID": 3, "COMPANY_ID": 7, "WEIGHTING_TAG_ID": 2},
+    {"COMPANY_WEIGHTING_TAG_ID": 4, "COMPANY_ID": 12, "WEIGHTING_TAG_ID": 3},
 ]
 
-LINKAGE_BLUEPRINTS = [
-    (1, "Email", "batches@bakehouse-collective.example", 1),
-    (2, "Email", "batches@bakehouse-collective.example", 4),
-    (10, "Email", "batches@bakehouse-collective.example", 4),
-    (11, "Email", "batches@bakehouse-collective.example", 7),
-    (3, "Phone", "+1-414-555-0110", 2),
-    (5, "Phone", "+1-414-555-0110", 3),
-    (9, "Phone", "+1-414-555-0110", 2),
-    (7, "Phone", "+1-773-555-0142", 6),
-    (8, "Phone", "+1-773-555-0142", 6),
-    (4, "Email", "vanilla@pantry-inputs.example", 2),
-    (6, "Email", "vanilla@pantry-inputs.example", 5),
-    (12, "Email", "coastal-orders@bakehouse-collective.example", 1),
-    (1, "Phone", "+1-312-555-0188", 1),
-    (7, "Email", "packing@fulfillment-partners.example", 6),
-    (8, "Email", "packing@fulfillment-partners.example", 6),
+DATA_SOURCES = [
+    {
+        "DATA_SOURCE_ID": 1,
+        "DATA_SOURCE_NAME": "Harbor Batch spring cookie board",
+        "DATA_SOURCE_TYPE": "bakery_menu",
+        "URL": "https://cookie-demo.example/bakeryboard/harbor-batch-spring-board",
+        "DATE_LOGGED": "2026-04-01",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-01_bakeryboard",
+        "SOURCE_PLATFORM": "BakeryBoard",
+        "OBSERVED_AT": "2026-04-01",
+        "FIRST_SEEN_AT": "2026-04-01",
+        "LAST_SEEN_AT": "2026-04-01",
+    },
+    {
+        "DATA_SOURCE_ID": 2,
+        "DATA_SOURCE_NAME": "Maple & Main cookie board",
+        "DATA_SOURCE_TYPE": "bakery_menu",
+        "URL": "https://cookie-demo.example/bakeryboard/maple-main-cookie-board",
+        "DATE_LOGGED": "2026-04-01",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-01_bakeryboard",
+        "SOURCE_PLATFORM": "BakeryBoard",
+        "OBSERVED_AT": "2026-04-01",
+        "FIRST_SEEN_AT": "2026-04-01",
+        "LAST_SEEN_AT": "2026-04-01",
+    },
+    {
+        "DATA_SOURCE_ID": 3,
+        "DATA_SOURCE_NAME": "Bluebird oatmeal board",
+        "DATA_SOURCE_TYPE": "bakery_menu",
+        "URL": "https://cookie-demo.example/bakeryboard/bluebird-oatmeal-board",
+        "DATE_LOGGED": "2026-04-01",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-01_bakeryboard",
+        "SOURCE_PLATFORM": "BakeryBoard",
+        "OBSERVED_AT": "2026-04-01",
+        "FIRST_SEEN_AT": "2026-04-01",
+        "LAST_SEEN_AT": "2026-04-01",
+    },
+    {
+        "DATA_SOURCE_ID": 4,
+        "DATA_SOURCE_NAME": "Golden Grain Supply catalog",
+        "DATA_SOURCE_TYPE": "supplier_catalog",
+        "URL": "https://cookie-demo.example/ingredienthub/golden-grain-catalog",
+        "DATE_LOGGED": "2026-04-15",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-15_ingredienthub",
+        "SOURCE_PLATFORM": "IngredientHub",
+        "OBSERVED_AT": "2026-04-15",
+        "FIRST_SEEN_AT": "2026-04-15",
+        "LAST_SEEN_AT": "2026-04-15",
+    },
+    {
+        "DATA_SOURCE_ID": 5,
+        "DATA_SOURCE_NAME": "Orchard Vanilla Imports catalog",
+        "DATA_SOURCE_TYPE": "supplier_catalog",
+        "URL": "https://cookie-demo.example/ingredienthub/orchard-vanilla-catalog",
+        "DATE_LOGGED": "2026-04-15",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-15_ingredienthub",
+        "SOURCE_PLATFORM": "IngredientHub",
+        "OBSERVED_AT": "2026-04-15",
+        "FIRST_SEEN_AT": "2026-04-15",
+        "LAST_SEEN_AT": "2026-04-15",
+    },
+    {
+        "DATA_SOURCE_ID": 6,
+        "DATA_SOURCE_NAME": "Cacao Coast ingredients catalog",
+        "DATA_SOURCE_TYPE": "supplier_catalog",
+        "URL": "https://cookie-demo.example/ingredienthub/cacao-coast-catalog",
+        "DATE_LOGGED": "2026-04-15",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-15_ingredienthub",
+        "SOURCE_PLATFORM": "IngredientHub",
+        "OBSERVED_AT": "2026-04-15",
+        "FIRST_SEEN_AT": "2026-04-15",
+        "LAST_SEEN_AT": "2026-04-15",
+    },
+    {
+        "DATA_SOURCE_ID": 7,
+        "DATA_SOURCE_NAME": "Northwind butter sheet",
+        "DATA_SOURCE_TYPE": "ingredient_sheet",
+        "URL": "https://cookie-demo.example/ingredienthub/northwind-butter-sheet",
+        "DATE_LOGGED": "2026-04-15",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-15_ingredienthub",
+        "SOURCE_PLATFORM": "IngredientHub",
+        "OBSERVED_AT": "2026-04-15",
+        "FIRST_SEEN_AT": "2026-04-15",
+        "LAST_SEEN_AT": "2026-04-15",
+    },
+    {
+        "DATA_SOURCE_ID": 8,
+        "DATA_SOURCE_NAME": "Clover Cane sugars catalog",
+        "DATA_SOURCE_TYPE": "supplier_catalog",
+        "URL": "https://cookie-demo.example/ingredienthub/clover-cane-catalog",
+        "DATE_LOGGED": "2026-04-15",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-15_ingredienthub",
+        "SOURCE_PLATFORM": "IngredientHub",
+        "OBSERVED_AT": "2026-04-15",
+        "FIRST_SEEN_AT": "2026-04-15",
+        "LAST_SEEN_AT": "2026-04-15",
+    },
+    {
+        "DATA_SOURCE_ID": 9,
+        "DATA_SOURCE_NAME": "Meadow Oat Collective catalog",
+        "DATA_SOURCE_TYPE": "supplier_catalog",
+        "URL": "https://cookie-demo.example/ingredienthub/meadow-oat-catalog",
+        "DATE_LOGGED": "2026-04-15",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-04-15_ingredienthub",
+        "SOURCE_PLATFORM": "IngredientHub",
+        "OBSERVED_AT": "2026-04-15",
+        "FIRST_SEEN_AT": "2026-04-15",
+        "LAST_SEEN_AT": "2026-04-15",
+    },
+    {
+        "DATA_SOURCE_ID": 10,
+        "DATA_SOURCE_NAME": "WholesaleCrumb route sheet",
+        "DATA_SOURCE_TYPE": "distributor_listing",
+        "URL": "https://cookie-demo.example/wholesalecrumb/route-sheet",
+        "DATE_LOGGED": "2026-05-01",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-05-01_wholesalecrumb",
+        "SOURCE_PLATFORM": "WholesaleCrumb",
+        "OBSERVED_AT": "2026-05-01",
+        "FIRST_SEEN_AT": "2026-05-01",
+        "LAST_SEEN_AT": "2026-05-01",
+    },
+    {
+        "DATA_SOURCE_ID": 11,
+        "DATA_SOURCE_NAME": "CertiBake public claims registry",
+        "DATA_SOURCE_TYPE": "claims_registry",
+        "URL": "https://cookie-demo.example/certibake/public-claims",
+        "DATE_LOGGED": "2026-05-20",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-05-20_certibake_registry",
+        "SOURCE_PLATFORM": "CertiBake Registry",
+        "OBSERVED_AT": "2026-05-20",
+        "FIRST_SEEN_AT": "2026-05-20",
+        "LAST_SEEN_AT": "2026-05-20",
+    },
+    {
+        "DATA_SOURCE_ID": 12,
+        "DATA_SOURCE_NAME": "CertiBake allergen notes registry",
+        "DATA_SOURCE_TYPE": "claims_registry",
+        "URL": "https://cookie-demo.example/certibake/allergen-notes",
+        "DATE_LOGGED": "2026-05-20",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-05-20_certibake_registry",
+        "SOURCE_PLATFORM": "CertiBake Registry",
+        "OBSERVED_AT": "2026-05-20",
+        "FIRST_SEEN_AT": "2026-05-20",
+        "LAST_SEEN_AT": "2026-05-20",
+    },
+    {
+        "DATA_SOURCE_ID": 13,
+        "DATA_SOURCE_NAME": "Harbor Batch refresh board",
+        "DATA_SOURCE_TYPE": "bakery_menu",
+        "URL": "https://cookie-demo.example/bakeryboard/harbor-batch-refresh-board",
+        "DATE_LOGGED": "2026-06-10",
+        "PARENT_DATA_SOURCE_ID": 1,
+        "SCRAPE_RUN_ID": "2026-06-10_bakeryboard_refresh",
+        "SOURCE_PLATFORM": "BakeryBoard Refresh",
+        "OBSERVED_AT": "2026-06-10",
+        "FIRST_SEEN_AT": "2026-06-10",
+        "LAST_SEEN_AT": "2026-06-10",
+    },
+    {
+        "DATA_SOURCE_ID": 14,
+        "DATA_SOURCE_NAME": "Seaside Biscuit Works menu board",
+        "DATA_SOURCE_TYPE": "bakery_menu",
+        "URL": "https://cookie-demo.example/bakeryboard/seaside-biscuit-board",
+        "DATE_LOGGED": "2026-06-10",
+        "PARENT_DATA_SOURCE_ID": "",
+        "SCRAPE_RUN_ID": "2026-06-10_bakeryboard_refresh",
+        "SOURCE_PLATFORM": "BakeryBoard Refresh",
+        "OBSERVED_AT": "2026-06-10",
+        "FIRST_SEEN_AT": "2026-06-10",
+        "LAST_SEEN_AT": "2026-06-10",
+    },
 ]
-
-ASSOCIATION_BLUEPRINTS = [
-    (1, 2, "Email", "batches@bakehouse-collective.example", "Shared production inbox", 4),
-    (1, 10, "Email", "batches@bakehouse-collective.example", "Shared production inbox", 4),
-    (2, 11, "Email", "batches@bakehouse-collective.example", "Shared production inbox", 7),
-    (3, 5, "Phone", "+1-414-555-0110", "Shared procurement phone", 3),
-    (3, 9, "Phone", "+1-414-555-0110", "Shared procurement phone", 2),
-    (7, 8, "Phone", "+1-773-555-0142", "Shared fulfillment line", 6),
-    (4, 6, "Email", "vanilla@pantry-inputs.example", "Shared imports inbox", 5),
-    (1, 12, "Phone", "+1-312-555-0188", "Shared bakery office line", 1),
-]
-
-COMPANY_INGREDIENT_MAP = {
-    1: [1, 2, 3, 4, 5, 6],
-    2: [1, 2, 3, 4, 5, 8],
-    3: [1, 9],
-    4: [4],
-    5: [3],
-    6: [5, 6, 8],
-    7: [5, 6],
-    8: [1, 5, 10],
-    9: [2, 10],
-    10: [1, 2, 3, 5, 10],
-    11: [1, 4, 7, 8, 9],
-    12: [1, 2, 3, 4, 5, 7],
-}
 
 LISTED_NAME_MAP = {
     1: "all-purpose flour",
-    2: "dark brown sugar",
-    3: "cultured sweet cream butter",
-    4: "Madagascar vanilla",
-    5: "semisweet chocolate chips",
-    6: "flaky sea salt",
-    7: "rolled oats",
-    8: "ground cinnamon",
-    9: "fine almond flour",
-    10: "blackstrap molasses",
+    2: "Madagascar vanilla",
+    3: "semisweet chocolate chips",
+    4: "cultured butter",
+    5: "brown sugar",
+    6: "rolled oats",
+    7: "sea salt finish",
+    8: "almond flour",
 }
 
-COMPANY_SOURCE_CYCLE = {
-    1: [1, 2],
-    2: [4, 2],
-    3: [2],
-    4: [2, 5],
-    5: [3],
-    6: [5, 2],
-    7: [6],
-    8: [6],
-    9: [2],
-    10: [4, 6],
-    11: [7, 2],
-    12: [1, 6],
-}
+EVIDENCE_BLUEPRINTS = [
+    (1, 1, 1, 1, "all-purpose flour"),
+    (1, 4, 1, 1, "cultured butter"),
+    (1, 3, 1, 1, "semisweet chocolate chips"),
+    (1, 2, 1, 1, "Madagascar vanilla"),
+    (1, 5, 1, 1, "brown sugar"),
+    (2, 1, 2, 1, "all-purpose flour"),
+    (2, 4, 2, 1, "cultured butter"),
+    (2, 3, 2, 1, "semisweet chocolate chips"),
+    (2, 5, 2, 1, "brown sugar"),
+    (2, 7, 2, 1, "sea salt finish"),
+    (3, 1, 3, 1, "all-purpose flour"),
+    (3, 6, 3, 1, "rolled oats"),
+    (3, 4, 3, 1, "cultured butter"),
+    (3, 5, 3, 1, "brown sugar"),
+    (5, 1, 4, 2, "all-purpose flour"),
+    (5, 8, 4, 2, "almond flour"),
+    (6, 2, 5, 2, "Madagascar vanilla extract"),
+    (8, 3, 6, 2, "semisweet chocolate chips"),
+    (7, 4, 7, 3, "cultured butter"),
+    (9, 5, 8, 2, "brown sugar"),
+    (10, 6, 9, 2, "rolled oats"),
+    (11, 1, 10, 4, "all-purpose flour"),
+    (11, 3, 10, 4, "semisweet chocolate chips"),
+    (11, 4, 10, 4, "cultured butter"),
+    (11, 5, 10, 4, "brown sugar"),
+    (11, 6, 10, 4, "rolled oats"),
+    (1, 1, 11, 5, "organic flour note"),
+    (2, 3, 11, 5, "fair-trade chocolate note"),
+    (3, 6, 11, 5, "gluten-free oats note"),
+    (4, 8, 12, 5, "almond flour batch note"),
+    (2, 4, 12, 5, "kosher-style butter cookie note"),
+    (1, 1, 13, 1, "stone-milled flour"),
+    (1, 6, 13, 1, "rolled oats"),
+    (1, 7, 13, 1, "sea salt finish"),
+    (4, 1, 14, 1, "all-purpose flour"),
+    (4, 4, 14, 1, "cultured butter"),
+    (4, 2, 14, 1, "Madagascar vanilla"),
+    (4, 3, 14, 1, "semisweet chocolate chips"),
+]
 
-COMPANY_EVIDENCE_TYPE_CYCLE = {
-    1: [3, 1, 2],
-    2: [3, 1, 2],
-    3: [1, 2],
-    4: [5, 2],
-    5: [2],
-    6: [5, 1],
-    7: [4],
-    8: [4],
-    9: [1],
-    10: [3, 4],
-    11: [3, 1],
-    12: [3, 4],
-}
+ASSOCIATION_BLUEPRINTS = [
+    (1, 2, "Email", "orders@bakeryboard-kitchens.example", "Shared BakeryBoard inbox", 1),
+    (5, 6, "Email", "catalog@ingredienthub.example", "Shared IngredientHub supplier inbox", 4),
+    (5, 9, "Phone", "+1-414-555-0110", "Shared IngredientHub support line", 8),
+    (6, 8, "Email", "catalog@ingredienthub.example", "Shared IngredientHub supplier inbox", 5),
+    (1, 11, "Phone", "+1-773-555-0142", "Shared WholesaleCrumb route line", 10),
+    (2, 11, "Phone", "+1-773-555-0142", "Shared WholesaleCrumb route line", 10),
+    (8, 11, "Phone", "+1-773-555-0142", "Shared WholesaleCrumb route line", 10),
+    (12, 1, "Email", "registry@certibake.example", "Listed in CertiBake claims registry", 11),
+    (12, 2, "Email", "registry@certibake.example", "Listed in CertiBake claims registry", 11),
+    (12, 3, "Email", "registry@certibake.example", "Listed in CertiBake claims registry", 11),
+    (1, 5, "Email", "orders@goldengrain.example", "BakeryBoard refresh supplier reference", 13),
+    (4, 11, "Phone", "+1-773-555-0142", "Shared WholesaleCrumb route line", 14),
+    (4, 5, "Email", "orders@goldengrain.example", "BakeryBoard refresh supplier reference", 14),
+]
+
+SUBSTANCE_SOURCING_BLUEPRINTS = [
+    (1, "All-purpose flour", 1, 4, "All-purpose flour catalog family"),
+    (1, "stone-milled flour", 3, 13, "Observed menu phrasing for All-purpose flour"),
+    (2, "Madagascar vanilla extract", 1, 5, "Madagascar vanilla catalog family"),
+    (2, "Madagascar vanilla", 3, 1, "Observed menu phrasing for Madagascar vanilla extract"),
+    (3, "Semisweet chocolate chips", 1, 6, "Chocolate chip catalog family"),
+    (3, "semisweet chocolate chips", 3, 2, "Observed menu phrasing for Semisweet chocolate chips"),
+    (4, "Cultured butter", 1, 7, "Cultured butter sheet family"),
+    (4, "cultured butter", 3, 2, "Observed menu phrasing for Cultured butter"),
+    (5, "Brown sugar", 1, 8, "Brown sugar catalog family"),
+    (5, "brown sugar", 3, 2, "Observed menu phrasing for Brown sugar"),
+    (6, "Rolled oats", 1, 9, "Rolled oat catalog family"),
+    (6, "rolled oats", 3, 3, "Observed menu phrasing for Rolled oats"),
+    (7, "Sea salt", 1, 2, "Sea salt pantry reference"),
+    (7, "sea salt finish", 3, 13, "Observed menu phrasing for Sea salt"),
+    (8, "Almond flour", 1, 4, "Almond flour catalog family"),
+    (8, "almond flour", 3, 12, "Observed public claim phrasing for Almond flour"),
+]
 
 
-def build_substance_sourcing():
-    rows = []
-    row_id = 1
-    for substance in SUBSTANCE_REFERENCE:
-        substance_id = substance["SUBSTANCE_ID"]
-        substance_name = substance["SUBSTANCE_NAME"]
-        base_category = next(item["SUBSTANCE_TYPE_TITLE"] for item in SUBSTANCE_TYPE if item["SUBSTANCE_TYPE_ID"] == substance["SUBSTANCE_TYPE_ID"])
-        rows.append({
-            "SUBSTANCE_SOURCING_ID": row_id,
-            "SUBSTANCE_ID": substance_id,
-            "SUBSTANCE_SOURCING_LOCAL_NAME": substance_name,
-            "SUBSTANCE_SOURCING_TYPE_ID": 1,
-            "DATA_SOURCE_ID": 2,
-            "SUBSTANCE_SOURCING_PRIMARY": "TRUE",
-            "SUBSTANCE_SOURCE_LOCAL_ID_ATTRIBUTE": base_category,
-            "SUBSTANCE_SOURCING_REFERENCE": f"{substance_name} catalog family",
-        })
-        row_id += 1
-        rows.append({
-            "SUBSTANCE_SOURCING_ID": row_id,
-            "SUBSTANCE_ID": substance_id,
-            "SUBSTANCE_SOURCING_LOCAL_NAME": LISTED_NAME_MAP[substance["SUBSTANCE_REFERENCE_ID"]],
-            "SUBSTANCE_SOURCING_TYPE_ID": 3,
-            "DATA_SOURCE_ID": 1 if substance["SUBSTANCE_REFERENCE_ID"] % 2 else 4,
-            "SUBSTANCE_SOURCING_PRIMARY": "FALSE",
-            "SUBSTANCE_SOURCE_LOCAL_ID_ATTRIBUTE": base_category,
-            "SUBSTANCE_SOURCING_REFERENCE": f"Observed menu phrasing for {substance_name}",
-        })
-        row_id += 1
-    return rows
-
-
-def build_evidence_rows():
-    start = date(2026, 6, 1)
-    rows = []
-    row_id = 1
-    company_lookup = {row["COMPANY_ID"]: row for row in COMPANIES}
-    source_lookup = {row["DATA_SOURCE_ID"]: row for row in DATA_SOURCE}
-    ingredient_lookup = {row["SUBSTANCE_REFERENCE_ID"]: row for row in SUBSTANCE_REFERENCE}
-    for company_id, ingredient_ids in COMPANY_INGREDIENT_MAP.items():
-        source_cycle = COMPANY_SOURCE_CYCLE[company_id]
-        evidence_cycle = COMPANY_EVIDENCE_TYPE_CYCLE[company_id]
-        for index, ingredient_id in enumerate(ingredient_ids):
-            source_id = source_cycle[index % len(source_cycle)]
-            evidence_type_id = evidence_cycle[index % len(evidence_cycle)]
-            source = source_lookup[source_id]
-            ingredient = ingredient_lookup[ingredient_id]
-            company = company_lookup[company_id]
-            logged_on = start + timedelta(days=((company_id * 2) + index) % 24)
-            rows.append({
-                "EVIDENCE_ID": row_id,
-                "COMPANY_ID": company_id,
-                "SUBSTANCE_REFERENCE_ID": ingredient_id,
-                "EVIDENCE_TYPE_ID": evidence_type_id,
-                "DATA_SOURCE_ID": source_id,
-                "LISTED_NAME_SUBSTANCE": LISTED_NAME_MAP[ingredient_id],
-                "REGION": company["PRC_HOME_BASE"],
-                "EVIDENCE_WEIGHT": ingredient["SUBSTANCE_WEIGHT"] + (evidence_type_id * 2) + (company_id % 3),
-                "URL": f"{source['URL']}#record-{row_id}",
-                "RECORD_ID": f"cookie-demo-{company_id:02d}-{ingredient_id:02d}-{row_id:03d}",
-                "DATE_LOGGED": logged_on.isoformat(),
-                "SCRAPE_RUN_ID": source["SCRAPE_RUN_ID"],
-            })
-            row_id += 1
-    return rows
+def compute_company_tag_scores():
+    tag_lookup = {row["WEIGHTING_TAG_ID"]: row for row in WEIGHTING_TAG}
+    scores = Counter()
+    for row in COMPANY_WEIGHTING_TAG:
+        scores[row["COMPANY_ID"]] += tag_lookup[row["WEIGHTING_TAG_ID"]]["WEIGHTING_TAG_WEIGHT"]
+    return scores
 
 
 def build_linkages():
+    seen = set()
     rows = []
-    for row_id, (company_id, method, value, source_id) in enumerate(LINKAGE_BLUEPRINTS, start=1):
-        rows.append({
-            "LINKAGEID": row_id,
-            "COMPANY_ID": company_id,
-            "LINKAGE_METHOD": method,
-            "Linkage_Value_Type": "Email" if method == "Email" else "Phone",
-            "LINKAGE_VALUE": value,
-            "DATA_SOURCE_ID": source_id,
-        })
+    row_id = 1
+    for company_id, associated_company_id, method, value, _, source_id in ASSOCIATION_BLUEPRINTS:
+        for linked_company_id in (company_id, associated_company_id):
+            key = (linked_company_id, method, value, source_id)
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append(
+                {
+                    "LINKAGEID": row_id,
+                    "COMPANY_ID": linked_company_id,
+                    "LINKAGE_METHOD": method,
+                    "Linkage_Value_Type": "Email" if method == "Email" else "Phone",
+                    "LINKAGE_VALUE": value,
+                    "DATA_SOURCE_ID": source_id,
+                    "SCRAPE_RUN_ID": RUN_BY_ID[DATA_SOURCE_LOOKUP[source_id]["SCRAPE_RUN_ID"]]["id"],
+                    "SOURCE_PLATFORM": DATA_SOURCE_LOOKUP[source_id]["SOURCE_PLATFORM"],
+                    "OBSERVED_AT": DATA_SOURCE_LOOKUP[source_id]["OBSERVED_AT"],
+                    "FIRST_SEEN_AT": DATA_SOURCE_LOOKUP[source_id]["OBSERVED_AT"],
+                    "LAST_SEEN_AT": DATA_SOURCE_LOOKUP[source_id]["OBSERVED_AT"],
+                }
+            )
+            row_id += 1
     return rows
 
 
 def build_associations():
     rows = []
     for row_id, (company_id, associated_company_id, method, value, linkage_type, source_id) in enumerate(ASSOCIATION_BLUEPRINTS, start=1):
-        rows.append({
-            "ASSOCIATIONID": row_id,
-            "COMPANY_ID": company_id,
-            "ASSOCIATED_COMPANY_ID": associated_company_id,
-            "LINKAGE_METHOD": method,
-            "LINKAGE_VALUE": value,
-            "LINKAGE_TYPE": linkage_type,
-            "DATA_SOURCE_ID": source_id,
-        })
+        source = DATA_SOURCE_LOOKUP[source_id]
+        rows.append(
+            {
+                "ASSOCIATIONID": row_id,
+                "COMPANY_ID": company_id,
+                "ASSOCIATED_COMPANY_ID": associated_company_id,
+                "LINKAGE_METHOD": method,
+                "LINKAGE_VALUE": value,
+                "LINKAGE_TYPE": linkage_type,
+                "DATA_SOURCE_ID": source_id,
+                "SCRAPE_RUN_ID": source["SCRAPE_RUN_ID"],
+                "SOURCE_PLATFORM": source["SOURCE_PLATFORM"],
+                "OBSERVED_AT": source["OBSERVED_AT"],
+                "FIRST_SEEN_AT": source["OBSERVED_AT"],
+                "LAST_SEEN_AT": source["OBSERVED_AT"],
+            }
+        )
+    return rows
+
+
+def build_substance_sourcing():
+    rows = []
+    for row_id, (substance_reference_id, local_name, sourcing_type_id, data_source_id, reference) in enumerate(SUBSTANCE_SOURCING_BLUEPRINTS, start=1):
+        substance = SUBSTANCE_LOOKUP[substance_reference_id]
+        rows.append(
+            {
+                "SUBSTANCE_SOURCING_ID": row_id,
+                "SUBSTANCE_ID": substance["SUBSTANCE_ID"],
+                "SUBSTANCE_SOURCING_LOCAL_NAME": local_name,
+                "SUBSTANCE_SOURCING_TYPE_ID": sourcing_type_id,
+                "DATA_SOURCE_ID": data_source_id,
+                "SUBSTANCE_SOURCING_PRIMARY": "TRUE" if sourcing_type_id == 1 else "FALSE",
+                "SUBSTANCE_SOURCE_LOCAL_ID_ATTRIBUTE": SUBSTANCE_TYPE_LOOKUP[substance["SUBSTANCE_TYPE_ID"]]["SUBSTANCE_TYPE_TITLE"],
+                "SUBSTANCE_SOURCING_REFERENCE": reference,
+            }
+        )
+    return rows
+
+
+def build_evidence_rows():
+    rows = []
+    for row_id, (company_id, substance_reference_id, source_id, evidence_type_id, observed_text) in enumerate(EVIDENCE_BLUEPRINTS, start=1):
+        source = DATA_SOURCE_LOOKUP[source_id]
+        company = COMPANY_LOOKUP[company_id]
+        substance = SUBSTANCE_LOOKUP[substance_reference_id]
+        evidence_weight = substance["SUBSTANCE_WEIGHT"] + (evidence_type_id * 2) + (company_id % 4)
+        rows.append(
+            {
+                "EVIDENCE_ID": row_id,
+                "COMPANY_ID": company_id,
+                "SUBSTANCE_REFERENCE_ID": substance_reference_id,
+                "EVIDENCE_TYPE_ID": evidence_type_id,
+                "DATA_SOURCE_ID": source_id,
+                "LISTED_NAME_SUBSTANCE": observed_text,
+                "REGION": company["PRC_HOME_BASE"],
+                "EVIDENCE_WEIGHT": evidence_weight,
+                "URL": f"{source['URL']}#record-{row_id}",
+                "SOURCE_URL": source["URL"],
+                "RECORD_ID": f"scrape-and-bake-{source['SCRAPE_RUN_ID']}-{company_id:02d}-{substance_reference_id:02d}-{row_id:03d}",
+                "DATE_LOGGED": source["DATE_LOGGED"],
+                "SCRAPE_RUN_ID": source["SCRAPE_RUN_ID"],
+                "SOURCE_PLATFORM": source["SOURCE_PLATFORM"],
+                "OBSERVED_AT": source["OBSERVED_AT"],
+                "FIRST_SEEN_AT": source["OBSERVED_AT"],
+                "LAST_SEEN_AT": source["OBSERVED_AT"],
+            }
+        )
     return rows
 
 
 def build_evidence_weighting(evidence_rows):
     rows = []
-    tag_pairs = {
-        1: [1],
-        3: [2],
-        5: [5],
-        10: [3],
-        12: [4],
-    }
     row_id = 1
     for evidence in evidence_rows:
-        for substance_id, tag_ids in tag_pairs.items():
-            if evidence["SUBSTANCE_REFERENCE_ID"] == substance_id:
-                for tag_id in tag_ids:
-                    rows.append({
-                        "EVIDENCE_WEIGHTING_TAG_ID": row_id,
-                        "EVIDENCE_ID": evidence["EVIDENCE_ID"],
-                        "WEIGHTING_TAG_ID": tag_id,
-                    })
-                    row_id += 1
+        if evidence["COMPANY_ID"] in {1, 3} and evidence["SUBSTANCE_REFERENCE_ID"] in {1, 3}:
+            rows.append(
+                {
+                    "EVIDENCE_WEIGHTING_TAG_ID": row_id,
+                    "EVIDENCE_ID": evidence["EVIDENCE_ID"],
+                    "WEIGHTING_TAG_ID": 1,
+                }
+            )
+            row_id += 1
+        if evidence["COMPANY_ID"] == 12:
+            rows.append(
+                {
+                    "EVIDENCE_WEIGHTING_TAG_ID": row_id,
+                    "EVIDENCE_ID": evidence["EVIDENCE_ID"],
+                    "WEIGHTING_TAG_ID": 3,
+                }
+            )
+            row_id += 1
     return rows
 
 
 def build_substance_weighting():
     return [
         {"SUBSTANCE_WEIGHTING_TAG_ID": 1, "SUBSTANCE_REFERENCE_ID": 1, "WEIGHTING_TAG_ID": 1},
-        {"SUBSTANCE_WEIGHTING_TAG_ID": 2, "SUBSTANCE_REFERENCE_ID": 3, "WEIGHTING_TAG_ID": 2},
-        {"SUBSTANCE_WEIGHTING_TAG_ID": 3, "SUBSTANCE_REFERENCE_ID": 5, "WEIGHTING_TAG_ID": 1},
-        {"SUBSTANCE_WEIGHTING_TAG_ID": 4, "SUBSTANCE_REFERENCE_ID": 9, "WEIGHTING_TAG_ID": 5},
+        {"SUBSTANCE_WEIGHTING_TAG_ID": 2, "SUBSTANCE_REFERENCE_ID": 4, "WEIGHTING_TAG_ID": 2},
+        {"SUBSTANCE_WEIGHTING_TAG_ID": 3, "SUBSTANCE_REFERENCE_ID": 8, "WEIGHTING_TAG_ID": 3},
     ]
 
 
 def derive_tables():
     substance_sourcing = build_substance_sourcing()
     evidence = build_evidence_rows()
-    linkages = build_linkages()
     associations = build_associations()
+    linkages = build_linkages()
     evidence_weighting = build_evidence_weighting(evidence)
     substance_weighting = build_substance_weighting()
 
-    company_by_id = {row["COMPANY_ID"]: row for row in COMPANIES}
-    ingredient_by_id = {row["SUBSTANCE_REFERENCE_ID"]: row for row in SUBSTANCE_REFERENCE}
-    source_by_id = {row["DATA_SOURCE_ID"]: row for row in DATA_SOURCE}
-    evidence_type_by_id = {row["EVIDENCE_TYPE_ID"]: row for row in EVIDENCE_TYPE}
-    tag_by_id = {row["WEIGHTING_TAG_ID"]: row for row in WEIGHTING_TAG}
-    consolidated_by_id = {row["CONSOLIDATED_NAME_ID"]: row for row in CONSOLIDATED_COMPANY}
-
     evidence_summary_bucket = defaultdict(lambda: {"evidence_count": 0, "total_weight": 0})
+    evidence_counts = Counter()
+    evidence_scores = Counter()
+    substance_scores = Counter()
+    substances_linked = defaultdict(set)
+
     for row in evidence:
-        bucket = evidence_summary_bucket[(row["COMPANY_ID"], row["SUBSTANCE_REFERENCE_ID"], row["EVIDENCE_TYPE_ID"])]
-        bucket["evidence_count"] += 1
-        bucket["total_weight"] += row["EVIDENCE_WEIGHT"]
+        key = (row["COMPANY_ID"], row["SUBSTANCE_REFERENCE_ID"], row["EVIDENCE_TYPE_ID"])
+        evidence_summary_bucket[key]["evidence_count"] += 1
+        evidence_summary_bucket[key]["total_weight"] += row["EVIDENCE_WEIGHT"]
+        evidence_counts[row["COMPANY_ID"]] += 1
+        evidence_scores[row["COMPANY_ID"]] += row["EVIDENCE_WEIGHT"]
+        substance_scores[row["COMPANY_ID"]] += SUBSTANCE_LOOKUP[row["SUBSTANCE_REFERENCE_ID"]]["SUBSTANCE_WEIGHT"]
+        substances_linked[row["COMPANY_ID"]].add(row["SUBSTANCE_REFERENCE_ID"])
+
     evidence_summary = [
         {
             "COMPANY_ID": company_id,
-            "SUBSTANCE_REFERENCE_ID": substance_id,
+            "SUBSTANCE_REFERENCE_ID": substance_reference_id,
             "EVIDENCE_TYPE_ID": evidence_type_id,
             "evidence_count": values["evidence_count"],
             "total_weight": values["total_weight"],
         }
-        for (company_id, substance_id, evidence_type_id), values in sorted(evidence_summary_bucket.items())
+        for (company_id, substance_reference_id, evidence_type_id), values in sorted(evidence_summary_bucket.items())
     ]
 
     connection_counts = Counter()
     for row in associations:
         connection_counts[row["COMPANY_ID"]] += 1
         connection_counts[row["ASSOCIATED_COMPANY_ID"]] += 1
+
     company_network_size = [
-        {
-            **company,
-            "connection_count": connection_counts.get(company["COMPANY_ID"], 0),
-        }
+        {**company, "connection_count": connection_counts.get(company["COMPANY_ID"], 0)}
         for company in COMPANIES
     ]
 
-    company_tag_scores = Counter()
-    for row in COMPANY_WEIGHTING_TAG:
-        company_tag_scores[row["COMPANY_ID"]] += tag_by_id[row["WEIGHTING_TAG_ID"]]["WEIGHTING_TAG_WEIGHT"]
-
-    evidence_counts = Counter()
-    substances_linked = defaultdict(set)
-    evidence_scores = Counter()
-    substance_scores = Counter()
-    for row in evidence:
-        company_id = row["COMPANY_ID"]
-        evidence_counts[company_id] += 1
-        evidence_scores[company_id] += row["EVIDENCE_WEIGHT"]
-        substance_scores[company_id] += ingredient_by_id[row["SUBSTANCE_REFERENCE_ID"]]["SUBSTANCE_WEIGHT"]
-        substances_linked[company_id].add(row["SUBSTANCE_REFERENCE_ID"])
-
+    company_tag_scores = compute_company_tag_scores()
     company_score_v2 = []
     company_evaluation = []
     for company in COMPANIES:
         company_id = company["COMPANY_ID"]
         evidence_score = evidence_scores[company_id]
         substance_score = substance_scores[company_id]
-        tag_score = company_tag_scores[company_id]
-        total_score = evidence_score + tag_score + round(substance_score * 0.35)
-        legacy_score = evidence_score + tag_score
-        row = {
-            **company,
-            "evidence_score": evidence_score,
-            "substance_score": substance_score,
-            "company_tag_score": tag_score,
-            "total_score_v2": total_score,
-            "legacy_score": legacy_score,
-            "evidence_count": evidence_counts[company_id],
-            "substances_linked": len(substances_linked[company_id]),
-        }
-        company_score_v2.append(row)
-        company_evaluation.append({
-            "COMPANY_ID": company_id,
-            "COMPANY_NAME": company["COMPANY_NAME"],
-            "EVIDENCE_COMPANY_WEIGHT": evidence_score,
-            "TOTAL_WEIGHT": total_score,
-        })
+        company_tag_score = company_tag_scores[company_id]
+        total_score = evidence_score + round(substance_score * 0.35) + company_tag_score
+        company_score_v2.append(
+            {
+                **company,
+                "evidence_score": evidence_score,
+                "substance_score": substance_score,
+                "company_tag_score": company_tag_score,
+                "total_score_v2": total_score,
+                "legacy_score": evidence_score + company_tag_score,
+                "evidence_count": evidence_counts[company_id],
+                "substances_linked": len(substances_linked[company_id]),
+            }
+        )
+        company_evaluation.append(
+            {
+                "COMPANY_ID": company_id,
+                "COMPANY_NAME": company["COMPANY_NAME"],
+                "EVIDENCE_COMPANY_WEIGHT": evidence_score,
+                "TOTAL_WEIGHT": total_score,
+            }
+        )
     company_score_v2.sort(key=lambda row: row["total_score_v2"], reverse=True)
 
-    ds_bucket = defaultdict(int)
+    datasource_bucket = defaultdict(int)
     for row in evidence:
-        source = source_by_id[row["DATA_SOURCE_ID"]]
-        ds_bucket[(row["SUBSTANCE_REFERENCE_ID"], source["DATA_SOURCE_NAME"], source["DATA_SOURCE_TYPE"])] += 1
+        source = DATA_SOURCE_LOOKUP[row["DATA_SOURCE_ID"]]
+        datasource_bucket[(row["SUBSTANCE_REFERENCE_ID"], source["DATA_SOURCE_NAME"], source["DATA_SOURCE_TYPE"])] += 1
     substance_datasource_summary = [
         {
-            "SUBSTANCE_REFERENCE_ID": substance_id,
-            "DATA_SOURCE_NAME": source_name,
-            "DATA_SOURCE_TYPE": source_type,
+            "SUBSTANCE_REFERENCE_ID": substance_reference_id,
+            "DATA_SOURCE_NAME": data_source_name,
+            "DATA_SOURCE_TYPE": data_source_type,
             "mention_count": count,
         }
-        for (substance_id, source_name, source_type), count in sorted(ds_bucket.items(), key=lambda item: (-item[1], item[0][0]))
+        for (substance_reference_id, data_source_name, data_source_type), count in sorted(
+            datasource_bucket.items(), key=lambda item: (-item[1], item[0][0], item[0][1])
+        )
     ]
 
     evidence_readable = []
     for row in evidence:
-        company = company_by_id[row["COMPANY_ID"]]
-        ingredient = ingredient_by_id[row["SUBSTANCE_REFERENCE_ID"]]
-        evidence_type = evidence_type_by_id[row["EVIDENCE_TYPE_ID"]]
-        source = source_by_id[row["DATA_SOURCE_ID"]]
-        evidence_readable.append({
-            **row,
-            "company_name": company["COMPANY_NAME"],
-            "substance_name": ingredient["SUBSTANCE_NAME"],
-            "evidence_type": evidence_type["EVIDENCE_TYPE_NAME"],
-            "data_source": source["DATA_SOURCE_NAME"],
-        })
+        source = DATA_SOURCE_LOOKUP[row["DATA_SOURCE_ID"]]
+        evidence_readable.append(
+            {
+                **row,
+                "company_name": COMPANY_LOOKUP[row["COMPANY_ID"]]["COMPANY_NAME"],
+                "substance_name": SUBSTANCE_LOOKUP[row["SUBSTANCE_REFERENCE_ID"]]["SUBSTANCE_NAME"],
+                "evidence_type": EVIDENCE_TYPE_LOOKUP[row["EVIDENCE_TYPE_ID"]]["EVIDENCE_TYPE_NAME"],
+                "data_source": source["DATA_SOURCE_NAME"],
+                "SOURCE_PLATFORM": source["SOURCE_PLATFORM"],
+                "OBSERVED_AT": source["OBSERVED_AT"],
+            }
+        )
 
     association_readable = []
     for row in associations:
-        association_readable.append({
-            **row,
-            "company_name": company_by_id[row["COMPANY_ID"]]["COMPANY_NAME"],
-            "associated_company_name": company_by_id[row["ASSOCIATED_COMPANY_ID"]]["COMPANY_NAME"],
-        })
+        association_readable.append(
+            {
+                **row,
+                "company_name": COMPANY_LOOKUP[row["COMPANY_ID"]]["COMPANY_NAME"],
+                "associated_company_name": COMPANY_LOOKUP[row["ASSOCIATED_COMPANY_ID"]]["COMPANY_NAME"],
+            }
+        )
 
     consolidated_company_readable = []
     for row_id, row in enumerate(COMPANY_CONSOLIDATED_MAP, start=1):
-        consolidated_company_readable.append({
-            "CONSOLIDATED_COMPANY_ID": row_id,
-            "CONSOLIDATED_NAME": consolidated_by_id[row["CONSOLIDATED_COMPANY_ID"]]["CONSOLIDATED_NAME"],
-            "COMPANY_NAME": company_by_id[row["COMPANY_ID"]]["COMPANY_NAME"],
-            "COMPANY_ID": row["COMPANY_ID"],
-        })
+        consolidated_company_readable.append(
+            {
+                "CONSOLIDATED_COMPANY_ID": row_id,
+                "CONSOLIDATED_NAME": CONSOLIDATED_LOOKUP[row["CONSOLIDATED_COMPANY_ID"]]["CONSOLIDATED_NAME"],
+                "COMPANY_NAME": COMPANY_LOOKUP[row["COMPANY_ID"]]["COMPANY_NAME"],
+                "COMPANY_ID": row["COMPANY_ID"],
+            }
+        )
 
     return {
         "company": COMPANIES,
@@ -592,15 +919,15 @@ def derive_tables():
         "substance_type": SUBSTANCE_TYPE,
         "substance_sourcing_type": SUBSTANCE_SOURCING_TYPE,
         "substance_sourcing": substance_sourcing,
-        "evidence": evidence,
         "evidence_type": EVIDENCE_TYPE,
-        "data_source": DATA_SOURCE,
-        "linkage": linkages,
-        "association": associations,
+        "data_source": DATA_SOURCES,
         "weighting_tag_type": WEIGHTING_TAG_TYPE,
         "weighting_tag_category": WEIGHTING_TAG_CATEGORY,
         "weighting_tag": WEIGHTING_TAG,
         "company_weighting_tag": COMPANY_WEIGHTING_TAG,
+        "linkage": linkages,
+        "association": associations,
+        "evidence": evidence,
         "evidence_weighting_tag": evidence_weighting,
         "substance_weighting_tag": substance_weighting,
         "company_evaluation": company_evaluation,
@@ -617,6 +944,195 @@ def derive_tables():
             "get_association_count": len(associations),
         },
     }
+
+
+def is_visible_as_of(row, cutoff_date):
+    if cutoff_date is None:
+        return True
+    observed_at = row.get("OBSERVED_AT") or row.get("DATE_LOGGED") or row.get("observed_at") or row.get("date_logged")
+    return str(observed_at) <= cutoff_date
+
+
+def build_snapshot(dataset, run_id=None):
+    cutoff_date = None if run_id is None else RUN_BY_ID[run_id]["date"]
+    evidence_rows = [row for row in dataset["evidence"] if is_visible_as_of(row, cutoff_date)]
+    association_rows = [row for row in dataset["association"] if is_visible_as_of(row, cutoff_date)]
+    linkage_rows = [row for row in dataset["linkage"] if is_visible_as_of(row, cutoff_date)]
+    data_sources = [row for row in dataset["data_source"] if is_visible_as_of(row, cutoff_date)]
+
+    company_ids = set()
+    ingredient_ids = set()
+    for row in evidence_rows:
+        company_ids.add(row["COMPANY_ID"])
+        ingredient_ids.add(row["SUBSTANCE_REFERENCE_ID"])
+    for row in association_rows:
+        company_ids.add(row["COMPANY_ID"])
+        company_ids.add(row["ASSOCIATED_COMPANY_ID"])
+    for row in linkage_rows:
+        company_ids.add(row["COMPANY_ID"])
+
+    return {
+        "company_ids": sorted(company_ids),
+        "ingredient_ids": sorted(ingredient_ids),
+        "evidence_count": len(evidence_rows),
+        "source_page_count": len({row["DATA_SOURCE_ID"] for row in evidence_rows}) or len(data_sources),
+        "network_link_count": len(association_rows),
+        "linkage_count": len(linkage_rows),
+    }
+
+
+def build_movement_summaries(dataset):
+    movement = {}
+    previous_snapshot = {
+        "company_ids": [],
+        "ingredient_ids": [],
+        "evidence_count": 0,
+        "network_link_count": 0,
+    }
+    for run in SCRAPE_RUNS:
+        snapshot = build_snapshot(dataset, run["id"])
+        new_companies = len(set(snapshot["company_ids"]) - set(previous_snapshot["company_ids"]))
+        new_ingredients = len(set(snapshot["ingredient_ids"]) - set(previous_snapshot["ingredient_ids"]))
+        new_evidence_rows = snapshot["evidence_count"] - previous_snapshot["evidence_count"]
+        new_links = snapshot["network_link_count"] - previous_snapshot["network_link_count"]
+        movement[run["id"]] = {
+            "label": run["label"],
+            "platform": run["platform"],
+            "date": run["date"],
+            "message": run["narrative"],
+            "newCompanies": new_companies,
+            "newIngredients": new_ingredients,
+            "newEvidenceRows": new_evidence_rows,
+            "newLinks": new_links,
+        }
+        previous_snapshot = snapshot
+    movement["all_runs"] = {
+        "label": "All runs",
+        "platform": "Synthetic timeline",
+        "date": SCRAPE_RUNS[-1]["date"],
+        "message": "All five synthetic scrape runs combine bakery pages, supplier catalogs, distributor listings, and public claim pages into one source-backed ingredient map.",
+        "newCompanies": len(build_snapshot(dataset)["company_ids"]),
+        "newIngredients": len(build_snapshot(dataset)["ingredient_ids"]),
+        "newEvidenceRows": build_snapshot(dataset)["evidence_count"],
+        "newLinks": build_snapshot(dataset)["network_link_count"],
+    }
+    return movement
+
+
+def build_scrape_run_metadata(dataset):
+    evidence_rows = dataset["evidence"]
+    data_sources = dataset["data_source"]
+    run_metadata = []
+    for run in SCRAPE_RUNS:
+        run_sources = [row for row in data_sources if row["SCRAPE_RUN_ID"] == run["id"]]
+        run_evidence = [row for row in evidence_rows if row["SCRAPE_RUN_ID"] == run["id"]]
+        run_metadata.append(
+            {
+                **run,
+                "sourcePageCount": len(run_sources),
+                "evidenceRowCount": len(run_evidence),
+            }
+        )
+    return run_metadata
+
+
+def build_fixture_html(source, rows):
+    ingredient_items = "\n".join(f"          <li>{row['LISTED_NAME_SUBSTANCE']}</li>" for row in rows) or "          <li>synthetic fixture content</li>"
+    notes = {
+        "BakeryBoard": "Synthetic bakery menu collection fixture.",
+        "IngredientHub": "Synthetic supplier catalog collection fixture.",
+        "WholesaleCrumb": "Synthetic distributor collection fixture.",
+        "CertiBake Registry": "Synthetic public claim registry fixture.",
+        "BakeryBoard Refresh": "Synthetic bakery refresh fixture.",
+    }
+    platform_note = notes.get(source["SOURCE_PLATFORM"], "Synthetic scrape fixture output.")
+    return f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{source["DATA_SOURCE_NAME"]}</title>
+  </head>
+  <body>
+    <main>
+      <h1>{source["DATA_SOURCE_NAME"]}</h1>
+      <p>{platform_note}</p>
+      <p>Source platform: {source["SOURCE_PLATFORM"]}</p>
+      <p>Observed on: {source["OBSERVED_AT"]}</p>
+      <ul>
+{ingredient_items}
+      </ul>
+    </main>
+  </body>
+</html>
+"""
+
+
+def write_scraper_outputs(dataset):
+    evidence_rows = dataset["evidence"]
+    for run in SCRAPE_RUNS:
+        folder = SCRAPER_OUTPUT_DIR / run["id"]
+        raw_dir = folder / "raw_html"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+
+        run_sources = [row for row in dataset["data_source"] if row["SCRAPE_RUN_ID"] == run["id"]]
+        run_evidence = [row for row in evidence_rows if row["SCRAPE_RUN_ID"] == run["id"]]
+
+        for source in run_sources:
+            source_rows = [row for row in run_evidence if row["DATA_SOURCE_ID"] == source["DATA_SOURCE_ID"]]
+            filename = source["DATA_SOURCE_NAME"].lower().replace(" ", "_").replace("&", "and").replace("/", "_")
+            (raw_dir / f"{filename}.html").write_text(build_fixture_html(source, source_rows), encoding="utf-8")
+
+        with (folder / "parsed_evidence.csv").open("w", encoding="utf-8", newline="") as handle:
+            fieldnames = [
+                "company_name",
+                "source_platform",
+                "source_url",
+                "scrape_run_id",
+                "observed_at",
+                "evidence_type",
+                "record_id",
+                "date_logged",
+                "ingredient_name",
+                "observed_text",
+            ]
+            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in run_evidence:
+                writer.writerow(
+                    {
+                        "company_name": COMPANY_LOOKUP[row["COMPANY_ID"]]["COMPANY_NAME"],
+                        "source_platform": row["SOURCE_PLATFORM"],
+                        "source_url": row["SOURCE_URL"],
+                        "scrape_run_id": row["SCRAPE_RUN_ID"],
+                        "observed_at": row["OBSERVED_AT"],
+                        "evidence_type": EVIDENCE_TYPE_LOOKUP[row["EVIDENCE_TYPE_ID"]]["EVIDENCE_TYPE_NAME"],
+                        "record_id": row["RECORD_ID"],
+                        "date_logged": row["DATE_LOGGED"],
+                        "ingredient_name": SUBSTANCE_LOOKUP[row["SUBSTANCE_REFERENCE_ID"]]["SUBSTANCE_NAME"],
+                        "observed_text": row["LISTED_NAME_SUBSTANCE"],
+                    }
+                )
+
+        summary = {
+            "scrape_run_id": run["id"],
+            "platform": run["platform"],
+            "run_date": run["date"],
+            "total_targets": len(run_sources),
+            "successful_targets": len(run_sources),
+            "failed_targets": 0,
+            "evidence_rows_produced": len(run_evidence),
+            "notes": "Synthetic fixture output for public walkthroughs.",
+            "source_pages": [
+                {
+                    "data_source_name": source["DATA_SOURCE_NAME"],
+                    "source_platform": source["SOURCE_PLATFORM"],
+                    "source_url": source["URL"],
+                    "raw_html_file": f"raw_html/{source['DATA_SOURCE_NAME'].lower().replace(' ', '_').replace('&', 'and').replace('/', '_')}.html",
+                }
+                for source in run_sources
+            ],
+        }
+        (folder / "scrape_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
 
 def write_csv(table_name, rows):
@@ -654,7 +1170,7 @@ def write_seed_sql(dataset):
     ]
     statements = [
         "-- Cookie demo seed data",
-        "-- The demo dataset is synthetic and does not contain TraCCC source records.",
+        "-- The demo dataset is synthetic and regenerated for public walkthroughs.",
     ]
     for table_name in ordered_tables:
         rows = dataset[table_name]
@@ -666,16 +1182,13 @@ def write_seed_sql(dataset):
             "(" + ", ".join(sql_literal(row[column]) for column in columns) + ")"
             for row in rows
         )
-        statements.append(
-            f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES\n{values};"
-        )
+        statements.append(f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES\n{values};")
     (SQL_DIR / "01_cookie_demo_seed.sql").write_text("\n\n".join(statements) + "\n", encoding="utf-8")
 
 
 def write_compatibility_sql():
     sql = """-- Cookie demo compatibility views and lightweight RPCs.
--- These keep the demo frontend query surface stable when the benign seed
--- data is loaded into a Supabase/Postgres environment.
+-- These keep the demo frontend query surface stable in a Supabase/Postgres environment.
 
 create or replace view evidence_summary as
 select
@@ -758,7 +1271,10 @@ select
   c."COMPANY_NAME" as company_name,
   sr."SUBSTANCE_NAME" as substance_name,
   et."EVIDENCE_TYPE_NAME" as evidence_type,
-  ds."DATA_SOURCE_NAME" as data_source
+  ds."DATA_SOURCE_NAME" as data_source,
+  ds."DATA_SOURCE_TYPE" as source_type,
+  ds."SOURCE_PLATFORM" as source_platform,
+  ds."OBSERVED_AT" as observed_at
 from evidence e
 join company c on c."COMPANY_ID" = e."COMPANY_ID"
 join substance_reference sr on sr."SUBSTANCE_REFERENCE_ID" = e."SUBSTANCE_REFERENCE_ID"
@@ -812,13 +1328,15 @@ $$;
     (SQL_DIR / "02_cookie_demo_compat_views.sql").write_text(sql, encoding="utf-8")
 
 
-def write_frontend_module(dataset):
+def write_frontend_module(dataset, movement_summaries, scrape_run_metadata):
     payload = {
         "metadata": {
             "name": "Scrape & Bake",
-            "seedVersion": "2026-07-03",
-            "description": "Synthetic cookie ingredient supply-chain demo dataset.",
+            "seedVersion": "2026-07-06",
+            "description": "Synthetic cookie ingredient supply-chain demo dataset with multiple scrape runs.",
             "evidenceRowCount": len(dataset["evidence"]),
+            "scrapeRuns": scrape_run_metadata,
+            "movementSummaries": movement_summaries,
         },
         "tables": dataset,
     }
@@ -830,24 +1348,39 @@ def write_frontend_module(dataset):
 
 def main():
     dataset = derive_tables()
+    movement_summaries = build_movement_summaries(dataset)
+    scrape_run_metadata = build_scrape_run_metadata(dataset)
+
     for table_name, rows in dataset.items():
         if table_name == "rpcs":
             continue
         write_csv(table_name, rows)
     write_seed_sql(dataset)
     write_compatibility_sql()
-    write_frontend_module(dataset)
+    write_frontend_module(dataset, movement_summaries, scrape_run_metadata)
+    write_scraper_outputs(dataset)
+
     print(
         json.dumps(
             {
-                "csv_tables": len([name for name in dataset if name != "rpcs"]),
+                "scrape_runs": len(SCRAPE_RUNS),
                 "evidence_rows": len(dataset["evidence"]),
-                "company_rows": len(dataset["company"]),
-                "association_rows": len(dataset["association"]),
+                "companies": len(dataset["company"]),
+                "ingredients": len(dataset["substance_reference"]),
+                "source_pages": len(dataset["data_source"]),
+                "network_links": len(dataset["association"]),
             },
             indent=2,
         )
     )
+
+
+COMPANY_LOOKUP = {row["COMPANY_ID"]: row for row in COMPANIES}
+CONSOLIDATED_LOOKUP = {row["CONSOLIDATED_NAME_ID"]: row for row in CONSOLIDATED_COMPANY}
+SUBSTANCE_LOOKUP = {row["SUBSTANCE_REFERENCE_ID"]: row for row in SUBSTANCE_REFERENCE}
+SUBSTANCE_TYPE_LOOKUP = {row["SUBSTANCE_TYPE_ID"]: row for row in SUBSTANCE_TYPE}
+EVIDENCE_TYPE_LOOKUP = {row["EVIDENCE_TYPE_ID"]: row for row in EVIDENCE_TYPE}
+DATA_SOURCE_LOOKUP = {row["DATA_SOURCE_ID"]: row for row in DATA_SOURCES}
 
 
 if __name__ == "__main__":

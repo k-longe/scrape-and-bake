@@ -1,0 +1,6 @@
+company_name,source_platform,source_url,scrape_run_id,observed_at,evidence_type,record_id,date_logged,ingredient_name,observed_text
+Golden Crate Logistics,WholesaleCrumb,https://cookie-demo.example/wholesalecrumb/route-sheet,2026-05-01_wholesalecrumb,2026-05-01,Distributor listing,scrape-and-bake-2026-05-01_wholesalecrumb-11-01-022,2026-05-01,All-purpose flour,all-purpose flour
+Golden Crate Logistics,WholesaleCrumb,https://cookie-demo.example/wholesalecrumb/route-sheet,2026-05-01_wholesalecrumb,2026-05-01,Distributor listing,scrape-and-bake-2026-05-01_wholesalecrumb-11-03-023,2026-05-01,Semisweet chocolate chips,semisweet chocolate chips
+Golden Crate Logistics,WholesaleCrumb,https://cookie-demo.example/wholesalecrumb/route-sheet,2026-05-01_wholesalecrumb,2026-05-01,Distributor listing,scrape-and-bake-2026-05-01_wholesalecrumb-11-04-024,2026-05-01,Cultured butter,cultured butter
+Golden Crate Logistics,WholesaleCrumb,https://cookie-demo.example/wholesalecrumb/route-sheet,2026-05-01_wholesalecrumb,2026-05-01,Distributor listing,scrape-and-bake-2026-05-01_wholesalecrumb-11-05-025,2026-05-01,Brown sugar,brown sugar
+Golden Crate Logistics,WholesaleCrumb,https://cookie-demo.example/wholesalecrumb/route-sheet,2026-05-01_wholesalecrumb,2026-05-01,Distributor listing,scrape-and-bake-2026-05-01_wholesalecrumb-11-06-026,2026-05-01,Rolled oats,rolled oats

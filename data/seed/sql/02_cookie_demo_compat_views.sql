@@ -1,6 +1,5 @@
 -- Cookie demo compatibility views and lightweight RPCs.
--- These keep the demo frontend query surface stable when the benign seed
--- data is loaded into a Supabase/Postgres environment.
+-- These keep the demo frontend query surface stable in a Supabase/Postgres environment.
 
 create or replace view evidence_summary as
 select
@@ -83,7 +82,10 @@ select
   c."COMPANY_NAME" as company_name,
   sr."SUBSTANCE_NAME" as substance_name,
   et."EVIDENCE_TYPE_NAME" as evidence_type,
-  ds."DATA_SOURCE_NAME" as data_source
+  ds."DATA_SOURCE_NAME" as data_source,
+  ds."DATA_SOURCE_TYPE" as source_type,
+  ds."SOURCE_PLATFORM" as source_platform,
+  ds."OBSERVED_AT" as observed_at
 from evidence e
 join company c on c."COMPANY_ID" = e."COMPANY_ID"
 join substance_reference sr on sr."SUBSTANCE_REFERENCE_ID" = e."SUBSTANCE_REFERENCE_ID"

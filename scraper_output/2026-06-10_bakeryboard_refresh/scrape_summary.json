@@ -1,0 +1,24 @@
+{
+  "scrape_run_id": "2026-06-10_bakeryboard_refresh",
+  "platform": "BakeryBoard Refresh",
+  "run_date": "2026-06-10",
+  "total_targets": 2,
+  "successful_targets": 2,
+  "failed_targets": 0,
+  "evidence_rows_produced": 7,
+  "notes": "Synthetic fixture output for public walkthroughs.",
+  "source_pages": [
+    {
+      "data_source_name": "Harbor Batch refresh board",
+      "source_platform": "BakeryBoard Refresh",
+      "source_url": "https://cookie-demo.example/bakeryboard/harbor-batch-refresh-board",
+      "raw_html_file": "raw_html/harbor_batch_refresh_board.html"
+    },
+    {
+      "data_source_name": "Seaside Biscuit Works menu board",
+      "source_platform": "BakeryBoard Refresh",
+      "source_url": "https://cookie-demo.example/bakeryboard/seaside-biscuit-board",
+      "raw_html_file": "raw_html/seaside_biscuit_works_menu_board.html"
+    }
+  ]
+}

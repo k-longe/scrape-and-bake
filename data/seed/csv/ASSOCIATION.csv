@@ -1,9 +1,14 @@
-ASSOCIATIONID,COMPANY_ID,ASSOCIATED_COMPANY_ID,LINKAGE_METHOD,LINKAGE_VALUE,LINKAGE_TYPE,DATA_SOURCE_ID
-1,1,2,Email,batches@bakehouse-collective.example,Shared production inbox,4
-2,1,10,Email,batches@bakehouse-collective.example,Shared production inbox,4
-3,2,11,Email,batches@bakehouse-collective.example,Shared production inbox,7
-4,3,5,Phone,+1-414-555-0110,Shared procurement phone,3
-5,3,9,Phone,+1-414-555-0110,Shared procurement phone,2
-6,7,8,Phone,+1-773-555-0142,Shared fulfillment line,6
-7,4,6,Email,vanilla@pantry-inputs.example,Shared imports inbox,5
-8,1,12,Phone,+1-312-555-0188,Shared bakery office line,1
+ASSOCIATIONID,COMPANY_ID,ASSOCIATED_COMPANY_ID,LINKAGE_METHOD,LINKAGE_VALUE,LINKAGE_TYPE,DATA_SOURCE_ID,SCRAPE_RUN_ID,SOURCE_PLATFORM,OBSERVED_AT,FIRST_SEEN_AT,LAST_SEEN_AT
+1,1,2,Email,orders@bakeryboard-kitchens.example,Shared BakeryBoard inbox,1,2026-04-01_bakeryboard,BakeryBoard,2026-04-01,2026-04-01,2026-04-01
+2,5,6,Email,catalog@ingredienthub.example,Shared IngredientHub supplier inbox,4,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+3,5,9,Phone,+1-414-555-0110,Shared IngredientHub support line,8,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+4,6,8,Email,catalog@ingredienthub.example,Shared IngredientHub supplier inbox,5,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+5,1,11,Phone,+1-773-555-0142,Shared WholesaleCrumb route line,10,2026-05-01_wholesalecrumb,WholesaleCrumb,2026-05-01,2026-05-01,2026-05-01
+6,2,11,Phone,+1-773-555-0142,Shared WholesaleCrumb route line,10,2026-05-01_wholesalecrumb,WholesaleCrumb,2026-05-01,2026-05-01,2026-05-01
+7,8,11,Phone,+1-773-555-0142,Shared WholesaleCrumb route line,10,2026-05-01_wholesalecrumb,WholesaleCrumb,2026-05-01,2026-05-01,2026-05-01
+8,12,1,Email,registry@certibake.example,Listed in CertiBake claims registry,11,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+9,12,2,Email,registry@certibake.example,Listed in CertiBake claims registry,11,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+10,12,3,Email,registry@certibake.example,Listed in CertiBake claims registry,11,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+11,1,5,Email,orders@goldengrain.example,BakeryBoard refresh supplier reference,13,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10
+12,4,11,Phone,+1-773-555-0142,Shared WholesaleCrumb route line,14,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10
+13,4,5,Email,orders@goldengrain.example,BakeryBoard refresh supplier reference,14,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10

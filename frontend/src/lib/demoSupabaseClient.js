@@ -1,6 +1,11 @@
 import DEMO_DATA from "../data/demoData";
 
 const TABLES = DEMO_DATA.tables || {};
+const METADATA = DEMO_DATA.metadata || {};
+const SCRAPE_RUNS = METADATA.scrapeRuns || [];
+const SCRAPE_RUN_BY_ID = new Map(SCRAPE_RUNS.map(run => [run.id, run]));
+const SCRAPE_RUN_LABELS = new Map(SCRAPE_RUNS.map(run => [run.id, run.label]));
+
 const FAKE_SESSION = {
   user: {
     id: "demo-viewer",
@@ -9,21 +14,305 @@ const FAKE_SESSION = {
   access_token: "demo-access-token",
 };
 
-const stripQuotes = (value) => String(value || "").replace(/^"+|"+$/g, "");
-const normalize = (value) => String(value ?? "").trim().toLowerCase();
+const stripQuotes = value => String(value || "").replace(/^"+|"+$/g, "");
+const normalize = value => String(value ?? "").trim().toLowerCase();
 const cloneRows = rows => rows.map(row => ({ ...row }));
-const maxScore = Math.max(...(TABLES.company_score_v2 || []).map(row => Number(row.total_score_v2) || 0), 1);
+const parseSelectedColumns = cols => {
+  if (!cols || cols === "*" || cols.trim() === "*") return "*";
+  return cols.split(",").map(col => stripQuotes(col.trim())).filter(Boolean);
+};
+const parseLiteral = value => {
+  const raw = String(value || "").trim();
+  if (/^-?\d+$/.test(raw)) return Number(raw);
+  return raw;
+};
+const projectRow = (row, selectedColumns) => {
+  if (!selectedColumns || selectedColumns === "*" || selectedColumns.length === 0) return { ...row };
+  return selectedColumns.reduce((acc, column) => {
+    acc[column] = row[column];
+    return acc;
+  }, {});
+};
+const rowObservedAt = row => row?.OBSERVED_AT || row?.DATE_LOGGED || row?.observed_at || row?.date_logged || "";
+const normalizeRunId = runId => {
+  if (!runId || runId === "all_runs") return "all_runs";
+  return SCRAPE_RUN_BY_ID.has(runId) ? runId : "all_runs";
+};
+const cutoffDateForRun = runId => {
+  const normalizedRunId = normalizeRunId(runId);
+  if (normalizedRunId === "all_runs") return null;
+  return SCRAPE_RUN_BY_ID.get(normalizedRunId)?.date || null;
+};
+const isVisibleAsOf = (row, cutoffDate) => !cutoffDate || String(rowObservedAt(row)) <= cutoffDate;
+
+let activeTimelineRunId = "all_runs";
+let snapshotCache = new Map();
 
 const companyById = new Map((TABLES.company || []).map(row => [row.COMPANY_ID, row]));
-const companyScoreById = new Map((TABLES.company_score_v2 || []).map(row => [row.COMPANY_ID, row]));
-const networkById = new Map((TABLES.company_network_size || []).map(row => [row.COMPANY_ID, row]));
+const substanceById = new Map((TABLES.substance_reference || []).map(row => [row.SUBSTANCE_REFERENCE_ID, row]));
 const dataSourceById = new Map((TABLES.data_source || []).map(row => [row.DATA_SOURCE_ID, row]));
 const evidenceTypeById = new Map((TABLES.evidence_type || []).map(row => [row.EVIDENCE_TYPE_ID, row]));
+const weightingTagById = new Map((TABLES.weighting_tag || []).map(row => [row.WEIGHTING_TAG_ID, row]));
+const consolidatedCompanyById = new Map((TABLES.consolidated_company || []).map(row => [row.CONSOLIDATED_NAME_ID, row]));
 
-const companyNodeData = companyId => {
+const artifactKindFromMethod = method => {
+  const normalized = normalize(method);
+  if (normalized.includes("email")) return "email";
+  if (normalized.includes("phone") || normalized.includes("telephone")) return "phone";
+  return null;
+};
+const artifactMethodLabel = kind => (kind === "email" ? "Email" : "Phone");
+const artifactNodeId = (kind, value) => `artifact:${kind}:${normalize(value)}`;
+const matchArtifact = (method, value, kind, artifactValue) => artifactKindFromMethod(method) === kind && normalize(value) === normalize(artifactValue);
+
+const clearSnapshotCache = () => {
+  snapshotCache = new Map();
+};
+
+const buildSnapshotContext = (runId = activeTimelineRunId) => {
+  const normalizedRunId = normalizeRunId(runId);
+  if (snapshotCache.has(normalizedRunId)) return snapshotCache.get(normalizedRunId);
+
+  const cutoffDate = cutoffDateForRun(normalizedRunId);
+  const evidenceRows = cloneRows((TABLES.evidence || []).filter(row => isVisibleAsOf(row, cutoffDate)));
+  const associationRows = cloneRows((TABLES.association || []).filter(row => isVisibleAsOf(row, cutoffDate)));
+  const linkageRows = cloneRows((TABLES.linkage || []).filter(row => isVisibleAsOf(row, cutoffDate)));
+  const dataSourceRows = cloneRows((TABLES.data_source || []).filter(row => isVisibleAsOf(row, cutoffDate)));
+  const visibleDataSourceIds = new Set(dataSourceRows.map(row => row.DATA_SOURCE_ID));
+
+  const companyIds = new Set();
+  const ingredientIds = new Set();
+  evidenceRows.forEach(row => {
+    companyIds.add(row.COMPANY_ID);
+    ingredientIds.add(row.SUBSTANCE_REFERENCE_ID);
+  });
+  associationRows.forEach(row => {
+    companyIds.add(row.COMPANY_ID);
+    companyIds.add(row.ASSOCIATED_COMPANY_ID);
+  });
+  linkageRows.forEach(row => {
+    companyIds.add(row.COMPANY_ID);
+  });
+
+  const companyRows = cloneRows((TABLES.company || []).filter(row => companyIds.has(row.COMPANY_ID)));
+  const substanceRows = cloneRows((TABLES.substance_reference || []).filter(row => ingredientIds.has(row.SUBSTANCE_REFERENCE_ID)));
+  const substanceSourcingRows = cloneRows((TABLES.substance_sourcing || []).filter(row => {
+    const matchesIngredient = ingredientIds.has(row.SUBSTANCE_REFERENCE_ID) || ingredientIds.has(row.SUBSTANCE_ID);
+    const matchesSource = row.DATA_SOURCE_ID == null || visibleDataSourceIds.has(row.DATA_SOURCE_ID);
+    return matchesIngredient && matchesSource;
+  }));
+  const companyConsolidatedMapRows = cloneRows((TABLES.company_consolidated_map || []).filter(row => companyIds.has(row.COMPANY_ID)));
+  const companyWeightingTagRows = cloneRows((TABLES.company_weighting_tag || []).filter(row => companyIds.has(row.COMPANY_ID)));
+  const visibleEvidenceIds = new Set(evidenceRows.map(row => row.EVIDENCE_ID));
+  const evidenceWeightingTagRows = cloneRows((TABLES.evidence_weighting_tag || []).filter(row => visibleEvidenceIds.has(row.EVIDENCE_ID)));
+  const visibleIngredientIds = new Set(substanceRows.map(row => row.SUBSTANCE_REFERENCE_ID));
+  const substanceWeightingTagRows = cloneRows((TABLES.substance_weighting_tag || []).filter(row => visibleIngredientIds.has(row.SUBSTANCE_REFERENCE_ID)));
+
+  const evidenceReadableRows = evidenceRows.map(row => {
+    const source = dataSourceById.get(row.DATA_SOURCE_ID) || {};
+    const evidenceType = evidenceTypeById.get(row.EVIDENCE_TYPE_ID) || {};
+    const company = companyById.get(row.COMPANY_ID) || {};
+    const substance = substanceById.get(row.SUBSTANCE_REFERENCE_ID) || {};
+    return {
+      ...row,
+      company_name: company.COMPANY_NAME || `Company #${row.COMPANY_ID}`,
+      substance_name: substance.SUBSTANCE_NAME || `Ingredient #${row.SUBSTANCE_REFERENCE_ID}`,
+      evidence_type: evidenceType.EVIDENCE_TYPE_NAME || "",
+      data_source: source.DATA_SOURCE_NAME || "",
+      source_type: source.DATA_SOURCE_TYPE || "",
+      source_platform: source.SOURCE_PLATFORM || row.SOURCE_PLATFORM || "",
+      observed_at: source.OBSERVED_AT || row.OBSERVED_AT || row.DATE_LOGGED || "",
+    };
+  });
+
+  const evidenceSummaryMap = new Map();
+  evidenceRows.forEach(row => {
+    const key = `${row.COMPANY_ID}:${row.SUBSTANCE_REFERENCE_ID}:${row.EVIDENCE_TYPE_ID}`;
+    const current = evidenceSummaryMap.get(key) || {
+      COMPANY_ID: row.COMPANY_ID,
+      SUBSTANCE_REFERENCE_ID: row.SUBSTANCE_REFERENCE_ID,
+      EVIDENCE_TYPE_ID: row.EVIDENCE_TYPE_ID,
+      evidence_count: 0,
+      total_weight: 0,
+    };
+    current.evidence_count += 1;
+    current.total_weight += Number(row.EVIDENCE_WEIGHT) || 0;
+    evidenceSummaryMap.set(key, current);
+  });
+  const evidenceSummaryRows = [...evidenceSummaryMap.values()].sort((left, right) => right.total_weight - left.total_weight);
+
+  const substanceDatasourceMap = new Map();
+  evidenceRows.forEach(row => {
+    const source = dataSourceById.get(row.DATA_SOURCE_ID) || {};
+    const key = `${row.SUBSTANCE_REFERENCE_ID}:${source.DATA_SOURCE_NAME || ""}:${source.DATA_SOURCE_TYPE || ""}`;
+    const current = substanceDatasourceMap.get(key) || {
+      SUBSTANCE_REFERENCE_ID: row.SUBSTANCE_REFERENCE_ID,
+      DATA_SOURCE_NAME: source.DATA_SOURCE_NAME || "",
+      DATA_SOURCE_TYPE: source.DATA_SOURCE_TYPE || "",
+      mention_count: 0,
+    };
+    current.mention_count += 1;
+    substanceDatasourceMap.set(key, current);
+  });
+  const substanceDatasourceSummaryRows = [...substanceDatasourceMap.values()].sort((left, right) => right.mention_count - left.mention_count);
+
+  const connectionCounts = new Map();
+  associationRows.forEach(row => {
+    connectionCounts.set(row.COMPANY_ID, (connectionCounts.get(row.COMPANY_ID) || 0) + 1);
+    connectionCounts.set(row.ASSOCIATED_COMPANY_ID, (connectionCounts.get(row.ASSOCIATED_COMPANY_ID) || 0) + 1);
+  });
+  const companyNetworkRows = companyRows
+    .map(row => ({
+      ...row,
+      connection_count: connectionCounts.get(row.COMPANY_ID) || 0,
+    }))
+    .sort((left, right) => (right.connection_count || 0) - (left.connection_count || 0));
+
+  const evidenceScores = new Map();
+  const evidenceCounts = new Map();
+  const substanceScores = new Map();
+  const companyTagScores = new Map();
+  const substancesLinked = new Map();
+
+  evidenceRows.forEach(row => {
+    const substance = substanceById.get(row.SUBSTANCE_REFERENCE_ID) || {};
+    evidenceScores.set(row.COMPANY_ID, (evidenceScores.get(row.COMPANY_ID) || 0) + (Number(row.EVIDENCE_WEIGHT) || 0));
+    evidenceCounts.set(row.COMPANY_ID, (evidenceCounts.get(row.COMPANY_ID) || 0) + 1);
+    substanceScores.set(row.COMPANY_ID, (substanceScores.get(row.COMPANY_ID) || 0) + (Number(substance.SUBSTANCE_WEIGHT) || 0));
+    const current = substancesLinked.get(row.COMPANY_ID) || new Set();
+    current.add(row.SUBSTANCE_REFERENCE_ID);
+    substancesLinked.set(row.COMPANY_ID, current);
+  });
+  companyWeightingTagRows.forEach(row => {
+    const weightingTag = weightingTagById.get(row.WEIGHTING_TAG_ID) || {};
+    companyTagScores.set(row.COMPANY_ID, (companyTagScores.get(row.COMPANY_ID) || 0) + (Number(weightingTag.WEIGHTING_TAG_WEIGHT) || 0));
+  });
+
+  const companyScoreRows = companyRows
+    .map(row => {
+      const evidenceScore = evidenceScores.get(row.COMPANY_ID) || 0;
+      const substanceScore = substanceScores.get(row.COMPANY_ID) || 0;
+      const companyTagScore = companyTagScores.get(row.COMPANY_ID) || 0;
+      const totalScoreV2 = evidenceScore + Math.round(substanceScore * 0.35) + companyTagScore;
+      return {
+        ...row,
+        evidence_score: evidenceScore,
+        substance_score: substanceScore,
+        company_tag_score: companyTagScore,
+        total_score_v2: totalScoreV2,
+        legacy_score: evidenceScore + companyTagScore,
+        evidence_count: evidenceCounts.get(row.COMPANY_ID) || 0,
+        substances_linked: (substancesLinked.get(row.COMPANY_ID) || new Set()).size,
+      };
+    })
+    .sort((left, right) => (right.total_score_v2 || 0) - (left.total_score_v2 || 0));
+
+  const companyEvaluationRows = companyScoreRows.map(row => ({
+    COMPANY_ID: row.COMPANY_ID,
+    COMPANY_NAME: row.COMPANY_NAME,
+    EVIDENCE_COMPANY_WEIGHT: row.evidence_score,
+    TOTAL_WEIGHT: row.total_score_v2,
+  }));
+
+  const associationReadableRows = associationRows.map(row => ({
+    ...row,
+    company_name: companyById.get(row.COMPANY_ID)?.COMPANY_NAME || `Company #${row.COMPANY_ID}`,
+    associated_company_name: companyById.get(row.ASSOCIATED_COMPANY_ID)?.COMPANY_NAME || `Company #${row.ASSOCIATED_COMPANY_ID}`,
+  }));
+
+  const consolidatedCompanyReadableRows = companyConsolidatedMapRows.map((row, index) => ({
+    CONSOLIDATED_COMPANY_ID: index + 1,
+    CONSOLIDATED_NAME: consolidatedCompanyById.get(row.CONSOLIDATED_COMPANY_ID)?.CONSOLIDATED_NAME || "",
+    COMPANY_NAME: companyById.get(row.COMPANY_ID)?.COMPANY_NAME || `Company #${row.COMPANY_ID}`,
+    COMPANY_ID: row.COMPANY_ID,
+  }));
+
+  const context = {
+    runId: normalizedRunId,
+    cutoffDate,
+    companyIds,
+    ingredientIds,
+    evidenceRows,
+    associationRows,
+    linkageRows,
+    dataSourceRows,
+    companyRows,
+    substanceRows,
+    substanceSourcingRows,
+    companyConsolidatedMapRows,
+    companyWeightingTagRows,
+    evidenceWeightingTagRows,
+    substanceWeightingTagRows,
+    evidenceReadableRows,
+    evidenceSummaryRows,
+    substanceDatasourceSummaryRows,
+    companyNetworkRows,
+    companyScoreRows,
+    companyEvaluationRows,
+    associationReadableRows,
+    consolidatedCompanyReadableRows,
+    companyScoreById: new Map(companyScoreRows.map(row => [row.COMPANY_ID, row])),
+    networkById: new Map(companyNetworkRows.map(row => [row.COMPANY_ID, row])),
+    sourcePageCount: dataSourceRows.length,
+  };
+  snapshotCache.set(normalizedRunId, context);
+  return context;
+};
+
+const getTableRows = (tableName, runId = activeTimelineRunId) => {
+  const context = buildSnapshotContext(runId);
+  switch (tableName) {
+    case "company":
+      return cloneRows(context.companyRows);
+    case "company_consolidated_map":
+      return cloneRows(context.companyConsolidatedMapRows);
+    case "substance_reference":
+      return cloneRows(context.substanceRows);
+    case "substance_sourcing":
+      return cloneRows(context.substanceSourcingRows);
+    case "data_source":
+      return cloneRows(context.dataSourceRows);
+    case "linkage":
+      return cloneRows(context.linkageRows);
+    case "association":
+      return cloneRows(context.associationRows);
+    case "evidence":
+      return cloneRows(context.evidenceRows);
+    case "company_weighting_tag":
+      return cloneRows(context.companyWeightingTagRows);
+    case "evidence_weighting_tag":
+      return cloneRows(context.evidenceWeightingTagRows);
+    case "substance_weighting_tag":
+      return cloneRows(context.substanceWeightingTagRows);
+    case "evidence_summary":
+      return cloneRows(context.evidenceSummaryRows);
+    case "company_network_size":
+      return cloneRows(context.companyNetworkRows);
+    case "company_score_v2":
+      return cloneRows(context.companyScoreRows);
+    case "company_evaluation":
+      return cloneRows(context.companyEvaluationRows);
+    case "substance_datasource_summary":
+      return cloneRows(context.substanceDatasourceSummaryRows);
+    case "evidence_readable":
+      return cloneRows(context.evidenceReadableRows);
+    case "association_readable":
+      return cloneRows(context.associationReadableRows);
+    case "consolidated_company_readable":
+      return cloneRows(context.consolidatedCompanyReadableRows);
+    default:
+      return cloneRows(TABLES[tableName] || []);
+  }
+};
+
+const getSignalScaleMax = runId => Math.max(...getTableRows("company_score_v2", runId).map(row => Number(row.total_score_v2) || 0), 1);
+
+const companyNodeData = (companyId, runId = activeTimelineRunId) => {
+  const snapshot = buildSnapshotContext(runId);
+  if (!snapshot.companyIds.has(companyId)) return null;
   const base = companyById.get(companyId);
-  const score = companyScoreById.get(companyId);
-  const network = networkById.get(companyId);
+  const score = snapshot.companyScoreById.get(companyId);
+  const network = snapshot.networkById.get(companyId);
   if (!base) return null;
   return {
     id: companyId,
@@ -41,75 +330,47 @@ const companyNodeData = companyId => {
     companyTagScore: score?.company_tag_score || 0,
     evidenceCount: score?.evidence_count || 0,
     substancesLinked: score?.substances_linked || 0,
-    risk: Math.max(Math.round(((score?.total_score_v2 || 0) / maxScore) * 100), 1),
+    signalScore: Math.max(Math.round(((score?.total_score_v2 || 0) / getSignalScaleMax(runId)) * 100), 1),
+    risk: Math.max(Math.round(((score?.total_score_v2 || 0) / getSignalScaleMax(runId)) * 100), 1),
   };
 };
 
-const artifactKindFromMethod = method => {
-  const normalized = normalize(method);
-  if (normalized.includes("email")) return "email";
-  if (normalized.includes("phone") || normalized.includes("telephone")) return "phone";
-  return null;
-};
-
-const artifactMethodLabel = kind => (kind === "email" ? "Email" : "Phone");
-const artifactNodeId = (kind, value) => `artifact:${kind}:${normalize(value)}`;
-const matchArtifact = (method, value, kind, artifactValue) => artifactKindFromMethod(method) === kind && normalize(value) === normalize(artifactValue);
-
-const projectRow = (row, selectedColumns) => {
-  if (!selectedColumns || selectedColumns === "*" || selectedColumns.length === 0) return { ...row };
-  return selectedColumns.reduce((acc, column) => {
-    acc[column] = row[column];
-    return acc;
-  }, {});
-};
-
-const parseSelectedColumns = cols => {
-  if (!cols || cols === "*" || cols.trim() === "*") return "*";
-  return cols.split(",").map(col => stripQuotes(col.trim())).filter(Boolean);
-};
-
-const parseLiteral = value => {
-  const raw = String(value || "").trim();
-  if (/^-?\d+$/.test(raw)) return Number(raw);
-  return raw;
-};
-
-const getTableRows = tableName => cloneRows(TABLES[tableName] || []);
-
-const applySearchFilter = (rows, searchCol, pattern) => {
-  const query = normalize(pattern).replace(/^%|%$/g, "");
-  return rows.filter(row => normalize(row[searchCol]).includes(query));
-};
-
-const buildProvenanceRows = filterFn => (
-  (TABLES.evidence_readable || [])
+const buildProvenanceRows = (filterFn, runId = activeTimelineRunId) => (
+  getTableRows("evidence_readable", runId)
     .filter(filterFn)
-    .map(row => ({
-      evidence_id: row.EVIDENCE_ID,
-      company_id: row.COMPANY_ID,
-      substance_reference_id: row.SUBSTANCE_REFERENCE_ID,
-      evidence_type_id: row.EVIDENCE_TYPE_ID,
-      data_source_id: row.DATA_SOURCE_ID,
-      company_name: row.company_name,
-      canonical_substance_name: row.substance_name,
-      observed_substance_text: row.LISTED_NAME_SUBSTANCE,
-      source_name: row.data_source,
-      source_type: dataSourceById.get(row.DATA_SOURCE_ID)?.DATA_SOURCE_TYPE || "",
-      record_id: row.RECORD_ID,
-      date_logged: row.DATE_LOGGED,
-      score_contribution: row.EVIDENCE_WEIGHT,
-      region: row.REGION,
-      source_locator: row.URL,
-      source_url: row.URL,
-      scrape_run_id: row.SCRAPE_RUN_ID,
-      evidence_type: evidenceTypeById.get(row.EVIDENCE_TYPE_ID)?.EVIDENCE_TYPE_NAME || "",
-    }))
-    .sort((a, b) => String(b.date_logged).localeCompare(String(a.date_logged)))
+    .map(row => {
+      const source = dataSourceById.get(row.DATA_SOURCE_ID) || {};
+      return {
+        evidence_id: row.EVIDENCE_ID,
+        company_id: row.COMPANY_ID,
+        substance_reference_id: row.SUBSTANCE_REFERENCE_ID,
+        evidence_type_id: row.EVIDENCE_TYPE_ID,
+        data_source_id: row.DATA_SOURCE_ID,
+        company_name: row.company_name,
+        canonical_substance_name: row.substance_name,
+        observed_substance_text: row.LISTED_NAME_SUBSTANCE,
+        source_name: row.data_source,
+        source_type: source.DATA_SOURCE_TYPE || row.source_type || "",
+        source_platform: source.SOURCE_PLATFORM || row.source_platform || "",
+        record_id: row.RECORD_ID,
+        date_logged: row.DATE_LOGGED,
+        observed_at: source.OBSERVED_AT || row.OBSERVED_AT || row.observed_at || row.DATE_LOGGED || "",
+        first_seen_at: source.FIRST_SEEN_AT || "",
+        last_seen_at: source.LAST_SEEN_AT || "",
+        score_contribution: row.EVIDENCE_WEIGHT,
+        region: row.REGION,
+        source_locator: row.URL,
+        source_url: row.URL,
+        scrape_run_id: row.SCRAPE_RUN_ID,
+        scrape_run_label: SCRAPE_RUN_LABELS.get(row.SCRAPE_RUN_ID) || row.SCRAPE_RUN_ID,
+        evidence_type: evidenceTypeById.get(row.EVIDENCE_TYPE_ID)?.EVIDENCE_TYPE_NAME || "",
+      };
+    })
+    .sort((left, right) => String(right.observed_at || right.date_logged).localeCompare(String(left.observed_at || left.date_logged)))
 );
 
-const buildAssociationRowsForArtifact = (kind, value) => (
-  (TABLES.association_readable || [])
+const buildAssociationRowsForArtifact = (kind, value, runId = activeTimelineRunId) => (
+  getTableRows("association_readable", runId)
     .filter(row => matchArtifact(row.LINKAGE_METHOD, row.LINKAGE_VALUE, kind, value))
     .map(row => ({
       associationId: row.ASSOCIATIONID,
@@ -123,11 +384,11 @@ const buildAssociationRowsForArtifact = (kind, value) => (
     }))
 );
 
-const buildLinkageRowsForArtifact = (kind, value) => (
-  (TABLES.linkage || [])
+const buildLinkageRowsForArtifact = (kind, value, runId = activeTimelineRunId) => (
+  getTableRows("linkage", runId)
     .filter(row => matchArtifact(row.LINKAGE_METHOD, row.LINKAGE_VALUE, kind, value))
     .map(row => {
-      const source = dataSourceById.get(row.DATA_SOURCE_ID);
+      const source = dataSourceById.get(row.DATA_SOURCE_ID) || {};
       return {
         linkageId: row.LINKAGEID,
         companyId: row.COMPANY_ID,
@@ -136,10 +397,13 @@ const buildLinkageRowsForArtifact = (kind, value) => (
         valueType: row.Linkage_Value_Type,
         value: row.LINKAGE_VALUE,
         dataSourceId: row.DATA_SOURCE_ID,
-        sourceName: source?.DATA_SOURCE_NAME || "",
-        sourceType: source?.DATA_SOURCE_TYPE || "",
-        sourceUrl: source?.URL || "",
-        dateLogged: source?.DATE_LOGGED || "",
+        sourceName: source.DATA_SOURCE_NAME || "",
+        sourceType: source.DATA_SOURCE_TYPE || "",
+        sourcePlatform: source.SOURCE_PLATFORM || "",
+        sourceUrl: source.URL || "",
+        dateLogged: source.DATE_LOGGED || row.DATE_LOGGED || "",
+        observedAt: source.OBSERVED_AT || row.OBSERVED_AT || row.DATE_LOGGED || "",
+        scrapeRunId: row.SCRAPE_RUN_ID || source.SCRAPE_RUN_ID || "",
       };
     })
 );
@@ -152,25 +416,30 @@ const buildSourceReferencesForArtifact = linkageRows => {
       dataSourceId: row.dataSourceId,
       sourceName: row.sourceName,
       sourceType: row.sourceType,
+      sourcePlatform: row.sourcePlatform,
       sourceUrl: row.sourceUrl,
       dateLogged: row.dateLogged,
+      observedAt: row.observedAt,
       linkageCount: 0,
+      scrapeRunId: row.scrapeRunId,
     };
     current.linkageCount += 1;
     bucket.set(row.dataSourceId, current);
   });
-  return [...bucket.values()].sort((a, b) => b.linkageCount - a.linkageCount);
+  return [...bucket.values()].sort((left, right) => right.linkageCount - left.linkageCount);
 };
 
-const buildCompanyGraph = companyId => {
+const buildCompanyGraph = (companyId, runId = activeTimelineRunId) => {
+  const snapshot = buildSnapshotContext(runId);
   const included = new Set([companyId]);
-  const associations = (TABLES.association || []).filter(row => row.COMPANY_ID === companyId || row.ASSOCIATED_COMPANY_ID === companyId);
+  const associations = snapshot.associationRows.filter(row => row.COMPANY_ID === companyId || row.ASSOCIATED_COMPANY_ID === companyId);
   associations.forEach(row => {
     included.add(row.COMPANY_ID);
     included.add(row.ASSOCIATED_COMPANY_ID);
   });
-  const filteredAssociations = (TABLES.association || []).filter(row => included.has(row.COMPANY_ID) && included.has(row.ASSOCIATED_COMPANY_ID));
+  const filteredAssociations = snapshot.associationRows.filter(row => included.has(row.COMPANY_ID) && included.has(row.ASSOCIATED_COMPANY_ID));
   const artifactGroups = new Map();
+
   filteredAssociations.forEach(row => {
     const kind = artifactKindFromMethod(row.LINKAGE_METHOD);
     if (!kind || !row.LINKAGE_VALUE) return;
@@ -189,11 +458,13 @@ const buildCompanyGraph = companyId => {
     artifactGroups.set(key, group);
   });
 
-  const nodes = [...included].map(id => ({
-    id,
-    type: "company",
-    data: companyNodeData(id),
-  }));
+  const nodes = [...included]
+    .map(id => ({
+      id,
+      type: "company",
+      data: companyNodeData(id, runId),
+    }))
+    .filter(node => node.data);
   const artifactNodes = [...artifactGroups.values()].filter(group => group.companyIds.size >= 2);
   artifactNodes.forEach(group => {
     nodes.push({
@@ -221,15 +492,16 @@ const buildCompanyGraph = companyId => {
       value: row.LINKAGE_VALUE,
     },
   }));
+
   artifactNodes.forEach(group => {
-    [...group.companyIds].forEach(companyIdValue => {
+    [...group.companyIds].forEach(groupCompanyId => {
       edges.push({
-        id: `artifact-edge:${group.id}:${companyIdValue}`,
+        id: `artifact-edge:${group.id}:${groupCompanyId}`,
         type: "company_linkage_artifact",
         target: group.id,
         data: {
           associationId: group.associationIds[0],
-          companyId: companyIdValue,
+          companyId: groupCompanyId,
           kind: group.kind,
           method: group.method,
           value: group.value,
@@ -243,30 +515,36 @@ const buildCompanyGraph = companyId => {
       type: "company",
       id: companyId,
       label: companyById.get(companyId)?.COMPANY_NAME || `Company #${companyId}`,
+      asOfRunId: normalizeRunId(runId),
     },
     nodes,
     edges,
     limits: {
       capped: false,
+      returnedCompanyNodes: nodes.filter(node => node.type === "company").length,
+      returnedEdges: edges.length,
     },
   };
 };
 
-const buildArtifactGraph = (kind, value) => {
-  const associationRows = buildAssociationRowsForArtifact(kind, value);
-  const linkageRows = buildLinkageRowsForArtifact(kind, value);
+const buildArtifactGraph = (kind, value, runId = activeTimelineRunId) => {
+  const associationRows = buildAssociationRowsForArtifact(kind, value, runId);
+  const linkageRows = buildLinkageRowsForArtifact(kind, value, runId);
   const included = new Set();
   associationRows.forEach(row => {
     included.add(row.companyId);
     included.add(row.associatedCompanyId);
   });
   linkageRows.forEach(row => included.add(row.companyId));
+
   const nodeId = artifactNodeId(kind, value);
-  const nodes = [...included].map(id => ({
-    id,
-    type: "company",
-    data: companyNodeData(id),
-  }));
+  const nodes = [...included]
+    .map(id => ({
+      id,
+      type: "company",
+      data: companyNodeData(id, runId),
+    }))
+    .filter(node => node.data);
   nodes.push({
     id: nodeId,
     type: "linkage_artifact",
@@ -278,6 +556,7 @@ const buildArtifactGraph = (kind, value) => {
       companyCount: included.size,
     },
   });
+
   const edges = associationRows.map(row => ({
     id: `association:${row.associationId}`,
     type: "company_association",
@@ -290,6 +569,7 @@ const buildArtifactGraph = (kind, value) => {
       value: row.value,
     },
   }));
+
   [...included].forEach(companyIdValue => {
     edges.push({
       id: `artifact-edge:${nodeId}:${companyIdValue}`,
@@ -304,6 +584,7 @@ const buildArtifactGraph = (kind, value) => {
       },
     });
   });
+
   return {
     seed: {
       type: "linkage_artifact",
@@ -311,25 +592,28 @@ const buildArtifactGraph = (kind, value) => {
       value,
       label: value,
       nodeId,
+      asOfRunId: normalizeRunId(runId),
     },
     nodes,
     edges,
     limits: {
       capped: false,
+      returnedCompanyNodes: nodes.filter(node => node.type === "company").length,
+      returnedEdges: edges.length,
     },
   };
 };
 
-const buildArtifactIntelligence = (kind, value) => {
-  const associationRows = buildAssociationRowsForArtifact(kind, value);
-  const linkageRows = buildLinkageRowsForArtifact(kind, value);
+const buildArtifactIntelligence = (kind, value, runId = activeTimelineRunId) => {
+  const associationRows = buildAssociationRowsForArtifact(kind, value, runId);
+  const linkageRows = buildLinkageRowsForArtifact(kind, value, runId);
   const associatedCompanyIds = new Set();
   associationRows.forEach(row => {
     associatedCompanyIds.add(row.companyId);
     associatedCompanyIds.add(row.associatedCompanyId);
   });
   linkageRows.forEach(row => associatedCompanyIds.add(row.companyId));
-  const associatedCompanies = [...associatedCompanyIds].map(id => companyNodeData(id)).filter(Boolean);
+  const associatedCompanies = [...associatedCompanyIds].map(id => companyNodeData(id, runId)).filter(Boolean);
   const sourceReferences = buildSourceReferencesForArtifact(linkageRows);
   return {
     method: artifactMethodLabel(kind),
@@ -344,23 +628,24 @@ const buildArtifactIntelligence = (kind, value) => {
   };
 };
 
-const searchResults = search => {
+const searchResults = (search, runId = activeTimelineRunId) => {
   const query = normalize(search);
   if (query.length < 2) return [];
   const results = [];
+  const context = buildSnapshotContext(runId);
 
-  (TABLES.company_score_v2 || []).forEach(row => {
+  context.companyScoreRows.forEach(row => {
     if (normalize(row.COMPANY_NAME).includes(query) || normalize(row.BUSINESS_TYPE).includes(query) || normalize(row.PRC_HOME_BASE).includes(query)) {
       results.push({
         type: "company",
         label: row.COMPANY_NAME,
         sublabel: [row.BUSINESS_TYPE, row.PRC_HOME_BASE].filter(Boolean).join(" · "),
-        data: companyNodeData(row.COMPANY_ID),
+        data: companyNodeData(row.COMPANY_ID, runId),
       });
     }
   });
 
-  (TABLES.substance_reference || []).forEach(row => {
+  context.substanceRows.forEach(row => {
     if (normalize(row.SUBSTANCE_NAME).includes(query) || normalize(row.SUBSTANCE_ID).includes(query) || normalize(row.SUBSTANCE_DESCRIPTION).includes(query)) {
       results.push({
         type: "substance",
@@ -377,7 +662,7 @@ const searchResults = search => {
     }
   });
 
-  (TABLES.substance_sourcing || []).forEach(row => {
+  context.substanceSourcingRows.forEach(row => {
     if (normalize(row.SUBSTANCE_SOURCING_LOCAL_NAME).includes(query) || normalize(row.SUBSTANCE_ID).includes(query) || normalize(row.SUBSTANCE_SOURCING_REFERENCE).includes(query)) {
       results.push({
         type: "synonym",
@@ -395,18 +680,19 @@ const searchResults = search => {
     }
   });
 
-  (TABLES.evidence_readable || []).forEach(row => {
+  context.evidenceReadableRows.forEach(row => {
     if (
       normalize(row.company_name).includes(query) ||
       normalize(row.substance_name).includes(query) ||
       normalize(row.LISTED_NAME_SUBSTANCE).includes(query) ||
       normalize(row.data_source).includes(query) ||
-      normalize(row.RECORD_ID).includes(query)
+      normalize(row.RECORD_ID).includes(query) ||
+      normalize(row.SOURCE_PLATFORM).includes(query)
     ) {
       results.push({
         type: "evidence",
         label: row.company_name,
-        sublabel: [row.substance_name, row.evidence_type].filter(Boolean).join(" · "),
+        sublabel: [row.substance_name, row.evidence_type, row.SOURCE_PLATFORM].filter(Boolean).join(" · "),
         data: {
           id: row.EVIDENCE_ID,
           evidenceId: row.EVIDENCE_ID,
@@ -414,16 +700,19 @@ const searchResults = search => {
           substanceName: row.substance_name,
           evidenceType: row.evidence_type,
           sourceName: row.data_source,
+          sourcePlatform: row.SOURCE_PLATFORM,
           listedName: row.LISTED_NAME_SUBSTANCE,
           region: row.REGION,
           weight: row.EVIDENCE_WEIGHT,
           url: row.URL,
+          scrapeRunId: row.SCRAPE_RUN_ID,
+          observedAt: row.OBSERVED_AT,
         },
       });
     }
   });
 
-  (TABLES.linkage || []).forEach(row => {
+  context.linkageRows.forEach(row => {
     if (normalize(row.LINKAGE_VALUE).includes(query) || normalize(row.LINKAGE_METHOD).includes(query)) {
       results.push({
         type: "linkage",
@@ -442,7 +731,7 @@ const searchResults = search => {
     }
   });
 
-  (TABLES.association_readable || []).forEach(row => {
+  context.associationReadableRows.forEach(row => {
     if (
       normalize(row.company_name).includes(query) ||
       normalize(row.associated_company_name).includes(query) ||
@@ -475,7 +764,12 @@ const searchResults = search => {
   }).slice(0, 80);
 };
 
-const runExport = ({ tableKey, search, sortCol, sortDir }) => {
+const applySearchFilter = (rows, searchCol, pattern) => {
+  const query = normalize(pattern).replace(/^%|%$/g, "");
+  return rows.filter(row => normalize(row[searchCol]).includes(query));
+};
+
+const runExport = ({ tableKey, search, sortCol, sortDir, asOfRunId }) => {
   const tableMap = {
     company: "company",
     evidence_readable: "evidence_readable",
@@ -508,14 +802,14 @@ const runExport = ({ tableKey, search, sortCol, sortDir }) => {
     evidence_type: "EVIDENCE_TYPE_NAME",
     company_evaluation: "COMPANY_NAME",
   };
-  let rows = getTableRows(tableMap[tableKey] || tableKey);
+  let rows = getTableRows(tableMap[tableKey] || tableKey, asOfRunId);
   if (search) rows = applySearchFilter(rows, searchColMap[tableKey] || searchColMap.company, search);
   if (sortCol) {
     const key = stripQuotes(sortCol);
+    const direction = sortDir === "desc" ? -1 : 1;
     rows = rows.sort((left, right) => {
       const a = left[key];
       const b = right[key];
-      const direction = sortDir === "desc" ? -1 : 1;
       if (typeof a === "number" && typeof b === "number") return (a - b) * direction;
       return String(a ?? "").localeCompare(String(b ?? "")) * direction;
     });
@@ -637,34 +931,51 @@ class DemoQuery {
 }
 
 const invokeAuthorizedData = body => {
+  const runId = body?.asOfRunId || activeTimelineRunId;
   switch (body?.action) {
     case "provenance":
       if (body.entityType === "company") {
-        return { rows: buildProvenanceRows(row => row.COMPANY_ID === body.companyId) };
+        return { rows: buildProvenanceRows(row => row.COMPANY_ID === body.companyId, runId) };
       }
-      return { rows: buildProvenanceRows(row => row.SUBSTANCE_REFERENCE_ID === body.substanceReferenceId || row.SUBSTANCE_ID === body.substanceId) };
+      return { rows: buildProvenanceRows(row => row.SUBSTANCE_REFERENCE_ID === body.substanceReferenceId || row.SUBSTANCE_ID === body.substanceId, runId) };
     case "companyGraph":
-      return { graph: buildCompanyGraph(body.companyId) };
+      return { graph: buildCompanyGraph(body.companyId, runId) };
     case "artifactGraph":
-      return { graph: buildArtifactGraph(body.kind, body.value) };
+      return { graph: buildArtifactGraph(body.kind, body.value, runId) };
     case "artifactIntelligence":
-      return { artifact: buildArtifactIntelligence(body.kind, body.value) };
+      return { artifact: buildArtifactIntelligence(body.kind, body.value, runId) };
     case "search":
-      return { results: searchResults(body.search) };
+      return { results: searchResults(body.search, runId) };
     case "export":
-      return { rows: runExport(body) };
+      return { rows: runExport({ ...body, asOfRunId: runId }) };
     default:
       return {};
   }
 };
 
 export const supabase = {
+  setTimelineFilter(runId) {
+    activeTimelineRunId = normalizeRunId(runId);
+    clearSnapshotCache();
+    return activeTimelineRunId;
+  },
+  getTimelineFilter() {
+    return activeTimelineRunId;
+  },
+  getTimelineOptions() {
+    return cloneRows(SCRAPE_RUNS);
+  },
   from(tableName) {
     return new DemoQuery(tableName);
   },
   rpc(name) {
+    const snapshot = buildSnapshotContext();
+    let data = TABLES.rpcs?.[name] ?? null;
+    if (name === "get_evidence_total") data = snapshot.evidenceRows.length;
+    if (name === "get_company_count") data = snapshot.companyRows.length;
+    if (name === "get_association_count") data = snapshot.associationRows.length;
     return Promise.resolve({
-      data: TABLES.rpcs?.[name] ?? null,
+      data,
       error: null,
     });
   },

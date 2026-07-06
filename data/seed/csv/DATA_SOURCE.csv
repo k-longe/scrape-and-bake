@@ -1,8 +1,15 @@
-DATA_SOURCE_ID,DATA_SOURCE_NAME,DATA_SOURCE_TYPE,URL,DATE_LOGGED,PARENT_DATA_SOURCE_ID,SCRAPE_RUN_ID
-1,Harbor Batch seasonal cookie menu,bakery_menu,https://cookie-demo.example/sources/harbor-batch-menu,2026-06-03,,cookie-demo-run-001
-2,Pantry inputs wholesale catalog,catalog,https://cookie-demo.example/sources/pantry-inputs-catalog,2026-06-05,,cookie-demo-run-002
-3,Northwind butter spec sheet,ingredient_sheet,https://cookie-demo.example/sources/northwind-butter-sheet,2026-06-08,,cookie-demo-run-003
-4,Maple & Main online ingredient panel,bakery_menu,https://cookie-demo.example/sources/maple-main-panel,2026-06-10,,cookie-demo-run-004
-5,Cacao Coast supplier profile,supplier_profile,https://cookie-demo.example/sources/cacao-coast-profile,2026-06-12,,cookie-demo-run-005
-6,Golden Crate distribution roster,distributor_listing,https://cookie-demo.example/sources/golden-crate-roster,2026-06-15,,cookie-demo-run-006
-7,Bluebird seasonal recipe archive,recipe_archive,https://cookie-demo.example/sources/bluebird-archive,2026-06-18,,cookie-demo-run-007
+DATA_SOURCE_ID,DATA_SOURCE_NAME,DATA_SOURCE_TYPE,URL,DATE_LOGGED,PARENT_DATA_SOURCE_ID,SCRAPE_RUN_ID,SOURCE_PLATFORM,OBSERVED_AT,FIRST_SEEN_AT,LAST_SEEN_AT
+1,Harbor Batch spring cookie board,bakery_menu,https://cookie-demo.example/bakeryboard/harbor-batch-spring-board,2026-04-01,,2026-04-01_bakeryboard,BakeryBoard,2026-04-01,2026-04-01,2026-04-01
+2,Maple & Main cookie board,bakery_menu,https://cookie-demo.example/bakeryboard/maple-main-cookie-board,2026-04-01,,2026-04-01_bakeryboard,BakeryBoard,2026-04-01,2026-04-01,2026-04-01
+3,Bluebird oatmeal board,bakery_menu,https://cookie-demo.example/bakeryboard/bluebird-oatmeal-board,2026-04-01,,2026-04-01_bakeryboard,BakeryBoard,2026-04-01,2026-04-01,2026-04-01
+4,Golden Grain Supply catalog,supplier_catalog,https://cookie-demo.example/ingredienthub/golden-grain-catalog,2026-04-15,,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+5,Orchard Vanilla Imports catalog,supplier_catalog,https://cookie-demo.example/ingredienthub/orchard-vanilla-catalog,2026-04-15,,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+6,Cacao Coast ingredients catalog,supplier_catalog,https://cookie-demo.example/ingredienthub/cacao-coast-catalog,2026-04-15,,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+7,Northwind butter sheet,ingredient_sheet,https://cookie-demo.example/ingredienthub/northwind-butter-sheet,2026-04-15,,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+8,Clover Cane sugars catalog,supplier_catalog,https://cookie-demo.example/ingredienthub/clover-cane-catalog,2026-04-15,,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+9,Meadow Oat Collective catalog,supplier_catalog,https://cookie-demo.example/ingredienthub/meadow-oat-catalog,2026-04-15,,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+10,WholesaleCrumb route sheet,distributor_listing,https://cookie-demo.example/wholesalecrumb/route-sheet,2026-05-01,,2026-05-01_wholesalecrumb,WholesaleCrumb,2026-05-01,2026-05-01,2026-05-01
+11,CertiBake public claims registry,claims_registry,https://cookie-demo.example/certibake/public-claims,2026-05-20,,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+12,CertiBake allergen notes registry,claims_registry,https://cookie-demo.example/certibake/allergen-notes,2026-05-20,,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+13,Harbor Batch refresh board,bakery_menu,https://cookie-demo.example/bakeryboard/harbor-batch-refresh-board,2026-06-10,1,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10
+14,Seaside Biscuit Works menu board,bakery_menu,https://cookie-demo.example/bakeryboard/seaside-biscuit-board,2026-06-10,,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10

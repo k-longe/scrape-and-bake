@@ -1,0 +1,24 @@
+{
+  "scrape_run_id": "2026-05-20_certibake_registry",
+  "platform": "CertiBake Registry",
+  "run_date": "2026-05-20",
+  "total_targets": 2,
+  "successful_targets": 2,
+  "failed_targets": 0,
+  "evidence_rows_produced": 5,
+  "notes": "Synthetic fixture output for public walkthroughs.",
+  "source_pages": [
+    {
+      "data_source_name": "CertiBake public claims registry",
+      "source_platform": "CertiBake Registry",
+      "source_url": "https://cookie-demo.example/certibake/public-claims",
+      "raw_html_file": "raw_html/certibake_public_claims_registry.html"
+    },
+    {
+      "data_source_name": "CertiBake allergen notes registry",
+      "source_platform": "CertiBake Registry",
+      "source_url": "https://cookie-demo.example/certibake/allergen-notes",
+      "raw_html_file": "raw_html/certibake_allergen_notes_registry.html"
+    }
+  ]
+}

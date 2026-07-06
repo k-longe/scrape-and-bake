@@ -1,6 +1,6 @@
 # Terminology Changelog
 
-This demo preserves the existing interaction model while replacing sensitive domain language with benign cookie ingredient terminology.
+This demo preserves the existing interaction model while replacing sensitive domain wording with benign cookie ingredient terminology.
 
 ## Core UI label changes
 
@@ -11,16 +11,16 @@ This demo preserves the existing interaction model while replacing sensitive dom
 - `Substance Sourcing` / sourcing references → `Ingredient Aliases` / `Ingredient References`
 - `Evidence` → `Source Evidence`
 - `Entity Flags` → `Company Signals`
-- `Risk Score Methodology` → `Signal Score Methodology`
-- `Investigative Priority` → `Supply Signal`
+- scoring methodology labels → `Signal Score Methodology`
+- priority labels → `Supply Signal`
 
-## Sensitive language removed or replaced
+## Public-demo wording changes
 
-- `Illicit substance supply chain intelligence` → `Cookie ingredient supply chain demo`
-- sanction / indictment document labels → benign `Spec Sheets` / `Source Packets`
-- scheduled / controlled-substance framing → ingredient reference and source-evidence framing
-- high-risk actor / flagging copy → company signal / signal scoring copy
-- TraCCC-specific descriptive copy in the UI → demo-specific documentation copy
+- sensitive supply-chain framing → `Cookie ingredient supply-chain demo`
+- document bucket labels → benign `Spec Sheets` / `Source Packets`
+- restricted-material framing → ingredient reference and source-evidence framing
+- enforcement-oriented copy → company signal and sourcing language
+- legacy project-specific documentation copy → demo-specific public documentation
 
 ## Schema compatibility note
 

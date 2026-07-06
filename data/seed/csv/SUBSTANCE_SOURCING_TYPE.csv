@@ -1,4 +1,4 @@
 SUBSTANCE_SOURCING_TYPE_ID,SUBSTANCE_SOURCING_TYPE_TITLE,SUBSTANCE_SOURCING_TYPE_DESCRIPTION
-1,Catalog family,High-level family or assortment name used in catalogs.
-2,Supplier alias,Localized supplier phrasing used on spec sheets or profiles.
-3,Recipe phrasing,Phrasing used on bakery menus or ingredient lists.
+1,Catalog family,High-level family phrasing used in catalog pages.
+2,Supplier alias,Supplier-facing local phrasing or shorthand.
+3,Recipe phrasing,Bakery-facing ingredient phrasing used in menus and labels.

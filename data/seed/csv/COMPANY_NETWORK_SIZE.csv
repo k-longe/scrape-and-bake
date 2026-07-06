@@ -1,13 +1,13 @@
 COMPANY_ID,COMPANY_NAME,CHINESE_NAME,ACTIVE_INACTIVE,BUSINESS_TYPE,PRC_HOME_BASE,GOV_COMPLICITY,connection_count
-1,Harbor Batch Bakery,,Active,Bakery,Midwest,Retail bakery,3
-2,Maple & Main Cookie Co.,,Active,Bakery,Northeast,Regional bakery,2
-3,Sunfield Flour Mills,,Active,Ingredient Supplier,Great Lakes,Flour mill,2
-4,Orchard Vanilla Imports,,Active,Importer,East Coast,Flavor importer,1
-5,Northwind Butter Works,,Active,Dairy Processor,Wisconsin,Butter supplier,1
-6,Cacao Coast Ingredients,,Active,Ingredient Supplier,West Coast,Chocolate ingredient supplier,1
-7,Spruce Street Packing,,Active,Co-Packer,Midwest,Packaging partner,1
-8,Golden Crate Logistics,,Active,Distributor,National,Distribution partner,1
-9,Clover Cane Sugars,,Active,Ingredient Supplier,Gulf Coast,Sugar refiner,1
-10,Copper Kettle Kitchen,,Active,Contract Bakery,South,Private-label bakery,1
-11,Bluebird Oven Foods,,Active,Bakery,Pacific Northwest,Regional bakery,1
-12,Seaside Biscuit Works,,Active,Bakery,Southeast,Retail bakery,1
+1,Harbor Batch Bakery,,Active,Bakery,Midwest,Retail bakery,4
+2,Maple & Main Cookie Co.,,Active,Bakery,Northeast,Neighborhood bakery,3
+3,Bluebird Oven Foods,,Active,Bakery,Pacific Northwest,Regional bakery,1
+4,Seaside Biscuit Works,,Active,Bakery,Southeast,Coastal bakery,2
+5,Golden Grain Supply,,Active,Ingredient Supplier,Great Lakes,Flour supplier,4
+6,Orchard Vanilla Imports,,Active,Ingredient Supplier,East Coast,Vanilla importer,2
+7,Northwind Butter Works,,Active,Ingredient Supplier,Wisconsin,Butter producer,0
+8,Cacao Coast Ingredients,,Active,Ingredient Supplier,West Coast,Chocolate supplier,2
+9,Clover Cane Sugars,,Active,Ingredient Supplier,Gulf Coast,Sugar supplier,1
+10,Meadow Oat Collective,,Active,Ingredient Supplier,Upper Midwest,Oat supplier,0
+11,Golden Crate Logistics,,Active,Distributor,National,Wholesale distributor,4
+12,CertiBake Registry,,Active,Source Entity,National,Public claims registry,3

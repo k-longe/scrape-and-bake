@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "./lib/supabaseClient";
+import DEMO_DATA from "./data/demoData";
 import Login from "./components/Login";
 import { DEFAULT_APP_ROLE, getSession, isAuthVerificationPending, signOut, verifyAppAccess } from "./lib/auth";
 
@@ -63,7 +64,7 @@ const evidCol = (t, dark) => {
   return (dark ? d : l)[t] || "#888";
 };
 
-const MEDIA_BUCKETS = { images: "Images", sanctions: "Spec Sheets", indictments: "Source Packets" };
+const MEDIA_BUCKETS = { images: "Images", specSheets: "Spec Sheets", sourcePackets: "Source Packets" };
 const APP_MODES = {
   investigator: { label: "Operations", hint: "Trace sources" },
   policy: { label: "Overview", hint: "Review patterns" },
@@ -72,6 +73,18 @@ const MODE_STORAGE_KEY = "scrape-and-bake.workflowMode";
 const DOSSIER_STORAGE_KEY_PREFIX = "scrape-and-bake.dossierDraft";
 const DOSSIER_META_STORAGE_KEY_PREFIX = "scrape-and-bake.dossierMeta";
 const APP_VIEW_STORAGE_KEY = "scrape-and-bake.activeView";
+const SCRAPE_RUN_OPTIONS = [
+  {
+    id: "all_runs",
+    label: "All runs",
+    platform: "Synthetic timeline",
+    date: DEMO_DATA.metadata?.scrapeRuns?.[DEMO_DATA.metadata.scrapeRuns.length - 1]?.date || "",
+    sourcePageCount: (DEMO_DATA.metadata?.scrapeRuns || []).reduce((sum, run) => sum + (run.sourcePageCount || 0), 0),
+    evidenceRowCount: DEMO_DATA.metadata?.evidenceRowCount || 0,
+  },
+  ...(DEMO_DATA.metadata?.scrapeRuns || []),
+];
+const MOVEMENT_SUMMARIES = DEMO_DATA.metadata?.movementSummaries || {};
 const SEARCH_FILTERS = [
   { id: "all", label: "All", types: null },
   { id: "companies", label: "Companies", types: ["company"] },
@@ -81,14 +94,14 @@ const SEARCH_FILTERS = [
 ];
 const SEARCH_MODE_COPY = {
   investigator: {
-    label: "Operations search",
-    placeholder: "Search identifiers, source evidence, contacts, companies...",
-    empty: "No operations-priority results found",
+    label: "Search",
+    placeholder: "Search",
+    empty: "No matching results found",
   },
   policy: {
-    label: "Overview search",
-    placeholder: "Search companies, ingredients, networks, and supplier entities...",
-    empty: "No overview-priority results found",
+    label: "Search",
+    placeholder: "Search",
+    empty: "No matching results found",
   },
 };
 const SEARCH_MODE_PRIORITY = {
@@ -184,6 +197,13 @@ const normalizeAppRole = value => {
 
 const getDefaultDrawerHeight = () => Math.round(window.innerHeight * 0.42);
 const getExpandedDrawerHeight = () => Math.round(window.innerHeight * 0.88);
+const timelineOptionById = runId => SCRAPE_RUN_OPTIONS.find(option => option.id === runId) || SCRAPE_RUN_OPTIONS[0];
+const formatTimelineDate = value => {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return String(value);
+  return parsed.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+};
 const ACTION_COMPANY_GRAPH = "companyGraph";
 const ACTION_ARTIFACT_GRAPH = "artifactGraph";
 const DEFAULT_GRAPH_NODE_LIMITS = [5, 10, 15, 25];
@@ -639,18 +659,19 @@ function EvidenceProvenancePanel({ title, summary, rows, loading, loaded, error,
             {field("INGREDIENT", row.canonical_substance_name)}
             {field("OBSERVED TEXT", row.observed_substance_text)}
             {field("SOURCE", row.source_name)}
+            {field("PLATFORM", row.source_platform)}
             {field("SOURCE TYPE", row.source_type)}
+            {field("OBSERVED", row.observed_at)}
             {field("RECORD ID", row.record_id)}
             {field("SCRAPE RUN", row.scrape_run_id)}
+            {field("FIRST SEEN", row.first_seen_at)}
+            {field("LAST SEEN", row.last_seen_at)}
             {field("DATE LOGGED", row.date_logged)}
             {field("SCORE WEIGHT", row.score_contribution)}
             {field("REGION", row.region)}
           </div>
-          {row.source_locator && (
-            <a href={row.source_locator} target="_blank" rel="noreferrer" style={{ color: T.accent, fontSize: 10, wordBreak: "break-all" }}>
-              Open source locator
-            </a>
-          )}
+          {row.source_url && <div style={{ color: T.textMuted, fontSize: 9, marginBottom: row.source_locator ? 6 : 0, wordBreak: "break-all" }}>URL: {row.source_url}</div>}
+          {row.source_locator && <a href={row.source_locator} target="_blank" rel="noreferrer" style={{ color: T.accent, fontSize: 10, wordBreak: "break-all" }}>Open source locator</a>}
         </div>
       ))}
     </div>
@@ -694,7 +715,7 @@ const maxObservedDate = values => values
   .sort((a, b) => b.getTime() - a.getTime())[0] || null;
 
 // ── Company Drawer ─────────────────────────────────────────────────────────
-function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEvidence, evidenceTypes, dark, onBuildCompanyGraph, graphLoadingCompanyId, onAddToDossier, isInDossier, onAddEvidenceToDossier, isEvidenceInDossier, onAddMediaToDossier, isMediaInDossier, companyLookup, getCompanyGraphMetrics, onOpenEvidenceExplorer }) {
+function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEvidence, evidenceTypes, dark, timelineRunId, onBuildCompanyGraph, graphLoadingCompanyId, onAddToDossier, isInDossier, onAddEvidenceToDossier, isEvidenceInDossier, onAddMediaToDossier, isMediaInDossier, companyLookup, getCompanyGraphMetrics, onOpenEvidenceExplorer }) {
   const T = dark ? DARK : LIGHT;
 
   const [liveEvidence, setLiveEvidence] = useState(null);
@@ -722,7 +743,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
     setProvenanceLoading(true);
     setProvenanceError("");
     try {
-      const { rows } = await invokeAuthorizedData({ action: "provenance", entityType: "company", companyId });
+      const { rows } = await invokeAuthorizedData({ action: "provenance", entityType: "company", companyId, asOfRunId: timelineRunId });
       if (requestId !== provenanceRequestRef.current) return;
       setProvenanceRows(rows || []);
       setProvenanceLoaded(true);
@@ -733,7 +754,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
     } finally {
       if (requestId === provenanceRequestRef.current) setProvenanceLoading(false);
     }
-  }, [companyId]);
+  }, [companyId, timelineRunId]);
 
   useEffect(() => {
     if (!companyId) {
@@ -815,7 +836,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
 
     fetchLive();
     return () => { liveRequestRef.current += 1; };
-  }, [companyId, inPreload]);
+  }, [companyId, inPreload, timelineRunId]);
 
   useEffect(() => {
     if (!companyId || provenanceLoaded || provenanceLoading) return;
@@ -1391,7 +1412,7 @@ function CompanyDrawer({ company, substances, preloadedAssociations, preloadedEv
 }
 
 // ── Ingredient Drawer ──────────────────────────────────────────────────────
-function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, companies, evidenceTypes, dark, onAddToDossier, isInDossier, onAddEvidenceToDossier, isEvidenceInDossier }) {
+function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, companies, evidenceTypes, dark, timelineRunId, onAddToDossier, isInDossier, onAddEvidenceToDossier, isEvidenceInDossier }) {
   const T = dark ? DARK : LIGHT;
   const [sourcing, setSourcing] = useState([]);
   const [provenanceRows, setProvenanceRows] = useState([]);
@@ -1417,7 +1438,7 @@ function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, com
         if (requestId === sourcingRequestRef.current) setSourcing(data || []);
       });
     return () => { sourcingRequestRef.current += 1; };
-  }, [substance?.casId]);
+  }, [substance?.casId, timelineRunId]);
 
   if (!substance) return null;
 
@@ -1428,7 +1449,7 @@ function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, com
     setProvenanceLoading(true);
     setProvenanceError("");
     try {
-      const { rows } = await invokeAuthorizedData({ action: "provenance", entityType: "substance", substanceReferenceId: selectedSubstanceReferenceId, substanceId: selectedSubstanceId });
+      const { rows } = await invokeAuthorizedData({ action: "provenance", entityType: "substance", substanceReferenceId: selectedSubstanceReferenceId, substanceId: selectedSubstanceId, asOfRunId: timelineRunId });
       if (requestId !== provenanceRequestRef.current) return;
       setProvenanceRows(rows || []);
       setProvenanceLoaded(true);
@@ -2191,7 +2212,7 @@ function MediaTab({ dark, onAddToDossier, isInDossier, previewRequest, onHandled
   const T = dark ? DARK : LIGHT;
   const [subTab, setSubTab] = useState("images");
   const [images, setImages] = useState([]);
-  const [pdfs, setPdfs] = useState({ sanctions: [], indictments: [] });
+  const [pdfs, setPdfs] = useState({ specSheets: [], sourcePackets: [] });
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -2207,18 +2228,18 @@ function MediaTab({ dark, onAddToDossier, isInDossier, previewRequest, onHandled
         const mediaData = await invokeAuthorizedMedia({ action: "list" });
         if (requestId !== loadRequestRef.current) return;
         const imgs = mediaData?.images || [];
-        const sanctions = mediaData?.sanctions || [];
-        const indictments = mediaData?.indictments || [];
+        const specSheets = mediaData?.specSheets || [];
+        const sourcePackets = mediaData?.sourcePackets || [];
         setImages(imgs);
         setPdfs({
-          sanctions: (sanctions || []).filter(f => f.name !== ".emptyFolderPlaceholder"),
-          indictments: (indictments || []).filter(f => f.name !== ".emptyFolderPlaceholder"),
+          specSheets: (specSheets || []).filter(f => f.name !== ".emptyFolderPlaceholder"),
+          sourcePackets: (sourcePackets || []).filter(f => f.name !== ".emptyFolderPlaceholder"),
         });
       } catch (e) {
         if (requestId !== loadRequestRef.current) return;
         console.error(e);
         setImages([]);
-        setPdfs({ sanctions: [], indictments: [] });
+        setPdfs({ specSheets: [], sourcePackets: [] });
       } finally {
         if (requestId === loadRequestRef.current) setLoading(false);
       }
@@ -2290,7 +2311,7 @@ function MediaTab({ dark, onAddToDossier, isInDossier, previewRequest, onHandled
     <div style={{ height: "100%", display: "flex", flexDirection: "column", fontFamily: "Georgia,serif", minWidth: 0 }}>
       <div style={{ padding: "14px 24px 8px", borderBottom: `1px solid ${T.border}`, background: T.surface, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-          {[["images", `Images (${images.length})`], ["sanctions", `Spec Sheets (${pdfs.sanctions.length})`], ["indictments", `Source Packets (${pdfs.indictments.length})`]].map(([id, label]) => (
+          {[["images", `Images (${images.length})`], ["specSheets", `Spec Sheets (${pdfs.specSheets.length})`], ["sourcePackets", `Source Packets (${pdfs.sourcePackets.length})`]].map(([id, label]) => (
             <button key={id} onClick={() => setSubTab(id)} style={{ padding: "7px 16px", borderRadius: "6px 6px 0 0", border: `1px solid ${subTab === id ? T.border : "transparent"}`, borderBottom: subTab === id ? `2px solid ${T.accent}` : "1px solid transparent", background: subTab === id ? T.bg : "transparent", color: subTab === id ? T.accent : T.textMuted, fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif", fontWeight: subTab === id ? 700 : 400 }}>{label}</button>
           ))}
         </div>
@@ -2345,12 +2366,12 @@ function MediaTab({ dark, onAddToDossier, isInDossier, previewRequest, onHandled
                 </div>
               </>
             )}
-            {(subTab === "sanctions" || subTab === "indictments") && (() => {
-              const bucket = subTab === "sanctions" ? "Spec Sheets" : "Source Packets";
-              const list = filterPdfs(subTab === "sanctions" ? pdfs.sanctions : pdfs.indictments);
+            {(subTab === "specSheets" || subTab === "sourcePackets") && (() => {
+              const bucket = subTab === "specSheets" ? "Spec Sheets" : "Source Packets";
+              const list = filterPdfs(subTab === "specSheets" ? pdfs.specSheets : pdfs.sourcePackets);
               return (
                 <>
-                  <SectionHeader label={`${list.length} ${(subTab === "sanctions" ? "SPEC SHEETS" : "SOURCE PACKETS")} · CLICK TO OPEN`} T={T} />
+                  <SectionHeader label={`${list.length} ${(subTab === "specSheets" ? "SPEC SHEETS" : "SOURCE PACKETS")} · CLICK TO OPEN`} T={T} />
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {list.map(f => (
                         <div key={f.name} role="button" tabIndex={0} onClick={() => openPdf(bucket, f.name)} onKeyDown={onKeyboardActivate(() => openPdf(bucket, f.name))}
@@ -2359,7 +2380,7 @@ function MediaTab({ dark, onAddToDossier, isInDossier, previewRequest, onHandled
                         onMouseEnter={e => e.currentTarget.style.background = T.surfaceAlt}
                         onMouseLeave={e => e.currentTarget.style.background = T.surface}>
                         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                          <div style={{ width: 36, height: 36, background: subTab === "sanctions" ? (dark ? "#2a0a08" : "#fef2f2") : (dark ? "#1a1500" : "#fffbeb"), border: `1px solid ${subTab === "sanctions" ? (dark ? "#ff3b30" : "#b91c1c") : (dark ? "#ff9500" : "#92400e")}44`, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ width: 36, height: 36, background: subTab === "specSheets" ? (dark ? "#2a0a08" : "#fef2f2") : (dark ? "#1a1500" : "#fffbeb"), border: `1px solid ${subTab === "specSheets" ? (dark ? "#ff3b30" : "#b91c1c") : (dark ? "#ff9500" : "#92400e")}44`, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <span style={{ fontSize: 16 }}>📄</span>
                           </div>
                           <div>
@@ -2629,7 +2650,7 @@ function SchemaERD({ dark, T }) {
   return <canvas ref={canvasRef} style={{ width:"100%", height:520, display:"block", borderRadius:8, border:`1px solid ${T.border}`, cursor:"grab" }} />;
 }
 
-function AboutTab({ dark, substances, evidenceTotal, companyTotal, associationTotal, linkageTotal, graphAssociationTotal }) {
+function AboutTab({ dark, substances, evidenceTotal, companyTotal, associationTotal, sourcePageTotal, linkageTotal, graphAssociationTotal }) {
   const T = dark ? DARK : LIGHT;
   return (
     <div style={{ height:"100%", overflowY:"auto", fontFamily:"Georgia,serif" }}>
@@ -2671,8 +2692,9 @@ function AboutTab({ dark, substances, evidenceTotal, companyTotal, associationTo
             {[
               ["Companies", companyTotal.toLocaleString()],
               ["Ingredients", substances.length],
-              ["Raw association records", associationTotal.toLocaleString()],
-              ["Raw linkage records", linkageTotal > 0 ? linkageTotal.toLocaleString() : "…"],
+              ["Network links", associationTotal.toLocaleString()],
+              ["Source pages", sourcePageTotal > 0 ? sourcePageTotal.toLocaleString() : "…"],
+              ["Linkage rows", linkageTotal > 0 ? linkageTotal.toLocaleString() : "…"],
               ["Source Evidence Records", evidenceTotal.toLocaleString()],
             ].map(([k,v]) => (
               <div key={k} style={{ flex:1, background:T.accentBg, border:`1px solid ${T.accent}33`, borderRadius:7, padding:"12px 16px" }}>
@@ -5166,22 +5188,14 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
 }
 
 // ── Stats Bar ──────────────────────────────────────────────────────────────
-function StatsBar({ substances, evidenceTotal, companyTotal, associationTotal, linkageTotal, dark }) {
+function StatsBar({ ingredientCount, evidenceTotal, companyTotal, sourcePageTotal, networkLinkTotal, dark }) {
   const T = dark ? DARK : LIGHT;
   const stats = [
     { label: "COMPANIES", value: companyTotal > 0 ? companyTotal.toLocaleString() : "…" },
-    { label: "INGREDIENTS", value: substances.length },
-    {
-      label: "RAW ASSOCIATION RECORDS",
-      value: associationTotal > 0 ? associationTotal.toLocaleString() : "…",
-      help: "These are raw database rows and may include duplicate or repeated infrastructure observations. Deduplicated metrics are planned after schema cleanup.",
-    },
-    {
-      label: "RAW LINKAGE RECORDS",
-      value: linkageTotal > 0 ? linkageTotal.toLocaleString() : "…",
-      help: "These are raw database rows and may include duplicate or repeated infrastructure observations. Deduplicated metrics are planned after schema cleanup.",
-    },
-    { label: "TOTAL EVIDENCE", value: evidenceTotal > 0 ? evidenceTotal.toLocaleString() : "…" },
+    { label: "INGREDIENTS", value: ingredientCount > 0 ? ingredientCount.toLocaleString() : "…" },
+    { label: "EVIDENCE ROWS", value: evidenceTotal > 0 ? evidenceTotal.toLocaleString() : "…" },
+    { label: "SOURCE PAGES", value: sourcePageTotal > 0 ? sourcePageTotal.toLocaleString() : "…" },
+    { label: "NETWORK LINKS", value: networkLinkTotal > 0 ? networkLinkTotal.toLocaleString() : "…" },
   ];
   return (
     <div style={{ display: "flex", background: T.surface, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
@@ -5191,6 +5205,81 @@ function StatsBar({ substances, evidenceTotal, companyTotal, associationTotal, l
           <div style={{ color: s.color || T.text, fontSize: 20, fontWeight: 700, fontFamily: "Georgia,serif", marginTop: 1 }}>{s.value}</div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function TimelineBar({ dark, selectedRunId, onSelectRun, movementSummary }) {
+  const T = dark ? DARK : LIGHT;
+  const activeRun = timelineOptionById(selectedRunId);
+  return (
+    <div style={{ padding: "12px clamp(12px, 2vw, 24px)", background: T.surfaceAlt, borderBottom: `1px solid ${T.border}`, display: "grid", gap: 12, flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ color: T.text, fontSize: 12, fontWeight: 700 }}>Show network as of...</div>
+          <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>
+            {selectedRunId === "all_runs"
+              ? "All synthetic scrape runs combined across bakery, supplier, distributor, and public-claim pages."
+              : `${activeRun.platform} · ${formatTimelineDate(activeRun.date)}`}
+          </div>
+        </div>
+        <div style={{ color: T.textMuted, fontSize: 10 }}>
+          {movementSummary?.newEvidenceRows != null ? `Latest step adds ${movementSummary.newEvidenceRows} evidence rows and ${movementSummary.newLinks} links.` : ""}
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {SCRAPE_RUN_OPTIONS.map(option => {
+          const active = option.id === selectedRunId;
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onSelectRun(option.id)}
+              style={{
+                background: active ? T.accentBg : T.surface,
+                color: active ? T.accent : T.textMid,
+                border: `1px solid ${active ? T.accent : T.border}`,
+                borderRadius: 8,
+                padding: "8px 10px",
+                cursor: "pointer",
+                textAlign: "left",
+                minWidth: 132,
+                fontFamily: "Georgia,serif",
+              }}
+            >
+              <div style={{ fontSize: 10, fontWeight: 700 }}>{option.label}</div>
+              {option.platform && option.id !== "all_runs" && <div style={{ fontSize: 9, color: active ? T.accent : T.textMuted, marginTop: 2 }}>{option.platform}</div>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function NetworkMovementPanel({ dark, selectedRunId, summary }) {
+  const T = dark ? DARK : LIGHT;
+  if (!summary) return null;
+  return (
+    <div style={{ background: dark ? "rgba(10,14,20,0.94)" : "rgba(255,255,255,0.96)", border: `1px solid ${T.border}`, borderRadius: 8, padding: 12 }}>
+      <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6 }}>Network Movement</div>
+      <div style={{ color: T.text, fontSize: 12, fontWeight: 700, marginBottom: 5 }}>
+        {selectedRunId === "all_runs" ? "Combined synthetic timeline" : summary.label}
+      </div>
+      <div style={{ color: T.textMid, fontSize: 11, lineHeight: 1.55, marginBottom: 10 }}>{summary.message}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 7 }}>
+        {[
+          ["New companies", summary.newCompanies],
+          ["New ingredients", summary.newIngredients],
+          ["New evidence", summary.newEvidenceRows],
+          ["New links", summary.newLinks],
+        ].map(([label, value]) => (
+          <div key={label} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 6, padding: "7px 8px" }}>
+            <div style={{ color: T.textMuted, fontSize: 8, letterSpacing: 0.8, textTransform: "uppercase" }}>{label}</div>
+            <div style={{ color: T.text, fontSize: 14, fontWeight: 700, marginTop: 2 }}>{Number(value || 0).toLocaleString()}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -5374,6 +5463,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFilter, setSearchFilter] = useState("all");
   const [searchResolvedQuery, setSearchResolvedQuery] = useState("");
+  const [selectedRunId, setSelectedRunId] = useState("all_runs");
   const [expandedSearchType, setExpandedSearchType] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -5406,6 +5496,7 @@ export default function App() {
   const [evidenceTotal, setEvidenceTotal] = useState(0);
   const [companyTotal, setCompanyTotal] = useState(0);
   const [associationTotal, setAssociationTotal] = useState(0);
+  const [sourcePageTotal, setSourcePageTotal] = useState(0);
   const [linkageTotal, setLinkageTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -5414,6 +5505,8 @@ export default function App() {
   const artifactIntelligenceRequestRef = useRef(0);
 
   const T = dark ? DARK : LIGHT;
+  const selectedRunOption = useMemo(() => timelineOptionById(selectedRunId), [selectedRunId]);
+  const movementSummary = useMemo(() => MOVEMENT_SUMMARIES[selectedRunId] || MOVEMENT_SUMMARIES.all_runs || null, [selectedRunId]);
   const sessionUserId = session?.user?.id || "";
   const sessionUserEmail = session?.user?.email || "";
   const sessionAccessToken = session?.access_token || "";
@@ -5753,12 +5846,19 @@ export default function App() {
   }, [dossierGlobalNote, dossierSectionOrder, dossierTitle, sessionUserId]);
 
   useEffect(() => {
+    if (typeof supabase.setTimelineFilter === "function") {
+      supabase.setTimelineFilter(selectedRunId);
+    }
+    APP_DATA_CACHE = null;
+  }, [selectedRunId]);
+
+  useEffect(() => {
     if (!sessionUserId) {
       initialDataRequestRef.current += 1;
       APP_DATA_CACHE = null;
       return;
     }
-    if (APP_DATA_CACHE?.userId === sessionUserId) {
+    if (APP_DATA_CACHE?.userId === sessionUserId && APP_DATA_CACHE?.runId === selectedRunId) {
       setCompanies(APP_DATA_CACHE.companies || []);
       setTopWeightCompanies(APP_DATA_CACHE.topWeightCompanies || []);
       setSubstances(APP_DATA_CACHE.substances || []);
@@ -5769,6 +5869,7 @@ export default function App() {
       setEvidenceTotal(APP_DATA_CACHE.evidenceTotal || 0);
       setCompanyTotal(APP_DATA_CACHE.companyTotal || 0);
       setAssociationTotal(APP_DATA_CACHE.associationTotal || 0);
+      setSourcePageTotal(APP_DATA_CACHE.sourcePageTotal || 0);
       setLinkageTotal(APP_DATA_CACHE.linkageTotal || 0);
       setLoading(false);
     }
@@ -5844,6 +5945,9 @@ export default function App() {
           const { data: assocTotal } = await supabase.rpc("get_association_count");
         if (requestId !== initialDataRequestRef.current) return;
           setAssociationTotal(Number(assocTotal) || 0);
+          const { count: sourceCount } = await supabase.from("data_source").select("DATA_SOURCE_ID", { count: "exact", head: true });
+        if (requestId !== initialDataRequestRef.current) return;
+        setSourcePageTotal(Number(sourceCount) || 0);
           const { count: linkageCount, error: linkageCountError } = await supabase.from("linkage").select("LINKAGEID", { count: "exact", head: true });
         if (requestId !== initialDataRequestRef.current) return;
         if (linkageCountError) {
@@ -5881,6 +5985,7 @@ export default function App() {
 
         APP_DATA_CACHE = {
           userId: sessionUserId,
+          runId: selectedRunId,
           companies: (networkData || []).map(r => {
             const v2 = v2Map[r.COMPANY_ID] || {};
             return {
@@ -5907,6 +6012,7 @@ export default function App() {
           evidenceTotal: Number(totalData) || 0,
           companyTotal: Number(coTotal) || 0,
           associationTotal: Number(assocTotal) || 0,
+          sourcePageTotal: Number(sourceCount) || 0,
           linkageTotal: Number(linkageCount) || 0,
         };
 
@@ -5914,7 +6020,7 @@ export default function App() {
     };
     fetchAll();
     return () => { initialDataRequestRef.current += 1; };
-  }, [refreshNonce, sessionUserId]);
+  }, [refreshNonce, selectedRunId, sessionUserId]);
 
   const handleViewChange = v => { setView(v); setSelectedCompany(null); setSelectedSubstance(null); setSelectedArtifactEntity(null); setSearchDetailRecord(null); setShowGraphSummary(false); };
   useEffect(() => {
@@ -5953,6 +6059,7 @@ export default function App() {
       action: "artifactIntelligence",
       kind: selectedArtifactEntity.kind,
       value: selectedArtifactEntity.value,
+      asOfRunId: selectedRunId,
     }).then(({ artifact }) => {
       if (requestId !== artifactIntelligenceRequestRef.current) return;
       setArtifactIntelligence(artifact || null);
@@ -5964,7 +6071,7 @@ export default function App() {
     }).finally(() => {
       if (requestId === artifactIntelligenceRequestRef.current) setArtifactIntelligenceLoading(false);
     });
-  }, [selectedArtifactEntity]);
+  }, [selectedArtifactEntity, selectedRunId]);
 
   const resetCompanyGraph = () => {
     companyGraphRequestRef.current += 1;
@@ -5986,7 +6093,7 @@ export default function App() {
     setSelectedArtifactEntity(null);
     setView("network");
     try {
-      const { graph } = await invokeAuthorizedData({ action: ACTION_COMPANY_GRAPH, companyId: company.id });
+      const { graph } = await invokeAuthorizedData({ action: ACTION_COMPANY_GRAPH, companyId: company.id, asOfRunId: selectedRunId });
       if (requestId !== companyGraphRequestRef.current) return;
       setCompanyGraph(graph || null);
       const seedCompany = graphToNetworkData(graph)?.companies.find(c => c.id === company.id) || company;
@@ -6029,7 +6136,7 @@ export default function App() {
     setView("network");
     setGraphLayers(current => ({ ...current, [kind]: true }));
     try {
-      const { graph } = await invokeAuthorizedData({ action: ACTION_ARTIFACT_GRAPH, kind, value });
+      const { graph } = await invokeAuthorizedData({ action: ACTION_ARTIFACT_GRAPH, kind, value, asOfRunId: selectedRunId });
       if (requestId !== companyGraphRequestRef.current) return;
       setCompanyGraph(graph || null);
       const networkData = graphToNetworkData(graph);
@@ -6074,7 +6181,7 @@ export default function App() {
     graphCompanySearchDebounce.current = setTimeout(async () => {
       setGraphCompanySearchLoading(true);
       try {
-        const { results } = await invokeAuthorizedData({ action: "search", search: query });
+        const { results } = await invokeAuthorizedData({ action: "search", search: query, asOfRunId: selectedRunId });
         if (requestId !== graphCompanySearchRequestRef.current) return;
         setGraphCompanyMatches((results || []).filter(result => getGraphSeedFromSearchResult(result)).slice(0, 7));
       } catch (e) {
@@ -6084,7 +6191,39 @@ export default function App() {
       }
     }, 250);
     return () => clearTimeout(graphCompanySearchDebounce.current);
-  }, [graphCompanyQuery, graphSelectedSeed, session]);
+  }, [graphCompanyQuery, graphSelectedSeed, selectedRunId, session]);
+
+  useEffect(() => {
+    if (!selectedCompany) return;
+    if (!companyDirectory.has(selectedCompany.id)) {
+      setSelectedCompany(null);
+    }
+  }, [companyDirectory, selectedCompany]);
+
+  useEffect(() => {
+    if (!selectedSubstance) return;
+    if (!substances.some(substance => substance.id === selectedSubstance.id)) {
+      setSelectedSubstance(null);
+    }
+  }, [selectedSubstance, substances]);
+
+  useEffect(() => {
+    if (!selectedArtifactEntity?.kind || !selectedArtifactEntity?.value) return;
+    const available = activeGraphArtifactEdges.some(edge => edge.kind === selectedArtifactEntity.kind && String(edge.value || "").toLowerCase() === String(selectedArtifactEntity.value || "").toLowerCase());
+    if (!available) {
+      setSelectedArtifactEntity(null);
+    }
+  }, [activeGraphArtifactEdges, selectedArtifactEntity]);
+
+  useEffect(() => {
+    companyGraphRequestRef.current += 1;
+    setCompanyGraph(null);
+    setCompanyGraphError("");
+    setCompanyGraphLoadingId(null);
+    setArtifactGraphLoadingKey("");
+    setShowGraphSummary(false);
+    setSelectedArtifactEntity(null);
+  }, [selectedRunId]);
 
   useEffect(() => {
     const requestId = ++searchRequestRef.current;
@@ -6100,14 +6239,14 @@ export default function App() {
     searchDebounce.current = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const { results } = await invokeAuthorizedData({ action: "search", search: searchQuery });
+        const { results } = await invokeAuthorizedData({ action: "search", search: searchQuery, asOfRunId: selectedRunId });
         if (requestId !== searchRequestRef.current) return;
         setSearchResults(results || []);
         setSearchResolvedQuery(searchQuery);
       } catch(e) { if (requestId === searchRequestRef.current) console.error(e); } finally { if (requestId === searchRequestRef.current) setSearchLoading(false); }
     }, 300);
     return () => clearTimeout(searchDebounce.current);
-  }, [searchQuery, session]);
+  }, [searchQuery, selectedRunId, session]);
 
   useEffect(() => {
     setExpandedSearchType(null);
@@ -6345,7 +6484,8 @@ export default function App() {
         </div>
       </div>
 
-      <StatsBar substances={substances} evidenceTotal={evidenceTotal} companyTotal={companyTotal} associationTotal={associationTotal} linkageTotal={linkageTotal} dark={dark} />
+      <StatsBar ingredientCount={substances.length} evidenceTotal={evidenceTotal} companyTotal={companyTotal} sourcePageTotal={sourcePageTotal} networkLinkTotal={associationTotal} dark={dark} />
+      <TimelineBar dark={dark} selectedRunId={selectedRunId} onSelectRun={setSelectedRunId} movementSummary={movementSummary} />
       {error && <div style={{ background: "#2a0a08", border: "1px solid #ff3b30", color: "#ff3b30", padding: "10px 24px", fontSize: 12, fontFamily: "monospace", flexShrink: 0 }}>⚠ {error}</div>}
 
       <div style={{ flex: 1, overflow: "hidden", position: "relative", minHeight: 0 }}>
@@ -6369,11 +6509,11 @@ export default function App() {
 
             <div style={{ height: "100%", position: "relative", display: view === "network" ? "block" : "none" }}>
               <div style={{ position: "absolute", top: 14, left: 18, zIndex: 5, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, maxWidth: "min(680px, calc(100% - 36px))" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "fit-content", maxWidth: "100%", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 999, padding: "6px 12px", fontSize: 10, color: T.textMuted, boxShadow: dark ? "0 10px 26px rgba(0,0,0,0.24)" : "0 10px 22px rgba(54,45,31,0.08)" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "fit-content", maxWidth: "100%", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "8px 12px", fontSize: 10, color: T.textMuted }}>
                   <span>
                     {companyGraph
                       ? `${companyGraph.seed?.type === "linkage_artifact" ? "Linkage-seeded" : "Company-seeded"} · ${companyGraph.seed?.label || "Selected seed"} · ${activeGraphCompanies.length} companies · ${activeGraphAssociations.length} visible graph associations`
-                      : `Top ${activeGraphCompanies.length} most-connected companies · ${activeGraphAssociations.length} visible graph associations`} · zoom, pan, drag nodes, labels on hover
+                      : `Top ${activeGraphCompanies.length} most-connected companies · ${activeGraphAssociations.length} visible graph associations`} · as of ${selectedRunId === "all_runs" ? "all runs" : formatTimelineDate(selectedRunOption.date)} · zoom, pan, drag nodes, labels on hover
                   </span>
 	                  {companyGraph && (
 	                    <>
@@ -6387,8 +6527,8 @@ export default function App() {
 	                  )}
 	                </div>
 	                <div style={{ position: "relative", width: "min(520px, calc(100vw - 72px))", background: dark ? "rgba(10,14,20,0.94)" : "rgba(255,255,255,0.96)", border: `1px solid ${T.border}`, borderRadius: 8, padding: 10, boxShadow: dark ? "0 18px 40px rgba(0,0,0,0.25)" : "0 18px 34px rgba(54,45,31,0.12)" }}>
-	                  <label htmlFor="company-graph-search" style={{ display: "block", color: T.textMuted, fontSize: 9, letterSpacing: 1.1, marginBottom: 6, textTransform: "uppercase" }}>Build graph from company, email, or phone</label>
-	                  <div style={{ display: "flex", gap: 8 }}>
+                  <label htmlFor="company-graph-search" style={{ display: "block", color: T.textMuted, fontSize: 9, letterSpacing: 1.1, marginBottom: 6, textTransform: "uppercase" }}>Build graph from company, email, or phone</label>
+                  <div style={{ display: "flex", gap: 8 }}>
 	                    <input
 	                      id="company-graph-search"
 	                      value={graphCompanyQuery}
@@ -6443,7 +6583,7 @@ export default function App() {
 	                      );})}
                     </div>
                   )}
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, paddingTop: 9, borderTop: `1px solid ${T.border}` }}>
+	                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, paddingTop: 9, borderTop: `1px solid ${T.border}` }}>
                     {!companyGraph && (
                       <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", width: "100%" }}>
                         <span style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginRight: 2 }}>Companies</span>
@@ -6489,8 +6629,9 @@ export default function App() {
                         {label} {graphArtifactCounts[kind] ? `(${graphArtifactCounts[kind]})` : ""}
                       </button>
                     ))}
-                  </div>
-                </div>
+	                  </div>
+	                </div>
+                  <NetworkMovementPanel dark={dark} selectedRunId={selectedRunId} summary={movementSummary} />
               </div>
               {companyGraph?.limits?.capped && (
                 <div style={{ position: "absolute", top: 14, right: 18, zIndex: 5, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 6, padding: "8px 12px", fontSize: 10, color: T.textMuted }}>
@@ -6590,7 +6731,7 @@ export default function App() {
                 onHandledPreviewRequest={() => setMediaPreviewRequest(null)}
               />
             )}
-            {view === "about" && <AboutTab dark={dark} substances={substances} evidenceTotal={evidenceTotal} companyTotal={companyTotal} associationTotal={associationTotal} linkageTotal={linkageTotal} graphAssociationTotal={activeGraphAssociations.length} />}
+            {view === "about" && <AboutTab dark={dark} substances={substances} evidenceTotal={evidenceTotal} companyTotal={companyTotal} associationTotal={associationTotal} sourcePageTotal={sourcePageTotal} linkageTotal={linkageTotal} graphAssociationTotal={activeGraphAssociations.length} />}
           </>
         )}
       </div>
@@ -6602,6 +6743,7 @@ export default function App() {
           preloadedAssociations={associations}
           preloadedEvidence={evidenceSummary}
           evidenceTypes={evidenceTypes}
+          timelineRunId={selectedRunId}
           onBuildCompanyGraph={handleBuildCompanyGraph}
           graphLoadingCompanyId={companyGraphLoadingId}
           onAddToDossier={addDossierItem}
@@ -6624,6 +6766,7 @@ export default function App() {
           substanceDataSources={substanceDataSources}
           companies={companies}
           evidenceTypes={evidenceTypes}
+          timelineRunId={selectedRunId}
           onAddToDossier={addDossierItem}
           isInDossier={selectedSubstance ? isDossierItemPresent(`substance:${selectedSubstance.id}`) : false}
           onAddEvidenceToDossier={row => addEvidenceRowToDossier(row, "Ingredient provenance")}

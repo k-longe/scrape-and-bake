@@ -1,0 +1,48 @@
+{
+  "scrape_run_id": "2026-04-15_ingredienthub",
+  "platform": "IngredientHub",
+  "run_date": "2026-04-15",
+  "total_targets": 6,
+  "successful_targets": 6,
+  "failed_targets": 0,
+  "evidence_rows_produced": 7,
+  "notes": "Synthetic fixture output for public walkthroughs.",
+  "source_pages": [
+    {
+      "data_source_name": "Golden Grain Supply catalog",
+      "source_platform": "IngredientHub",
+      "source_url": "https://cookie-demo.example/ingredienthub/golden-grain-catalog",
+      "raw_html_file": "raw_html/golden_grain_supply_catalog.html"
+    },
+    {
+      "data_source_name": "Orchard Vanilla Imports catalog",
+      "source_platform": "IngredientHub",
+      "source_url": "https://cookie-demo.example/ingredienthub/orchard-vanilla-catalog",
+      "raw_html_file": "raw_html/orchard_vanilla_imports_catalog.html"
+    },
+    {
+      "data_source_name": "Cacao Coast ingredients catalog",
+      "source_platform": "IngredientHub",
+      "source_url": "https://cookie-demo.example/ingredienthub/cacao-coast-catalog",
+      "raw_html_file": "raw_html/cacao_coast_ingredients_catalog.html"
+    },
+    {
+      "data_source_name": "Northwind butter sheet",
+      "source_platform": "IngredientHub",
+      "source_url": "https://cookie-demo.example/ingredienthub/northwind-butter-sheet",
+      "raw_html_file": "raw_html/northwind_butter_sheet.html"
+    },
+    {
+      "data_source_name": "Clover Cane sugars catalog",
+      "source_platform": "IngredientHub",
+      "source_url": "https://cookie-demo.example/ingredienthub/clover-cane-catalog",
+      "raw_html_file": "raw_html/clover_cane_sugars_catalog.html"
+    },
+    {
+      "data_source_name": "Meadow Oat Collective catalog",
+      "source_platform": "IngredientHub",
+      "source_url": "https://cookie-demo.example/ingredienthub/meadow-oat-catalog",
+      "raw_html_file": "raw_html/meadow_oat_collective_catalog.html"
+    }
+  ]
+}

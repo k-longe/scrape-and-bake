@@ -1,16 +1,23 @@
-LINKAGEID,COMPANY_ID,LINKAGE_METHOD,Linkage_Value_Type,LINKAGE_VALUE,DATA_SOURCE_ID
-1,1,Email,Email,batches@bakehouse-collective.example,1
-2,2,Email,Email,batches@bakehouse-collective.example,4
-3,10,Email,Email,batches@bakehouse-collective.example,4
-4,11,Email,Email,batches@bakehouse-collective.example,7
-5,3,Phone,Phone,+1-414-555-0110,2
-6,5,Phone,Phone,+1-414-555-0110,3
-7,9,Phone,Phone,+1-414-555-0110,2
-8,7,Phone,Phone,+1-773-555-0142,6
-9,8,Phone,Phone,+1-773-555-0142,6
-10,4,Email,Email,vanilla@pantry-inputs.example,2
-11,6,Email,Email,vanilla@pantry-inputs.example,5
-12,12,Email,Email,coastal-orders@bakehouse-collective.example,1
-13,1,Phone,Phone,+1-312-555-0188,1
-14,7,Email,Email,packing@fulfillment-partners.example,6
-15,8,Email,Email,packing@fulfillment-partners.example,6
+LINKAGEID,COMPANY_ID,LINKAGE_METHOD,Linkage_Value_Type,LINKAGE_VALUE,DATA_SOURCE_ID,SCRAPE_RUN_ID,SOURCE_PLATFORM,OBSERVED_AT,FIRST_SEEN_AT,LAST_SEEN_AT
+1,1,Email,Email,orders@bakeryboard-kitchens.example,1,2026-04-01_bakeryboard,BakeryBoard,2026-04-01,2026-04-01,2026-04-01
+2,2,Email,Email,orders@bakeryboard-kitchens.example,1,2026-04-01_bakeryboard,BakeryBoard,2026-04-01,2026-04-01,2026-04-01
+3,5,Email,Email,catalog@ingredienthub.example,4,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+4,6,Email,Email,catalog@ingredienthub.example,4,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+5,5,Phone,Phone,+1-414-555-0110,8,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+6,9,Phone,Phone,+1-414-555-0110,8,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+7,6,Email,Email,catalog@ingredienthub.example,5,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+8,8,Email,Email,catalog@ingredienthub.example,5,2026-04-15_ingredienthub,IngredientHub,2026-04-15,2026-04-15,2026-04-15
+9,1,Phone,Phone,+1-773-555-0142,10,2026-05-01_wholesalecrumb,WholesaleCrumb,2026-05-01,2026-05-01,2026-05-01
+10,11,Phone,Phone,+1-773-555-0142,10,2026-05-01_wholesalecrumb,WholesaleCrumb,2026-05-01,2026-05-01,2026-05-01
+11,2,Phone,Phone,+1-773-555-0142,10,2026-05-01_wholesalecrumb,WholesaleCrumb,2026-05-01,2026-05-01,2026-05-01
+12,8,Phone,Phone,+1-773-555-0142,10,2026-05-01_wholesalecrumb,WholesaleCrumb,2026-05-01,2026-05-01,2026-05-01
+13,12,Email,Email,registry@certibake.example,11,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+14,1,Email,Email,registry@certibake.example,11,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+15,2,Email,Email,registry@certibake.example,11,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+16,3,Email,Email,registry@certibake.example,11,2026-05-20_certibake_registry,CertiBake Registry,2026-05-20,2026-05-20,2026-05-20
+17,1,Email,Email,orders@goldengrain.example,13,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10
+18,5,Email,Email,orders@goldengrain.example,13,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10
+19,4,Phone,Phone,+1-773-555-0142,14,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10
+20,11,Phone,Phone,+1-773-555-0142,14,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10
+21,4,Email,Email,orders@goldengrain.example,14,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10
+22,5,Email,Email,orders@goldengrain.example,14,2026-06-10_bakeryboard_refresh,BakeryBoard Refresh,2026-06-10,2026-06-10,2026-06-10

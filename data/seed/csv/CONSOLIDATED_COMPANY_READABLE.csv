@@ -1,13 +1,13 @@
 CONSOLIDATED_COMPANY_ID,CONSOLIDATED_NAME,COMPANY_NAME,COMPANY_ID
-1,Bakehouse Collective,Harbor Batch Bakery,1
-2,Bakehouse Collective,Maple & Main Cookie Co.,2
-3,Bakehouse Collective,Copper Kettle Kitchen,10
-4,Bakehouse Collective,Bluebird Oven Foods,11
-5,Bakehouse Collective,Seaside Biscuit Works,12
-6,Pantry Inputs Cooperative,Sunfield Flour Mills,3
-7,Pantry Inputs Cooperative,Orchard Vanilla Imports,4
-8,Pantry Inputs Cooperative,Northwind Butter Works,5
-9,Pantry Inputs Cooperative,Cacao Coast Ingredients,6
-10,Pantry Inputs Cooperative,Clover Cane Sugars,9
-11,Packing & Fulfillment Partners,Spruce Street Packing,7
-12,Packing & Fulfillment Partners,Golden Crate Logistics,8
+1,Bakery Network,Harbor Batch Bakery,1
+2,Bakery Network,Maple & Main Cookie Co.,2
+3,Bakery Network,Bluebird Oven Foods,3
+4,Bakery Network,Seaside Biscuit Works,4
+5,Ingredient Partners,Golden Grain Supply,5
+6,Ingredient Partners,Orchard Vanilla Imports,6
+7,Ingredient Partners,Northwind Butter Works,7
+8,Ingredient Partners,Cacao Coast Ingredients,8
+9,Ingredient Partners,Clover Cane Sugars,9
+10,Ingredient Partners,Meadow Oat Collective,10
+11,Movement & Registry,Golden Crate Logistics,11
+12,Movement & Registry,CertiBake Registry,12

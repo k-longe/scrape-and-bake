@@ -1,0 +1,30 @@
+{
+  "scrape_run_id": "2026-04-01_bakeryboard",
+  "platform": "BakeryBoard",
+  "run_date": "2026-04-01",
+  "total_targets": 3,
+  "successful_targets": 3,
+  "failed_targets": 0,
+  "evidence_rows_produced": 14,
+  "notes": "Synthetic fixture output for public walkthroughs.",
+  "source_pages": [
+    {
+      "data_source_name": "Harbor Batch spring cookie board",
+      "source_platform": "BakeryBoard",
+      "source_url": "https://cookie-demo.example/bakeryboard/harbor-batch-spring-board",
+      "raw_html_file": "raw_html/harbor_batch_spring_cookie_board.html"
+    },
+    {
+      "data_source_name": "Maple & Main cookie board",
+      "source_platform": "BakeryBoard",
+      "source_url": "https://cookie-demo.example/bakeryboard/maple-main-cookie-board",
+      "raw_html_file": "raw_html/maple_and_main_cookie_board.html"
+    },
+    {
+      "data_source_name": "Bluebird oatmeal board",
+      "source_platform": "BakeryBoard",
+      "source_url": "https://cookie-demo.example/bakeryboard/bluebird-oatmeal-board",
+      "raw_html_file": "raw_html/bluebird_oatmeal_board.html"
+    }
+  ]
+}
