@@ -1,42 +1,100 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100%;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.network-stage-shell {
+  padding: 14px clamp(12px, 2vw, 24px) 28px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.network-stage {
+  position: relative;
+  min-height: 680px;
+  background: #fff1d1;
+  border: 2px solid #d6b891;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.network-canvas-layer {
+  position: relative;
+  z-index: 1;
+  height: 680px;
+}
+
+.network-canvas-layer > * {
+  height: 100%;
+}
+
+.network-canvas-wrap {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.network-overlay {
+  position: absolute;
+  z-index: 4;
+  pointer-events: auto;
+}
+
+.network-overlay-controls {
+  top: 16px;
+  left: 16px;
+  width: min(410px, calc(100% - 32px));
+  display: grid;
+  gap: 12px;
+}
+
+.network-overlay-legend {
+  left: 16px;
+  bottom: 16px;
+  width: min(300px, calc(100% - 32px));
+}
+
+.network-overlay-movement {
+  right: 16px;
+  bottom: 16px;
+  width: min(360px, calc(100% - 32px));
+}
+
+.network-overlay-zoom {
+  top: 16px;
+  right: 16px;
+  width: min(300px, calc(100% - 32px));
+}
+
+.network-panel-card {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .network-stage {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    min-height: 0;
   }
-  to {
-    transform: rotate(360deg);
+
+  .network-canvas-layer {
+    order: 5;
+    height: 560px;
+  }
+
+  .network-overlay {
+    position: static;
+    width: 100%;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@media (max-width: 640px) {
+  .network-stage-shell {
+    padding-bottom: 22px;
   }
-}
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  .network-canvas-layer {
+    height: 520px;
+  }
 }

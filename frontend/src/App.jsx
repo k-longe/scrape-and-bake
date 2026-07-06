@@ -1,21 +1,24 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import "./App.css";
 import { supabase } from "./lib/supabaseClient";
 import DEMO_DATA from "./data/demoData";
 import Login from "./components/Login";
 import { DEFAULT_APP_ROLE, getSession, isAuthVerificationPending, signOut, verifyAppAccess } from "./lib/auth";
 
 // ── Themes ─────────────────────────────────────────────────────────────────
+const DISPLAY_FONT = '"Bricolage Grotesque", "Avenir Next", "Trebuchet MS", sans-serif';
+const BODY_FONT = '"Nunito", "Inter", system-ui, sans-serif';
 const DARK = {
-  bg: "#070b10", surface: "#0a0e14", surfaceAlt: "#0f1520",
-  border: "#1a2233", borderMid: "#2a3550",
-  text: "#cdd6e8", textMid: "#7a90a8", textMuted: "#4a6080",
-  navy: "#0f1f35", accent: "#007aff", accentBg: "#0f2040",
+  bg: "#1c120f", surface: "#2a1a15", surfaceAlt: "#38241d",
+  border: "#5a3426", borderMid: "#7b4b38",
+  text: "#fff4df", textMid: "#f2d9b8", textMuted: "#d9b98d",
+  navy: "#233d8b", accent: "#ffd166", accentBg: "#4b2d20",
 };
 const LIGHT = {
-  bg: "#f2f0eb", surface: "#ffffff", surfaceAlt: "#f8f6f2",
-  border: "#e0dbd2", borderMid: "#c8c2b8",
-  text: "#18150f", textMid: "#52493c", textMuted: "#96897a",
-  navy: "#1b2d4f", accent: "#1b56a5", accentBg: "#eaf0fb",
+  bg: "#fff7eb", surface: "#fffdf8", surfaceAlt: "#fff1d4",
+  border: "#d9b07b", borderMid: "#b77a55",
+  text: "#2d1810", textMid: "#5a3426", textMuted: "#8d6447",
+  navy: "#233d8b", accent: "#e94b7f", accentBg: "#ffe0d0",
 };
 
 const getPriorityCategory = s => (s >= 85 ? "critical" : s >= 65 ? "high" : s >= 45 ? "medium" : "low");
@@ -1605,12 +1608,12 @@ function SubstanceDrawer({ substance, evidenceSummary, substanceDataSources, com
 // ── Search Bar ─────────────────────────────────────────────────────────────
 const SEARCH_TYPE_STYLE = (type, dark) => {
   const styles = {
-    company:   { bg: dark ? "#0f2040" : "#eaf0fb", color: dark ? "#007aff" : "#1b56a5" },
-    substance: { bg: dark ? "#0a2010" : "#f0fdf4", color: dark ? "#34c759" : "#166534" },
-    linkage:   { bg: dark ? "#1a1a2e" : "#f3e8ff", color: dark ? "#af52de" : "#7c3aed" },
-    association: { bg: dark ? "#1a1a2e" : "#f3e8ff", color: dark ? "#af52de" : "#7c3aed" },
-    evidence:  { bg: dark ? "#2a0a08" : "#fef2f2", color: dark ? "#ff3b30" : "#b91c1c" },
-    synonym:   { bg: dark ? "#2a1800" : "#fff7ed", color: dark ? "#ff9500" : "#c2410c" },
+    company: { bg: dark ? "#2d3e78" : "#dfe7ff", color: dark ? "#fff4df" : "#233d8b" },
+    substance: { bg: dark ? "#355a35" : "#dff4d6", color: dark ? "#fff4df" : "#2f6d3d" },
+    linkage: { bg: dark ? "#5a2845" : "#ffd9ea", color: dark ? "#fff4df" : "#a0315b" },
+    association: { bg: dark ? "#5a2845" : "#ffd9ea", color: dark ? "#fff4df" : "#a0315b" },
+    evidence: { bg: dark ? "#6a351f" : "#ffe1d2", color: dark ? "#fff4df" : "#b55326" },
+    synonym: { bg: dark ? "#6b5422" : "#ffeab0", color: dark ? "#fff4df" : "#8d5f00" },
   };
   return styles[type] || styles.company;
 };
@@ -1626,19 +1629,18 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
 
   return (
     <div style={{ position: "relative", flex: "2 1 460px", minWidth: 260, maxWidth: 680 }}>
-      <div style={{ background: T.surfaceAlt, border: `1px solid ${query ? T.accent : T.border}`, borderRadius: 8, padding: "7px 10px" }}>
+      <div style={{ background: T.surface, border: `2px solid ${query ? T.accent : T.border}`, borderRadius: 12, padding: "8px 10px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ color: loading ? T.accent : T.textMuted, fontSize: 13 }}>{loading ? "⟳" : "⌕"}</span>
-          <span style={{ color: T.accent, background: T.accentBg, border: `1px solid ${T.border}`, borderRadius: 999, fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase", padding: "3px 7px", whiteSpace: "nowrap" }}>{copy.label}</span>
           <input ref={inputRef} value={query} onChange={e => onChange(e.target.value)} placeholder={copy.placeholder}
-            style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "Georgia,serif", flex: "1 1 220px", minWidth: 140 }} />
-          <label style={{ display: "flex", alignItems: "center", gap: 5, color: T.textMuted, fontSize: 9, letterSpacing: 0.7, textTransform: "uppercase", whiteSpace: "nowrap" }}>
-            Scope
+            style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 12, fontFamily: BODY_FONT, flex: "1 1 220px", minWidth: 140 }} />
+          <label style={{ display: "flex", alignItems: "center", gap: 5, color: T.textMuted, fontSize: 9, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap" }}>
+            Filter
             <select
               value={filter}
               onChange={e => onFilterChange(e.target.value)}
               aria-label="Search scope"
-              style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 999, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif", padding: "3px 8px", maxWidth: 150 }}
+              style={{ appearance: "none", WebkitAppearance: "none", background: T.surfaceAlt, border: `2px solid ${T.border}`, borderRadius: 10, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: BODY_FONT, padding: "5px 9px", maxWidth: 150 }}
             >
               {SEARCH_FILTERS.map(item => (
                 <option key={item.id} value={item.id}>{item.label}</option>
@@ -1649,15 +1651,12 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
         </div>
       </div>
       {open && (
-        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 6, marginTop: 4, maxHeight: 400, overflowY: "auto", boxShadow: dark ? "0 8px 32px rgba(0,0,0,0.6)" : "0 8px 24px rgba(0,0,0,0.12)", width: "min(420px, calc(100vw - 32px))" }}>
+        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, background: T.surface, border: `2px solid ${T.border}`, borderRadius: 12, marginTop: 6, maxHeight: 400, overflowY: "auto", width: "min(440px, calc(100vw - 32px))" }}>
           {loading && results.length === 0 && (
-            <div style={{ padding: "14px", color: T.textMuted, fontSize: 11, textAlign: "center" }}>Searching across all tables...</div>
+            <div style={{ padding: "14px", color: T.textMuted, fontSize: 11, textAlign: "center" }}>Searching...</div>
           )}
           {results.length > 0 && (
             <>
-              <div style={{ padding: "7px 14px", color: T.textMuted, fontSize: 10, borderBottom: `1px solid ${T.border}` }}>
-                Preview suggestions only. Use view-more actions for fuller scoped results.
-              </div>
               {searchGroupOrder(mode).map(type => {
                 const group = results.filter(r => r.type === type);
                 if (!group.length) return null;
@@ -1688,7 +1687,7 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
                                 onBuildGraphFromResult(r);
                                 onChange("");
                               }}
-                              style={{ marginTop: 7, marginLeft: 46, background: T.surfaceAlt, color: T.accent, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "4px 9px", cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif" }}
+                              style={{ marginTop: 7, marginLeft: 46, background: T.surfaceAlt, color: T.accent, border: `2px solid ${T.borderMid}`, borderRadius: 8, padding: "4px 9px", cursor: "pointer", fontSize: 10, fontFamily: BODY_FONT }}
                             >
                               Build graph from this
                             </button>
@@ -1700,7 +1699,7 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
                       <button
                         type="button"
                         onClick={() => onViewMore(type)}
-                        style={{ width: "100%", textAlign: "left", padding: "8px 14px", background: T.surfaceAlt, border: "none", borderBottom: `1px solid ${T.border}`, color: T.accent, cursor: "pointer", fontSize: 11, fontFamily: "Georgia,serif" }}
+                        style={{ width: "100%", textAlign: "left", padding: "8px 14px", background: T.surfaceAlt, border: "none", borderBottom: `1px solid ${T.border}`, color: T.accent, cursor: "pointer", fontSize: 11, fontFamily: BODY_FONT }}
                       >
                         View all {total} {searchTypeLabel(type)} results
                       </button>
@@ -1712,7 +1711,7 @@ function SearchBar({ query, onChange, T, dark, mode, filter, onFilterChange, res
           )}
           {!loading && searched && results.length === 0 && query.length > 1 && (
             <div style={{ padding: "14px", color: T.textMuted, fontSize: 11, textAlign: "center" }}>
-              {copy.empty} for "{query}" in {activeFilter.label}. Try All if you want the broad result set.
+              {copy.empty} for "{query}" in {activeFilter.label}.
             </div>
           )}
         </div>
@@ -1769,7 +1768,7 @@ function SearchResultsPanel({ query, type, results, onSelect, onBuildGraphFromRe
 }
 
 // ── Network Graph ──────────────────────────────────────────────────────────
-function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCompany, onSelectArtifact, selectedId, seedId, dark }) {
+function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCompany, onSelectArtifact, selectedId, seedId, dark, onViewApiChange = null }) {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const nodesRef = useRef([]);
@@ -1785,6 +1784,25 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
   useEffect(() => { selectedIdRef.current = selectedId; }, [selectedId]);
   useEffect(() => { seedIdRef.current = seedId; }, [seedId]);
   useEffect(() => { darkRef.current = dark; }, [dark]);
+  useEffect(() => {
+    if (!onViewApiChange) return undefined;
+    const api = {
+      zoomIn() {
+        zoomRef.current = Math.min(zoomRef.current * 1.15, 4);
+      },
+      zoomOut() {
+        zoomRef.current = Math.max(zoomRef.current * 0.87, 0.3);
+      },
+      reset() {
+        zoomRef.current = 1;
+        panRef.current = { x: 0, y: 0 };
+      },
+    };
+    onViewApiChange(api);
+    return () => {
+      onViewApiChange(null);
+    };
+  }, [onViewApiChange]);
 
   // Convert screen coords to world coords
   const toWorld = (sx, sy) => ({
@@ -1960,7 +1978,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
         const showLabel = companies.length <= 10 || sel || isHov || isSeed || isAnchor;
         if (sel || isHov || isSeed) { ctx.beginPath(); ctx.arc(n.x, n.y, r + (sel || isSeed ? 10 : 6), 0, Math.PI * 2); ctx.strokeStyle = col + (sel || isSeed ? "66" : "33"); ctx.lineWidth = (sel || isSeed ? 3 : 2) / z; ctx.stroke(); }
         if (isDark && (sel || isHov || isSeed)) { const grd = ctx.createRadialGradient(n.x, n.y, r * 0.5, n.x, n.y, r * 3); grd.addColorStop(0, col + "22"); grd.addColorStop(1, "transparent"); ctx.beginPath(); ctx.arc(n.x, n.y, r * 3, 0, Math.PI * 2); ctx.fillStyle = grd; ctx.fill(); }
-        if (!isDark) { ctx.shadowColor = "rgba(0,0,0,0.10)"; ctx.shadowBlur = sel ? 14 : 5; ctx.shadowOffsetY = 2; }
+        if (!isDark) { ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; }
         ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fillStyle = sel ? col : bg; ctx.fill();
         ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
         ctx.strokeStyle = col; ctx.lineWidth = (sel || isSeed ? 2.7 : 1.5) / z; ctx.stroke();
@@ -2015,7 +2033,7 @@ function NetworkGraph({ companies, associations, artifactEdges = [], onSelectCom
   const hit = (wx, wy) => nodesRef.current.find(n => Math.hypot(n.x - wx, n.y - wy) < (n.kind === "artifact" ? 18 : 12 + Math.min(n.degree || 0, 12) * 1.6 + 8));
 
   return (
-    <canvas ref={canvasRef} style={{ width: "100%", height: "100%", cursor: "default" }}
+    <canvas ref={canvasRef} style={{ width: "100%", height: "100%", cursor: "default", borderRadius: 18, background: dark ? "#2a1a15" : "#fff5da" }}
       onMouseMove={e => {
         const p = pt(e), n = hit(p.x, p.y);
         hovRef.current = n?.id || null;
@@ -5191,20 +5209,22 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
 function StatsBar({ ingredientCount, evidenceTotal, companyTotal, sourcePageTotal, networkLinkTotal, dark }) {
   const T = dark ? DARK : LIGHT;
   const stats = [
-    { label: "COMPANIES", value: companyTotal > 0 ? companyTotal.toLocaleString() : "…" },
-    { label: "INGREDIENTS", value: ingredientCount > 0 ? ingredientCount.toLocaleString() : "…" },
-    { label: "EVIDENCE ROWS", value: evidenceTotal > 0 ? evidenceTotal.toLocaleString() : "…" },
-    { label: "SOURCE PAGES", value: sourcePageTotal > 0 ? sourcePageTotal.toLocaleString() : "…" },
-    { label: "NETWORK LINKS", value: networkLinkTotal > 0 ? networkLinkTotal.toLocaleString() : "…" },
+    { label: "Companies", value: companyTotal > 0 ? companyTotal.toLocaleString() : "…", bg: dark ? "#3d2641" : "#ffe0ea", accent: dark ? "#ffd166" : "#a0315b" },
+    { label: "Ingredients", value: ingredientCount > 0 ? ingredientCount.toLocaleString() : "…", bg: dark ? "#2f5232" : "#e4f7d9", accent: dark ? "#ffd166" : "#2f6d3d" },
+    { label: "Evidence rows", value: evidenceTotal > 0 ? evidenceTotal.toLocaleString() : "…", bg: dark ? "#63331e" : "#ffe5d2", accent: dark ? "#ffd166" : "#b55326" },
+    { label: "Source pages", value: sourcePageTotal > 0 ? sourcePageTotal.toLocaleString() : "…", bg: dark ? "#2e3567" : "#e3e8ff", accent: dark ? "#ffd166" : "#233d8b" },
+    { label: "Network links", value: networkLinkTotal > 0 ? networkLinkTotal.toLocaleString() : "…", bg: dark ? "#5a4720" : "#fff0b8", accent: dark ? "#ffd166" : "#8d5f00" },
   ];
   return (
-    <div style={{ display: "flex", background: T.surface, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
-      {stats.map((s, i) => (
-        <div key={s.label} title={s.help || ""} style={{ flex: 1, padding: "10px 20px", borderRight: i < stats.length - 1 ? `1px solid ${T.border}` : "none" }}>
-          <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1.5 }}>{s.label}</div>
-          <div style={{ color: s.color || T.text, fontSize: 20, fontWeight: 700, fontFamily: "Georgia,serif", marginTop: 1 }}>{s.value}</div>
-        </div>
-      ))}
+    <div style={{ padding: "10px clamp(12px, 2vw, 24px)", background: T.bg, flexShrink: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(132px, 1fr))", gap: 8 }}>
+        {stats.map(s => (
+          <div key={s.label} style={{ background: s.bg, border: `2px solid ${s.accent}`, borderRadius: 12, padding: "8px 12px" }}>
+            <div style={{ color: s.accent, fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase", fontWeight: 800 }}>{s.label}</div>
+            <div style={{ color: T.text, fontSize: 20, fontWeight: 800, fontFamily: DISPLAY_FONT, lineHeight: 1.05, marginTop: 3 }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -5213,17 +5233,18 @@ function TimelineBar({ dark, selectedRunId, onSelectRun, movementSummary }) {
   const T = dark ? DARK : LIGHT;
   const activeRun = timelineOptionById(selectedRunId);
   return (
-    <div style={{ padding: "12px clamp(12px, 2vw, 24px)", background: T.surfaceAlt, borderBottom: `1px solid ${T.border}`, display: "grid", gap: 12, flexShrink: 0 }}>
+    <div style={{ padding: "2px clamp(12px, 2vw, 24px) 14px", background: T.bg, display: "grid", gap: 10, flexShrink: 0 }}>
+      <div style={{ background: T.surface, border: `2px solid ${T.border}`, borderRadius: 14, padding: "12px 14px", display: "grid", gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
-          <div style={{ color: T.text, fontSize: 12, fontWeight: 700 }}>Show network as of...</div>
-          <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3 }}>
+          <div style={{ color: T.text, fontSize: 12, fontWeight: 800, fontFamily: DISPLAY_FONT }}>Show network as of...</div>
+          <div style={{ color: T.textMuted, fontSize: 10, marginTop: 3, fontFamily: BODY_FONT }}>
             {selectedRunId === "all_runs"
               ? "All synthetic scrape runs combined across bakery, supplier, distributor, and public-claim pages."
               : `${activeRun.platform} · ${formatTimelineDate(activeRun.date)}`}
           </div>
         </div>
-        <div style={{ color: T.textMuted, fontSize: 10 }}>
+        <div style={{ color: T.textMuted, fontSize: 10, fontFamily: BODY_FONT }}>
           {movementSummary?.newEvidenceRows != null ? `Latest step adds ${movementSummary.newEvidenceRows} evidence rows and ${movementSummary.newLinks} links.` : ""}
         </div>
       </div>
@@ -5238,20 +5259,21 @@ function TimelineBar({ dark, selectedRunId, onSelectRun, movementSummary }) {
               style={{
                 background: active ? T.accentBg : T.surface,
                 color: active ? T.accent : T.textMid,
-                border: `1px solid ${active ? T.accent : T.border}`,
-                borderRadius: 8,
-                padding: "8px 10px",
+                border: `2px solid ${active ? T.accent : T.border}`,
+                borderRadius: 10,
+                padding: "7px 10px",
                 cursor: "pointer",
                 textAlign: "left",
                 minWidth: 132,
-                fontFamily: "Georgia,serif",
+                fontFamily: BODY_FONT,
               }}
             >
-              <div style={{ fontSize: 10, fontWeight: 700 }}>{option.label}</div>
+              <div style={{ fontSize: 10, fontWeight: 800 }}>{option.label}</div>
               {option.platform && option.id !== "all_runs" && <div style={{ fontSize: 9, color: active ? T.accent : T.textMuted, marginTop: 2 }}>{option.platform}</div>}
             </button>
           );
         })}
+      </div>
       </div>
     </div>
   );
@@ -5261,9 +5283,9 @@ function NetworkMovementPanel({ dark, selectedRunId, summary }) {
   const T = dark ? DARK : LIGHT;
   if (!summary) return null;
   return (
-    <div style={{ background: dark ? "rgba(10,14,20,0.94)" : "rgba(255,255,255,0.96)", border: `1px solid ${T.border}`, borderRadius: 8, padding: 12 }}>
+    <div style={{ background: T.surface, border: `2px solid ${T.border}`, borderRadius: 12, padding: 12 }}>
       <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6 }}>Network Movement</div>
-      <div style={{ color: T.text, fontSize: 12, fontWeight: 700, marginBottom: 5 }}>
+      <div style={{ color: T.text, fontSize: 13, fontWeight: 800, fontFamily: DISPLAY_FONT, marginBottom: 5 }}>
         {selectedRunId === "all_runs" ? "Combined synthetic timeline" : summary.label}
       </div>
       <div style={{ color: T.textMid, fontSize: 11, lineHeight: 1.55, marginBottom: 10 }}>{summary.message}</div>
@@ -5274,11 +5296,44 @@ function NetworkMovementPanel({ dark, selectedRunId, summary }) {
           ["New evidence", summary.newEvidenceRows],
           ["New links", summary.newLinks],
         ].map(([label, value]) => (
-          <div key={label} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 6, padding: "7px 8px" }}>
+          <div key={label} style={{ background: T.surfaceAlt, border: `2px solid ${T.border}`, borderRadius: 10, padding: "7px 8px" }}>
             <div style={{ color: T.textMuted, fontSize: 8, letterSpacing: 0.8, textTransform: "uppercase" }}>{label}</div>
-            <div style={{ color: T.text, fontSize: 14, fontWeight: 700, marginTop: 2 }}>{Number(value || 0).toLocaleString()}</div>
+            <div style={{ color: T.text, fontSize: 14, fontWeight: 800, fontFamily: DISPLAY_FONT, marginTop: 2 }}>{Number(value || 0).toLocaleString()}</div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function GraphLegendPanel({ dark }) {
+  const T = dark ? DARK : LIGHT;
+  return (
+    <div style={{ background: T.surface, border: `2px solid ${T.border}`, borderRadius: 12, padding: 12 }}>
+      <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8 }}>Graph Legend</div>
+      <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginBottom: 9 }}>LINKAGE TYPE</div>
+      {[["IP Address", linkCol("IP Address", dark)], ["Email", linkCol("Email", dark)], ["Phone", linkCol("Phone", dark)]].map(([k, v]) => (
+        <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+          <div style={{ width: 20, height: 3, background: v, borderRadius: 2 }} />
+          <span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
+        </div>
+      ))}
+      <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>{GRAPH_PRIORITY_LABEL.toUpperCase()}</div>
+      {[[90, "≥85 Critical"], [70, "65–84 High"], [50, "45–64 Medium"], [30, "<45 Low"]].map(([sc, k]) => (
+        <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+          <div style={{ width: 11, height: 11, borderRadius: "50%", background: riskBg(sc, dark), border: `1.5px solid ${riskColor(sc, dark)}` }} />
+          <span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
+        </div>
+      ))}
+      <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>NODE TYPE</div>
+      {[["Company", "circle", T.textMid], ["Email artifact", "diamond", linkCol("Email", dark)], ["Phone artifact", "square", linkCol("Phone", dark)]].map(([label, shape, color]) => (
+        <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+          <div style={{ width: 11, height: 11, transform: shape === "diamond" ? "rotate(45deg)" : "none", borderRadius: shape === "circle" ? "50%" : 2, border: `1.5px solid ${color}`, background: shape === "circle" ? color : "transparent" }} />
+          <span style={{ color: T.textMid, fontSize: 10 }}>{label}</span>
+        </div>
+      ))}
+      <div style={{ color: T.textMuted, fontSize: 9, lineHeight: 1.45, marginTop: 10 }}>
+        Node size reflects {GRAPH_NODE_METRIC_LABEL.toLowerCase()}. Color reflects {GRAPH_PRIORITY_LABEL.toLowerCase()}.
       </div>
     </div>
   );
@@ -5370,11 +5425,11 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "26px clamp(16px, 3vw, 34px)" }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <section style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 18, boxShadow: dark ? "0 12px 36px rgba(0,0,0,0.24)" : "0 12px 30px rgba(24,21,15,0.08)" }}>
+        <section style={{ background: T.surface, border: `2px solid ${T.border}`, borderRadius: 14, padding: 18 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div>
               <div style={{ color: T.textMuted, fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>Workflow mode</div>
-              <div style={{ color: T.text, fontSize: 18, fontWeight: 700 }}>{isInvestigator ? "Operations launchpad" : "Overview launchpad"}</div>
+              <div style={{ color: T.text, fontSize: 18, fontWeight: 800, fontFamily: DISPLAY_FONT }}>{isInvestigator ? "Operations launchpad" : "Overview launchpad"}</div>
               <div style={{ color: T.textMid, fontSize: 12, lineHeight: 1.5, marginTop: 4, maxWidth: 620 }}>
                 {isInvestigator
                   ? "Use the cards below to move quickly into search, row-level source review, graph pivots, and dossier building."
@@ -5382,7 +5437,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
               </div>
             </div>
             {canToggleMode ? (
-              <div style={{ display: "inline-flex", background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 999, padding: 4, gap: 4 }}>
+              <div style={{ display: "inline-flex", background: T.surfaceAlt, border: `2px solid ${T.border}`, borderRadius: 12, padding: 4, gap: 4 }}>
                 {Object.entries(APP_MODES).map(([value, option]) => {
                   const active = mode === value;
                   return (
@@ -5391,7 +5446,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
                       type="button"
                       onClick={() => onModeChange(value)}
                       aria-pressed={active}
-                      style={{ background: active ? T.accent : "transparent", color: active ? (dark ? "#06131d" : "#ffffff") : T.text, border: "none", borderRadius: 999, padding: "8px 12px", cursor: "pointer", fontSize: 11, fontFamily: "Georgia,serif", fontWeight: 700 }}
+                      style={{ background: active ? T.accent : "transparent", color: active ? "#fff7eb" : T.text, border: "none", borderRadius: 9, padding: "8px 12px", cursor: "pointer", fontSize: 11, fontFamily: BODY_FONT, fontWeight: 700 }}
                     >
                       {option.label}
                     </button>
@@ -5399,7 +5454,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
                 })}
               </div>
             ) : (
-              <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 999, padding: "8px 12px", color: T.textMuted, fontSize: 11 }}>
+              <div style={{ background: T.surfaceAlt, border: `2px solid ${T.border}`, borderRadius: 10, padding: "8px 12px", color: T.textMuted, fontSize: 11 }}>
                 {APP_MODES[mode]?.label || APP_MODES[DEFAULT_VIEWER_MODE].label}
               </div>
             )}
@@ -5412,7 +5467,7 @@ function HomeLanding({ mode, canToggleMode, onModeChange, onFocusSearch, onNavig
               key={card.name}
               type="button"
               onClick={() => handleCardAction(card)}
-              style={{ textAlign: "left", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 17, cursor: "pointer", color: T.text, fontFamily: "Georgia,serif", minHeight: 176 }}
+              style={{ textAlign: "left", background: T.surface, border: `2px solid ${T.border}`, borderRadius: 12, padding: 16, cursor: "pointer", color: T.text, fontFamily: BODY_FONT, minHeight: 176 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.transform = "translateY(-1px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.transform = "translateY(0)"; }}
             >
@@ -5482,6 +5537,7 @@ export default function App() {
   const [graphLayers, setGraphLayers] = useState({ email: false, phone: false });
   const [defaultGraphNodeLimit, setDefaultGraphNodeLimit] = useState(25);
   const [graphArtifactMinCompanies, setGraphArtifactMinCompanies] = useState(2);
+  const [graphViewApi, setGraphViewApi] = useState(null);
   const companyGraphRequestRef = useRef(0);
   const graphCompanySearchDebounce = useRef(null);
   const graphCompanySearchRequestRef = useRef(0);
@@ -6367,7 +6423,7 @@ export default function App() {
   const activeSecondaryTab = secondaryTabs.find(tab => tab.id === view) || null;
 
   if (authLoading || (session && appAccessLoading && !appAccess)) return (
-    <div style={{ width: "100%", height: "100vh", background: "#f2f0eb", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ width: "100%", minHeight: "100vh", background: "#f2f0eb", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid #e0dbd2", borderTopColor: "#1b56a5", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
@@ -6391,17 +6447,18 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: T.bg, color: T.text, display: "flex", flexDirection: "column", fontFamily: "Georgia,serif", overflow: "hidden" }}>
-      <div style={{ padding: "10px clamp(12px, 2vw, 24px)", background: T.surface, borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexShrink: 0, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flex: "1 1 260px", minWidth: 220 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 6, background: T.navy, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", background: dark ? "#ff3b30" : "#ef4444" }} />
+    <div style={{ width: "100%", minHeight: "100vh", background: T.bg, color: T.text, display: "flex", flexDirection: "column", fontFamily: BODY_FONT, overflowX: "hidden", overflowY: "visible" }}>
+      <div style={{ padding: "14px clamp(12px, 2vw, 24px)", background: T.bg, display: "grid", gap: 10, flexShrink: 0 }}>
+        <div style={{ background: T.surface, border: `2px solid ${T.border}`, borderRadius: 16, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flex: "1 1 280px", minWidth: 220 }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg, ${T.navy} 0%, ${T.accent} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff7eb", fontSize: 19 }}>
+              🍪
+            </div>
+            <div>
+              <div style={{ fontSize: 34, lineHeight: 0.95, fontWeight: 800, fontFamily: DISPLAY_FONT, color: T.text }}>Scrape &amp; Bake</div>
+              <div style={{ fontSize: 14, color: T.textMid, marginTop: 4 }}>It's not just for cookies...</div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1.8, color: T.text }}>SCRAPE &amp; BAKE</div>
-            <div style={{ fontSize: 9, color: T.textMuted, letterSpacing: 1 }}>COOKIE INGREDIENT SUPPLY CHAIN DEMO</div>
-          </div>
-        </div>
         <SearchBar query={searchQuery} onChange={setSearchQuery} T={T} dark={dark} mode={effectiveMode} filter={searchFilter} onFilterChange={setSearchFilter} results={displayedSearchResults} resultCounts={searchResultCounts} rawResultCount={filteredSearchResultCount} searched={searchResolvedQuery === searchQuery} onSelectResult={handleSearchSelect} onViewMore={setExpandedSearchType} onBuildGraphFromResult={handleBuildGraphFromSearchResult} loading={searchLoading} inputRef={globalSearchInputRef} />
         <div
           aria-label="Primary navigation"
@@ -6417,25 +6474,25 @@ export default function App() {
                 alignItems: "center",
                 gap: tab.id === "dossier" ? 8 : 0,
                 background: view === tab.id ? T.accentBg : tab.id === "dossier" && dossierItems.length ? T.accentBg : T.surfaceAlt,
-                border: `1px solid ${view === tab.id || (tab.id === "dossier" && dossierItems.length) ? T.accent : T.border}`,
-                borderRadius: 20,
-                padding: "5px 12px",
+                border: `2px solid ${view === tab.id || (tab.id === "dossier" && dossierItems.length) ? T.accent : T.border}`,
+                borderRadius: 10,
+                padding: "6px 12px",
                 cursor: "pointer",
                 color: view === tab.id || (tab.id === "dossier" && dossierItems.length) ? T.accent : T.textMuted,
                 fontSize: 10,
-                fontFamily: "Georgia,serif",
+                fontFamily: BODY_FONT,
                 whiteSpace: "nowrap",
               }}
             >
               <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>{tab.id === "dossier" ? "Dossier" : tab.label}</span>
               {tab.id === "dossier" && (
-                <span style={{ background: dossierItems.length ? T.accent : T.surface, color: dossierItems.length ? (dark ? "#06110d" : "#fff") : T.textMuted, borderRadius: 999, padding: "2px 8px", fontSize: 10, fontWeight: 700, minWidth: 24, textAlign: "center" }}>
+                <span style={{ background: dossierItems.length ? T.accent : T.surface, color: dossierItems.length ? (dark ? "#06110d" : "#fff") : T.textMuted, borderRadius: 8, padding: "2px 8px", fontSize: 10, fontWeight: 700, minWidth: 24, textAlign: "center" }}>
                   {dossierItems.length}
                 </span>
               )}
             </button>
           ))}
-          <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 20, padding: "4px 8px 4px 12px", color: activeSecondaryTab ? T.accent : T.textMuted, fontSize: 10, fontFamily: "Georgia,serif", background: activeSecondaryTab ? T.accentBg : T.surfaceAlt }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 7, border: `2px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 10, padding: "5px 8px 5px 12px", color: activeSecondaryTab ? T.accent : T.textMuted, fontSize: 10, fontFamily: BODY_FONT, background: activeSecondaryTab ? T.accentBg : T.surfaceAlt }}>
             <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>Views</span>
             <select
               value={activeSecondaryTab?.id || ""}
@@ -6444,7 +6501,7 @@ export default function App() {
                 handleViewChange(e.target.value);
               }}
               aria-label="Open secondary feature view"
-              style={{ background: T.surface, border: `1px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 14, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif", padding: "3px 8px", minWidth: 160 }}
+              style={{ appearance: "none", WebkitAppearance: "none", background: T.surface, border: `2px solid ${activeSecondaryTab ? T.accent : T.border}`, borderRadius: 8, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: BODY_FONT, padding: "5px 8px", minWidth: 160 }}
             >
               <option value="">Open view...</option>
               {secondaryTabs.map(tab => (
@@ -6457,18 +6514,18 @@ export default function App() {
           <button
             type="button"
             onClick={() => setRefreshNonce(current => current + 1)}
-            style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 20, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "Georgia,serif" }}
+            style={{ background: T.surfaceAlt, border: `2px solid ${T.border}`, borderRadius: 10, padding: "6px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMid, fontSize: 11, fontFamily: BODY_FONT, fontWeight: 700 }}
           >
             ↻ Refresh data
           </button>
           {canToggleMode && (
-            <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${T.border}`, borderRadius: 20, padding: "4px 8px 4px 12px", color: T.textMuted, fontSize: 10, fontFamily: "Georgia,serif", background: T.surfaceAlt }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 7, border: `2px solid ${T.border}`, borderRadius: 10, padding: "5px 8px 5px 12px", color: T.textMuted, fontSize: 10, fontFamily: BODY_FONT, background: T.surfaceAlt }}>
               <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>Mode</span>
               <select
                 value={effectiveMode}
                 onChange={e => setMode(e.target.value)}
                 aria-label="Workflow mode"
-                style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: "Georgia,serif", padding: "3px 8px" }}
+                style={{ appearance: "none", WebkitAppearance: "none", background: T.surface, border: `2px solid ${T.border}`, borderRadius: 8, color: T.text, cursor: "pointer", fontSize: 10, fontFamily: BODY_FONT, padding: "5px 8px" }}
               >
                 {Object.entries(APP_MODES).map(([value, option]) => (
                   <option key={value} value={value}>{option.label}</option>
@@ -6477,18 +6534,19 @@ export default function App() {
               <span style={{ fontSize: 9, color: T.textMuted }}>{APP_MODES[effectiveMode].hint}</span>
             </label>
           )}
-          <button onClick={() => setDark(d => !d)} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 20, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMuted, fontSize: 11, fontFamily: "Georgia,serif" }}>
+          <button onClick={() => setDark(d => !d)} style={{ background: T.surfaceAlt, border: `2px solid ${T.border}`, borderRadius: 10, padding: "6px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, color: T.textMid, fontSize: 11, fontFamily: BODY_FONT, fontWeight: 700 }}>
             <span>{dark ? "☀" : "☾"}</span>{dark ? "Light" : "Dark"}
           </button>
-          <button onClick={() => signOut()} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 4, padding: "4px 10px", cursor: "pointer", color: T.textMuted, fontSize: 10, fontFamily: "Georgia,serif" }}>Sign Out</button>
+          <button onClick={() => signOut()} style={{ background: T.surfaceAlt, border: `2px solid ${T.border}`, borderRadius: 10, padding: "6px 12px", cursor: "pointer", color: T.textMid, fontSize: 10, fontFamily: BODY_FONT, fontWeight: 700 }}>Sign Out</button>
         </div>
+      </div>
       </div>
 
       <StatsBar ingredientCount={substances.length} evidenceTotal={evidenceTotal} companyTotal={companyTotal} sourcePageTotal={sourcePageTotal} networkLinkTotal={associationTotal} dark={dark} />
       <TimelineBar dark={dark} selectedRunId={selectedRunId} onSelectRun={setSelectedRunId} movementSummary={movementSummary} />
       {error && <div style={{ background: "#2a0a08", border: "1px solid #ff3b30", color: "#ff3b30", padding: "10px 24px", fontSize: 12, fontFamily: "monospace", flexShrink: 0 }}>⚠ {error}</div>}
 
-      <div style={{ flex: 1, overflow: "hidden", position: "relative", minHeight: 0 }}>
+      <div style={{ flex: 1, overflow: "visible", position: "relative", minHeight: 0 }}>
         {loading && !hasLoadedAppData ? <Spinner T={T} /> : (
           <>
             {loading && hasLoadedAppData && (
@@ -6507,174 +6565,186 @@ export default function App() {
               />
             )}
 
-            <div style={{ height: "100%", position: "relative", display: view === "network" ? "block" : "none" }}>
-              <div style={{ position: "absolute", top: 14, left: 18, zIndex: 5, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, maxWidth: "min(680px, calc(100% - 36px))" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "fit-content", maxWidth: "100%", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "8px 12px", fontSize: 10, color: T.textMuted }}>
-                  <span>
-                    {companyGraph
-                      ? `${companyGraph.seed?.type === "linkage_artifact" ? "Linkage-seeded" : "Company-seeded"} · ${companyGraph.seed?.label || "Selected seed"} · ${activeGraphCompanies.length} companies · ${activeGraphAssociations.length} visible graph associations`
-                      : `Top ${activeGraphCompanies.length} most-connected companies · ${activeGraphAssociations.length} visible graph associations`} · as of ${selectedRunId === "all_runs" ? "all runs" : formatTimelineDate(selectedRunOption.date)} · zoom, pan, drag nodes, labels on hover
-                  </span>
-	                  {companyGraph && (
-	                    <>
-	                      <button type="button" onClick={() => { setSelectedCompany(null); setSelectedArtifactEntity(null); setSearchDetailRecord(null); setShowGraphSummary(true); }} style={{ background: T.accentBg, color: T.accent, border: `1px solid ${T.accent}55`, borderRadius: 999, padding: "3px 8px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap" }}>
-	                        View summary
-	                      </button>
-	                      <button type="button" onClick={resetCompanyGraph} style={{ background: "transparent", color: T.textMid, border: `1px solid ${T.borderMid}`, borderRadius: 999, padding: "3px 8px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap" }}>
-	                        Return to top 25
-	                      </button>
-	                    </>
-	                  )}
-	                </div>
-	                <div style={{ position: "relative", width: "min(520px, calc(100vw - 72px))", background: dark ? "rgba(10,14,20,0.94)" : "rgba(255,255,255,0.96)", border: `1px solid ${T.border}`, borderRadius: 8, padding: 10, boxShadow: dark ? "0 18px 40px rgba(0,0,0,0.25)" : "0 18px 34px rgba(54,45,31,0.12)" }}>
-                  <label htmlFor="company-graph-search" style={{ display: "block", color: T.textMuted, fontSize: 9, letterSpacing: 1.1, marginBottom: 6, textTransform: "uppercase" }}>Build graph from company, email, or phone</label>
-                  <div style={{ display: "flex", gap: 8 }}>
-	                    <input
-	                      id="company-graph-search"
-	                      value={graphCompanyQuery}
-	                      autoComplete="off"
-	                      spellCheck={false}
-	                      onChange={e => { setGraphCompanyQuery(e.target.value); setGraphSelectedSeed(null); setCompanyGraphError(""); }}
-	                      onKeyDown={e => {
-	                        if (e.key === "Enter" && graphSelectedSeed) {
-	                          e.preventDefault();
-	                          buildSelectedGraphSeed();
-	                        }
-	                      }}
-	                      placeholder="Search a company, email, or phone..."
-	                      aria-label="Search for a company, email, or phone to build a graph"
-	                      style={{ flex: 1, minWidth: 0, background: T.surfaceAlt, color: T.text, border: `1px solid ${T.border}`, borderRadius: 5, padding: "7px 9px", fontFamily: "Georgia, serif", fontSize: 12 }}
-	                    />
-	                    <button
-	                      type="button"
-	                      onClick={buildSelectedGraphSeed}
-	                      disabled={!graphSelectedSeed || graphBuildInFlight}
-	                      style={{ background: graphSelectedSeed && !graphBuildInFlight ? T.accent : T.surfaceAlt, color: graphSelectedSeed && !graphBuildInFlight ? (dark ? "#06110d" : "#fff") : T.textMuted, border: `1px solid ${graphSelectedSeed && !graphBuildInFlight ? T.accent : T.border}`, borderRadius: 5, padding: "7px 10px", fontSize: 11, fontWeight: 700, cursor: graphSelectedSeed && !graphBuildInFlight ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
-	                    >
-	                      {selectedGraphSeedLoading ? "Building..." : "Build"}
-	                    </button>
-	                  </div>
-	                  {graphSelectedSeed && (
-	                    <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 7, background: T.accentBg, border: `1px solid ${T.accent}33`, color: T.textMid, borderRadius: 999, padding: "4px 8px", fontSize: 10 }}>
-	                      <span style={{ color: T.accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8 }}>{graphSeedTypeLabel(graphSelectedSeed)}</span>
-	                      <span>{graphSelectedSeed.label}</span>
-	                    </div>
-	                  )}
-	                  {graphCompanySearchLoading && <div style={{ color: T.textMuted, fontSize: 10, marginTop: 7 }}>Searching companies, emails, and phones...</div>}
-                  {companyGraphError && <div style={{ color: dark ? "#fecaca" : "#991b1b", background: dark ? "rgba(74,20,20,0.5)" : "rgba(254,242,242,0.9)", border: `1px solid ${dark ? "#7f1d1d" : "#fecaca"}`, borderRadius: 5, padding: "6px 8px", fontSize: 10, marginTop: 8 }}>{companyGraphError}</div>}
-                  {graphCompanyMatches.length > 0 && (
-                    <div style={{ position: "relative", zIndex: 9, marginTop: 8, border: `1px solid ${T.border}`, borderRadius: 6, overflow: "hidden", background: T.surface }}>
-	                      {graphCompanyMatches.map(result => {
-	                        const seed = getGraphSeedFromSearchResult(result);
-	                        const style = SEARCH_TYPE_STYLE(result.type, dark);
-	                        return (
-	                        <button
-	                          key={result.data?.id || result.label}
-	                          type="button"
-	                          onClick={() => selectGraphSeedMatch(result)}
-	                          style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", color: T.text, border: 0, borderBottom: `1px solid ${T.border}`, padding: "7px 9px", cursor: "pointer", fontFamily: "Georgia, serif" }}
-	                        >
-	                          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-	                            <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 2, fontWeight: 700, background: style.bg, color: style.color }}>{graphSeedTypeLabel(seed).toUpperCase()}</span>
-	                            <span style={{ fontSize: 12, fontWeight: 700 }}>{seed?.label || result.label}</span>
-	                          </div>
-	                          <div style={{ color: T.textMuted, fontSize: 10, marginTop: 2 }}>{seed?.sublabel || result.sublabel}</div>
-	                        </button>
-	                      );})}
+            <section className="network-stage-shell" style={{ display: view === "network" ? "block" : "none" }}>
+              <div className="network-stage" style={{ background: dark ? "#24150f" : "#fff1d1", borderColor: T.border }}>
+                <aside className="network-overlay network-overlay-controls">
+                  <div className="network-panel-card" style={{ background: T.surface, border: `2px solid ${T.border}`, borderRadius: 12, padding: "10px 12px" }}>
+                    <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6 }}>Graph stage</div>
+                    <div style={{ color: T.textMid, fontSize: 10, lineHeight: 1.55 }}>
+                      {companyGraph
+                        ? `${companyGraph.seed?.type === "linkage_artifact" ? "Linkage-seeded" : "Company-seeded"} · ${companyGraph.seed?.label || "Selected seed"} · ${activeGraphCompanies.length} companies · ${activeGraphAssociations.length} visible graph associations`
+                        : `Top ${activeGraphCompanies.length} most-connected companies · ${activeGraphAssociations.length} visible graph associations`} · as of ${selectedRunId === "all_runs" ? "all runs" : formatTimelineDate(selectedRunOption.date)}
                     </div>
-                  )}
-	                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, paddingTop: 9, borderTop: `1px solid ${T.border}` }}>
-                    {!companyGraph && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", width: "100%" }}>
-                        <span style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginRight: 2 }}>Companies</span>
-                        {DEFAULT_GRAPH_NODE_LIMITS.map(limit => (
-                          <button
-                            key={limit}
-                            type="button"
-                            onClick={() => setDefaultGraphNodeLimit(limit)}
-                            style={{ background: defaultGraphNodeLimit === limit ? T.accentBg : T.surfaceAlt, color: defaultGraphNodeLimit === limit ? T.accent : T.textMuted, border: `1px solid ${defaultGraphNodeLimit === limit ? T.accent : T.border}`, borderRadius: 999, padding: "4px 8px", fontSize: 10, fontWeight: 700, cursor: "pointer" }}
-                          >
-                            {limit}
-                          </button>
-                        ))}
+                    <div style={{ color: T.textMuted, fontSize: 10, marginTop: 6 }}>Zoom, pan, drag nodes, and hover labels directly inside the map.</div>
+                    {companyGraph && (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                        <button type="button" onClick={() => { setSelectedCompany(null); setSelectedArtifactEntity(null); setSearchDetailRecord(null); setShowGraphSummary(true); }} style={{ background: T.accentBg, color: T.accent, border: `2px solid ${T.accent}55`, borderRadius: 8, padding: "4px 8px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap", fontFamily: BODY_FONT, fontWeight: 700 }}>
+                          View summary
+                        </button>
+                        <button type="button" onClick={resetCompanyGraph} style={{ background: T.surfaceAlt, color: T.textMid, border: `2px solid ${T.borderMid}`, borderRadius: 8, padding: "4px 8px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap", fontFamily: BODY_FONT, fontWeight: 700 }}>
+                          Return to top 25
+                        </button>
                       </div>
                     )}
-                    <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", width: "100%" }}>
-                      <span style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginRight: 2 }}>Artifacts shared by</span>
-                      {GRAPH_ARTIFACT_THRESHOLDS.map(threshold => (
+                  </div>
+
+                  <div className="network-panel-card" style={{ position: "relative", background: T.surface, border: `2px solid ${T.border}`, borderRadius: 12, padding: 12 }}>
+                    <label htmlFor="company-graph-search" style={{ display: "block", color: T.textMuted, fontSize: 9, letterSpacing: 1.1, marginBottom: 6, textTransform: "uppercase" }}>Build graph from company, email, or phone</label>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        id="company-graph-search"
+                        value={graphCompanyQuery}
+                        autoComplete="off"
+                        spellCheck={false}
+                        onChange={e => { setGraphCompanyQuery(e.target.value); setGraphSelectedSeed(null); setCompanyGraphError(""); }}
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && graphSelectedSeed) {
+                            e.preventDefault();
+                            buildSelectedGraphSeed();
+                          }
+                        }}
+                        placeholder="Search a company, email, or phone..."
+                        aria-label="Search for a company, email, or phone to build a graph"
+                        style={{ flex: 1, minWidth: 0, background: T.surfaceAlt, color: T.text, border: `2px solid ${T.border}`, borderRadius: 10, padding: "8px 10px", fontFamily: BODY_FONT, fontSize: 12 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={buildSelectedGraphSeed}
+                        disabled={!graphSelectedSeed || graphBuildInFlight}
+                        style={{ background: graphSelectedSeed && !graphBuildInFlight ? T.accent : T.surfaceAlt, color: graphSelectedSeed && !graphBuildInFlight ? "#fff7eb" : T.textMuted, border: `2px solid ${graphSelectedSeed && !graphBuildInFlight ? T.accent : T.border}`, borderRadius: 10, padding: "8px 10px", fontSize: 11, fontWeight: 700, cursor: graphSelectedSeed && !graphBuildInFlight ? "pointer" : "not-allowed", whiteSpace: "nowrap", fontFamily: BODY_FONT }}
+                      >
+                        {selectedGraphSeedLoading ? "Building..." : "Build"}
+                      </button>
+                    </div>
+                    {graphSelectedSeed && (
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 7, background: T.accentBg, border: `2px solid ${T.accent}33`, color: T.textMid, borderRadius: 8, padding: "4px 8px", fontSize: 10 }}>
+                        <span style={{ color: T.accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8 }}>{graphSeedTypeLabel(graphSelectedSeed)}</span>
+                        <span>{graphSelectedSeed.label}</span>
+                      </div>
+                    )}
+                    {graphCompanySearchLoading && <div style={{ color: T.textMuted, fontSize: 10, marginTop: 7 }}>Searching companies, emails, and phones...</div>}
+                    {companyGraphError && <div style={{ color: dark ? "#fecaca" : "#991b1b", background: dark ? "rgba(74,20,20,0.5)" : "rgba(254,242,242,0.9)", border: `2px solid ${dark ? "#7f1d1d" : "#fecaca"}`, borderRadius: 10, padding: "6px 8px", fontSize: 10, marginTop: 8 }}>{companyGraphError}</div>}
+                    {graphCompanyMatches.length > 0 && (
+                      <div style={{ position: "relative", zIndex: 9, marginTop: 8, border: `2px solid ${T.border}`, borderRadius: 10, overflow: "hidden", background: T.surface }}>
+                        {graphCompanyMatches.map(result => {
+                          const seed = getGraphSeedFromSearchResult(result);
+                          const style = SEARCH_TYPE_STYLE(result.type, dark);
+                          return (
+                            <button
+                              key={result.data?.id || result.label}
+                              type="button"
+                              onClick={() => selectGraphSeedMatch(result)}
+                              style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", color: T.text, border: 0, borderBottom: `1px solid ${T.border}`, padding: "7px 9px", cursor: "pointer", fontFamily: BODY_FONT }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                                <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 2, fontWeight: 700, background: style.bg, color: style.color }}>{graphSeedTypeLabel(seed).toUpperCase()}</span>
+                                <span style={{ fontSize: 12, fontWeight: 700 }}>{seed?.label || result.label}</span>
+                              </div>
+                              <div style={{ color: T.textMuted, fontSize: 10, marginTop: 2 }}>{seed?.sublabel || result.sublabel}</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, paddingTop: 9, borderTop: `1px solid ${T.border}` }}>
+                      {!companyGraph && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", width: "100%" }}>
+                          <span style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginRight: 2 }}>Companies</span>
+                          {DEFAULT_GRAPH_NODE_LIMITS.map(limit => (
+                            <button
+                              key={limit}
+                              type="button"
+                              onClick={() => setDefaultGraphNodeLimit(limit)}
+                              style={{ background: defaultGraphNodeLimit === limit ? T.accentBg : T.surfaceAlt, color: defaultGraphNodeLimit === limit ? T.accent : T.textMuted, border: `2px solid ${defaultGraphNodeLimit === limit ? T.accent : T.border}`, borderRadius: 8, padding: "4px 8px", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: BODY_FONT }}
+                            >
+                              {limit}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", width: "100%" }}>
+                        <span style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginRight: 2 }}>Artifacts shared by</span>
+                        {GRAPH_ARTIFACT_THRESHOLDS.map(threshold => (
+                          <button
+                            key={threshold}
+                            type="button"
+                            onClick={() => setGraphArtifactMinCompanies(threshold)}
+                            style={{ background: graphArtifactMinCompanies === threshold ? T.accentBg : T.surfaceAlt, color: graphArtifactMinCompanies === threshold ? T.accent : T.textMuted, border: `2px solid ${graphArtifactMinCompanies === threshold ? T.accent : T.border}`, borderRadius: 8, padding: "4px 8px", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: BODY_FONT }}
+                          >
+                            {threshold}+
+                          </button>
+                        ))}
+                        <span style={{ color: T.textMuted, fontSize: 10 }}>
+                          effective {effectiveGraphArtifactThreshold(graphArtifactMinCompanies, activeGraphCompanies.length)}+
+                        </span>
+                      </div>
+                      {[
+                        ["email", "Emails", "Email"],
+                        ["phone", "Phones", "Phone"],
+                      ].map(([kind, label, method]) => (
                         <button
-                          key={threshold}
+                          key={kind}
                           type="button"
-                          onClick={() => setGraphArtifactMinCompanies(threshold)}
-                          style={{ background: graphArtifactMinCompanies === threshold ? T.accentBg : T.surfaceAlt, color: graphArtifactMinCompanies === threshold ? T.accent : T.textMuted, border: `1px solid ${graphArtifactMinCompanies === threshold ? T.accent : T.border}`, borderRadius: 999, padding: "4px 8px", fontSize: 10, fontWeight: 700, cursor: "pointer" }}
+                          onClick={() => toggleGraphLayer(kind)}
+                          disabled={!graphArtifactCounts[kind]}
+                          style={{ background: graphLayers[kind] ? `${linkCol(method, dark)}22` : T.surfaceAlt, color: graphLayers[kind] ? linkCol(method, dark) : T.textMuted, border: `2px solid ${graphLayers[kind] ? linkCol(method, dark) : T.border}`, borderRadius: 8, padding: "5px 9px", fontSize: 10, fontWeight: 700, cursor: graphArtifactCounts[kind] ? "pointer" : "not-allowed", fontFamily: BODY_FONT }}
                         >
-                          {threshold}+
+                          {label} {graphArtifactCounts[kind] ? `(${graphArtifactCounts[kind]})` : ""}
                         </button>
                       ))}
-                      <span style={{ color: T.textMuted, fontSize: 10 }}>
-                        effective {effectiveGraphArtifactThreshold(graphArtifactMinCompanies, activeGraphCompanies.length)}+
-                      </span>
                     </div>
-                    {[
-                      ["email", "Emails", "Email"],
-                      ["phone", "Phones", "Phone"],
-                    ].map(([kind, label, method]) => (
-                      <button
-                        key={kind}
-                        type="button"
-                        onClick={() => toggleGraphLayer(kind)}
-                        disabled={!graphArtifactCounts[kind]}
-                        style={{ background: graphLayers[kind] ? `${linkCol(method, dark)}22` : T.surfaceAlt, color: graphLayers[kind] ? linkCol(method, dark) : T.textMuted, border: `1px solid ${graphLayers[kind] ? linkCol(method, dark) : T.border}`, borderRadius: 999, padding: "5px 9px", fontSize: 10, fontWeight: 700, cursor: graphArtifactCounts[kind] ? "pointer" : "not-allowed" }}
-                      >
-                        {label} {graphArtifactCounts[kind] ? `(${graphArtifactCounts[kind]})` : ""}
-                      </button>
-                    ))}
-	                  </div>
-	                </div>
-                  <NetworkMovementPanel dark={dark} selectedRunId={selectedRunId} summary={movementSummary} />
-              </div>
-              {companyGraph?.limits?.capped && (
-                <div style={{ position: "absolute", top: 14, right: 18, zIndex: 5, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 6, padding: "8px 12px", fontSize: 10, color: T.textMuted }}>
-                  Graph capped for readability and least-privilege access.
+                  </div>
+                </aside>
+
+                <div className="network-overlay network-overlay-zoom">
+                  <div className="network-panel-card" style={{ width: "auto", background: T.surface, border: `2px solid ${T.border}`, borderRadius: 12, padding: 10 }}>
+                    <div style={{ color: T.text, fontSize: 13, fontWeight: 800, fontFamily: DISPLAY_FONT, marginBottom: 4 }}>Network map</div>
+                    <div style={{ color: T.textMuted, fontSize: 10, marginBottom: 10 }}>Scroll or pinch inside the map to zoom. Drag to pan.</div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                      <button type="button" onClick={() => graphViewApi?.zoomOut?.()} style={{ background: T.surfaceAlt, color: T.textMid, border: `2px solid ${T.border}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 10, fontFamily: BODY_FONT, fontWeight: 700 }}>Zoom out</button>
+                      <button type="button" onClick={() => graphViewApi?.zoomIn?.()} style={{ background: T.surfaceAlt, color: T.textMid, border: `2px solid ${T.border}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 10, fontFamily: BODY_FONT, fontWeight: 700 }}>Zoom in</button>
+                      <button type="button" onClick={() => graphViewApi?.reset?.()} style={{ background: T.accentBg, color: T.accent, border: `2px solid ${T.accent}66`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 10, fontFamily: BODY_FONT, fontWeight: 700 }}>Reset view</button>
+                    </div>
+                    {companyGraph?.limits?.capped && (
+                      <div style={{ marginTop: 10, background: T.surfaceAlt, border: `2px solid ${T.border}`, borderRadius: 10, padding: "8px 10px", fontSize: 10, color: T.textMuted }}>
+                        Graph capped for readability and least-privilege access.
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-              {graphBuildInFlight && <GraphLoadingOverlay dark={dark} />}
-              {view === "network" && (
-                <NetworkGraph
-                  companies={activeGraphCompanies}
-                  associations={activeGraphAssociations}
-                  artifactEdges={activeGraphArtifactEdges}
-                  onSelectCompany={c => { setShowGraphSummary(false); setSelectedArtifactEntity(null); setSelectedCompany(prev => prev?.id === c.id ? null : c); }}
-                  onSelectArtifact={artifact => openArtifactEntity(artifact)}
-                  selectedId={selectedArtifactEntity?.id || selectedCompany?.id}
-                  seedId={graphSeedNodeId}
-                  dark={dark}
-                />
-              )}
-              <div style={{ position: "absolute", bottom: 18, left: 18, zIndex: 4, background: dark ? "rgba(10,14,20,0.92)" : "rgba(255,255,255,0.94)", border: `1px solid ${T.border}`, padding: "13px 16px", borderRadius: 8 }}>
-                <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginBottom: 9 }}>LINKAGE TYPE</div>
-                {[["IP Address", linkCol("IP Address", dark)], ["Email", linkCol("Email", dark)], ["Phone", linkCol("Phone", dark)]].map(([k, v]) => (
-                  <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <div style={{ width: 20, height: 2, background: v, borderRadius: 1 }} /><span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
+
+                <aside className="network-overlay network-overlay-legend">
+                  <div className="network-panel-card">
+                    <GraphLegendPanel dark={dark} />
                   </div>
-                ))}
-                <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>{GRAPH_PRIORITY_LABEL.toUpperCase()}</div>
-                {[[90, "≥85 Critical"], [70, "65–84 High"], [50, "45–64 Medium"], [30, "<45 Low"]].map(([sc, k]) => (
-                  <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <div style={{ width: 11, height: 11, borderRadius: "50%", background: riskBg(sc, dark), border: `1.5px solid ${riskColor(sc, dark)}` }} /><span style={{ color: T.textMid, fontSize: 10 }}>{k}</span>
+                </aside>
+
+                <aside className="network-overlay network-overlay-movement">
+                  <div className="network-panel-card">
+                    <NetworkMovementPanel dark={dark} selectedRunId={selectedRunId} summary={movementSummary} />
                   </div>
-                ))}
-                <div style={{ color: T.textMuted, fontSize: 9, letterSpacing: 1, marginTop: 11, marginBottom: 9 }}>NODE TYPE</div>
-                {[["Company", "circle", T.textMid], ["Email artifact", "diamond", linkCol("Email", dark)], ["Phone artifact", "square", linkCol("Phone", dark)]].map(([label, shape, color]) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <div style={{ width: 11, height: 11, transform: shape === "diamond" ? "rotate(45deg)" : "none", borderRadius: shape === "circle" ? "50%" : 2, border: `1.5px solid ${color}`, background: shape === "circle" ? color : "transparent" }} /><span style={{ color: T.textMid, fontSize: 10 }}>{label}</span>
+                </aside>
+
+                <div className="network-canvas-layer">
+                  <div className="network-canvas-wrap" style={{ background: dark ? "#2a1a15" : "#fff5da" }}>
+                    {graphBuildInFlight && <GraphLoadingOverlay dark={dark} />}
+                    {view === "network" && (
+                      <NetworkGraph
+                        companies={activeGraphCompanies}
+                        associations={activeGraphAssociations}
+                        artifactEdges={activeGraphArtifactEdges}
+                        onSelectCompany={c => { setShowGraphSummary(false); setSelectedArtifactEntity(null); setSelectedCompany(prev => prev?.id === c.id ? null : c); }}
+                        onSelectArtifact={artifact => openArtifactEntity(artifact)}
+                        selectedId={selectedArtifactEntity?.id || selectedCompany?.id}
+                        seedId={graphSeedNodeId}
+                        dark={dark}
+                        onViewApiChange={setGraphViewApi}
+                      />
+                    )}
                   </div>
-                ))}
-                <div style={{ color: T.textMuted, fontSize: 9, lineHeight: 1.45, marginTop: 10, maxWidth: 190 }}>
-                  Node size reflects {GRAPH_NODE_METRIC_LABEL.toLowerCase()}. Color reflects {GRAPH_PRIORITY_LABEL.toLowerCase()}. Selected node numbers show the shared-link count.
                 </div>
               </div>
-            </div>
+            </section>
 
             {view === "substances" && (
               <div style={{ height: "100%", overflowY: "auto", paddingTop: 22 }}>
