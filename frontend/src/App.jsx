@@ -2910,21 +2910,49 @@ const COLUMN_TOOLTIPS = {
 
 // ── Data Explorer ──────────────────────────────────────────────────────────
 const EXPLORER_TABLES = [
-  { key: "company", label: "Companies", from: "company", searchCol: "COMPANY_NAME", columns: ["COMPANY_ID", "COMPANY_NAME", "CHINESE_NAME", "ACTIVE_INACTIVE", "BUSINESS_TYPE", "PRC_HOME_BASE", "GOV_COMPLICITY"] },
-  { key: "evidence_readable", label: "Source Evidence", from: "evidence_readable", searchCol: "company_name", columns: ["EVIDENCE_ID", "company_name", "substance_name", "evidence_type", "data_source", "LISTED_NAME_SUBSTANCE", "REGION", "EVIDENCE_WEIGHT", "URL"], defaultSort: "EVIDENCE_ID", defaultDir: "asc" },
-  { key: "company_score_v2", label: "Scores (v2)", from: "company_score_v2", searchCol: "COMPANY_NAME", columns: ["COMPANY_ID", "COMPANY_NAME", "total_score_v2", "evidence_score", "substance_score", "company_tag_score", "legacy_score", "evidence_count", "substances_linked"] },
-  { key: "substance_reference", label: "Ingredients", from: "substance_reference", searchCol: "SUBSTANCE_NAME", columns: ["SUBSTANCE_REFERENCE_ID", "SUBSTANCE_NAME", "SUBSTANCE_ID", "SUBSTANCE_WEIGHT", "SUBSTANCE_DESCRIPTION"] },
-  { key: "substance_sourcing", label: "Ingredient Aliases", from: "substance_sourcing", searchCol: "SUBSTANCE_SOURCING_LOCAL_NAME", columns: ["SUBSTANCE_SOURCING_ID", "SUBSTANCE_ID", "SUBSTANCE_SOURCING_LOCAL_NAME", "SUBSTANCE_SOURCING_TYPE_ID", "DATA_SOURCE_ID", "SUBSTANCE_SOURCING_PRIMARY"] },
-  { key: "substance_sourcing_type", label: "Sourcing Types", from: "substance_sourcing_type", searchCol: "SUBSTANCE_SOURCING_TYPE_TITLE", columns: ["SUBSTANCE_SOURCING_TYPE_ID", "SUBSTANCE_SOURCING_TYPE_TITLE", "SUBSTANCE_SOURCING_TYPE_DESCRIPTION"] },
-  { key: "substance_type", label: "Ingredient Types", from: "substance_type", searchCol: "SUBSTANCE_TYPE_TITLE", columns: ["SUBSTANCE_TYPE_ID", "SUBSTANCE_TYPE_TITLE", "SUBSTANCE_TYPE_DESCRIPTION"] },
-  { key: "linkage_readable", label: "Linkage", from: "linkage", searchCol: "LINKAGE_VALUE", columns: ["LINKAGEID", "COMPANY_ID", "LINKAGE_METHOD", "Linkage_Value_Type", "LINKAGE_VALUE", "DATA_SOURCE_ID"], renderCompanyName: true },
-  { key: "association_readable", label: "Associations", from: "association_readable", searchCol: "company_name", columns: ["ASSOCIATIONID", "company_name", "associated_company_name", "LINKAGE_METHOD", "LINKAGE_TYPE", "LINKAGE_VALUE"] },
-  { key: "consolidated_company_readable", label: "Consolidated", from: "consolidated_company_readable", searchCol: "CONSOLIDATED_NAME", columns: ["CONSOLIDATED_COMPANY_ID", "CONSOLIDATED_NAME", "COMPANY_NAME", "COMPANY_ID"] },
-  { key: "weighting_tag", label: "Weighting Tags", from: "weighting_tag", searchCol: "WEIGHTING_TAG_TITLE", columns: ["WEIGHTING_TAG_ID", "WEIGHTING_TAG_TITLE", "WEIGHTING_TAG_WEIGHT", "WEIGHTING_TAG_CATEGORY_ID"] },
-  { key: "data_source", label: "Data Sources", from: "data_source", searchCol: "DATA_SOURCE_NAME", columns: ["DATA_SOURCE_ID", "DATA_SOURCE_NAME", "DATA_SOURCE_TYPE", "URL", "DATE_LOGGED"] },
-  { key: "evidence_type", label: "Evidence Types", from: "evidence_type", searchCol: "EVIDENCE_TYPE_NAME", columns: ["EVIDENCE_TYPE_ID", "EVIDENCE_TYPE_NAME"] },
-  { key: "company_evaluation", label: "Company Signals", from: "company_evaluation", searchCol: "COMPANY_NAME", columns: ["COMPANY_ID", "COMPANY_NAME", "EVIDENCE_COMPANY_WEIGHT", "TOTAL_WEIGHT"] },
+  { key: "company", label: "Companies", publicLabel: "Companies", description: "Browse synthetic demo companies with business type and region context.", visibleByDefault: true, from: "company", searchCol: "COMPANY_NAME", searchPlaceholder: "Search companies...", columns: ["COMPANY_ID", "COMPANY_NAME", "CHINESE_NAME", "ACTIVE_INACTIVE", "BUSINESS_TYPE", "PRC_HOME_BASE", "GOV_COMPLICITY"] },
+  { key: "evidence_readable", label: "Source Evidence", publicLabel: "Source Evidence", description: "Review source-bearing evidence rows tied to companies, ingredients, and provenance URLs.", visibleByDefault: true, from: "evidence_readable", searchCol: "company_name", searchPlaceholder: "Search source evidence...", columns: ["EVIDENCE_ID", "company_name", "substance_name", "evidence_type", "data_source", "LISTED_NAME_SUBSTANCE", "REGION", "EVIDENCE_WEIGHT", "URL"], defaultSort: "EVIDENCE_ID", defaultDir: "asc" },
+  { key: "company_score_v2", label: "Scores (v2)", publicLabel: "Scores (v2)", description: "Internal score outputs used to build company signals.", visibleByDefault: false, from: "company_score_v2", searchCol: "COMPANY_NAME", columns: ["COMPANY_ID", "COMPANY_NAME", "total_score_v2", "evidence_score", "substance_score", "company_tag_score", "legacy_score", "evidence_count", "substances_linked"] },
+  { key: "substance_reference", label: "Ingredients", publicLabel: "Ingredients", description: "Inspect canonical ingredient references and their descriptive context.", visibleByDefault: true, from: "substance_reference", searchCol: "SUBSTANCE_NAME", searchPlaceholder: "Search ingredients...", columns: ["SUBSTANCE_REFERENCE_ID", "SUBSTANCE_NAME", "SUBSTANCE_ID", "SUBSTANCE_WEIGHT", "SUBSTANCE_DESCRIPTION"] },
+  { key: "substance_sourcing", label: "Ingredient Aliases", publicLabel: "Ingredient Aliases", description: "Internal ingredient alias and sourcing compatibility records.", visibleByDefault: false, from: "substance_sourcing", searchCol: "SUBSTANCE_SOURCING_LOCAL_NAME", columns: ["SUBSTANCE_SOURCING_ID", "SUBSTANCE_ID", "SUBSTANCE_SOURCING_LOCAL_NAME", "SUBSTANCE_SOURCING_TYPE_ID", "DATA_SOURCE_ID", "SUBSTANCE_SOURCING_PRIMARY"] },
+  { key: "substance_sourcing_type", label: "Sourcing Types", publicLabel: "Sourcing Types", description: "Internal sourcing-type reference rows.", visibleByDefault: false, from: "substance_sourcing_type", searchCol: "SUBSTANCE_SOURCING_TYPE_TITLE", columns: ["SUBSTANCE_SOURCING_TYPE_ID", "SUBSTANCE_SOURCING_TYPE_TITLE", "SUBSTANCE_SOURCING_TYPE_DESCRIPTION"] },
+  { key: "substance_type", label: "Ingredient Types", publicLabel: "Ingredient Types", description: "Internal ingredient type reference rows.", visibleByDefault: false, from: "substance_type", searchCol: "SUBSTANCE_TYPE_TITLE", columns: ["SUBSTANCE_TYPE_ID", "SUBSTANCE_TYPE_TITLE", "SUBSTANCE_TYPE_DESCRIPTION"] },
+  { key: "linkage_readable", label: "Network Links", publicLabel: "Network Links", description: "Inspect shared identifiers and infrastructure values that connect companies.", visibleByDefault: true, from: "linkage", searchCol: "LINKAGE_VALUE", searchPlaceholder: "Search network links...", columns: ["LINKAGEID", "COMPANY_ID", "LINKAGE_METHOD", "Linkage_Value_Type", "LINKAGE_VALUE", "DATA_SOURCE_ID"], renderCompanyName: true },
+  { key: "association_readable", label: "Associations", publicLabel: "Associations", description: "Review company-to-company associations derived from shared infrastructure and evidence.", visibleByDefault: true, from: "association_readable", searchCol: "company_name", searchPlaceholder: "Search associations...", columns: ["ASSOCIATIONID", "company_name", "associated_company_name", "LINKAGE_METHOD", "LINKAGE_TYPE", "LINKAGE_VALUE"] },
+  { key: "consolidated_company_readable", label: "Consolidated", publicLabel: "Consolidated", description: "Internal helper table for company name consolidation.", visibleByDefault: false, from: "consolidated_company_readable", searchCol: "CONSOLIDATED_NAME", columns: ["CONSOLIDATED_COMPANY_ID", "CONSOLIDATED_NAME", "COMPANY_NAME", "COMPANY_ID"] },
+  { key: "weighting_tag", label: "Weighting Tags", publicLabel: "Weighting Tags", description: "Internal weighting and scoring support tags.", visibleByDefault: false, from: "weighting_tag", searchCol: "WEIGHTING_TAG_TITLE", columns: ["WEIGHTING_TAG_ID", "WEIGHTING_TAG_TITLE", "WEIGHTING_TAG_WEIGHT", "WEIGHTING_TAG_CATEGORY_ID"] },
+  { key: "data_source", label: "Source Pages", publicLabel: "Source Pages", description: "Inspect source page and dataset provenance rows tied to the synthetic demo evidence.", visibleByDefault: true, from: "data_source", searchCol: "DATA_SOURCE_NAME", searchPlaceholder: "Search source pages...", columns: ["DATA_SOURCE_ID", "DATA_SOURCE_NAME", "DATA_SOURCE_TYPE", "URL", "DATE_LOGGED"] },
+  { key: "evidence_type", label: "Evidence Types", publicLabel: "Evidence Types", description: "Internal evidence type reference rows.", visibleByDefault: false, from: "evidence_type", searchCol: "EVIDENCE_TYPE_NAME", columns: ["EVIDENCE_TYPE_ID", "EVIDENCE_TYPE_NAME"] },
+  { key: "company_evaluation", label: "Company Signals", publicLabel: "Company Signals", description: "Internal company scoring and signal support rows.", visibleByDefault: false, from: "company_evaluation", searchCol: "COMPANY_NAME", columns: ["COMPANY_ID", "COMPANY_NAME", "EVIDENCE_COMPANY_WEIGHT", "TOTAL_WEIGHT"] },
 ];
+const PUBLIC_EXPLORER_TABLE_ORDER = ["company", "substance_reference", "evidence_readable", "data_source", "linkage_readable", "association_readable"];
+const PUBLIC_EXPLORER_TABLES = PUBLIC_EXPLORER_TABLE_ORDER
+  .map(key => EXPLORER_TABLES.find(table => table.key === key))
+  .filter(Boolean);
+const DEFAULT_PUBLIC_EXPLORER_TABLE = PUBLIC_EXPLORER_TABLES[0];
+const PUBLIC_EXPLORER_TABLE_KEYS = new Set(PUBLIC_EXPLORER_TABLES.map(table => table.key));
+const EXPLORER_TABLE_STORAGE_KEY = "scrape_bake_public_explorer_table";
+const EXPLORER_CONTEXT_FALLBACKS = {
+  company_score_v2: "company",
+  company_evaluation: "company",
+  consolidated_company_readable: "company",
+  substance_sourcing: "substance_reference",
+  substance_sourcing_type: "substance_reference",
+  substance_type: "substance_reference",
+  weighting_tag: "association_readable",
+  evidence_type: "evidence_readable",
+};
+
+function resolvePublicExplorerTable(tableKey) {
+  if (tableKey && PUBLIC_EXPLORER_TABLE_KEYS.has(tableKey)) {
+    return PUBLIC_EXPLORER_TABLES.find(table => table.key === tableKey) || DEFAULT_PUBLIC_EXPLORER_TABLE;
+  }
+  const fallbackKey = EXPLORER_CONTEXT_FALLBACKS[tableKey];
+  if (fallbackKey && PUBLIC_EXPLORER_TABLE_KEYS.has(fallbackKey)) {
+    return PUBLIC_EXPLORER_TABLES.find(table => table.key === fallbackKey) || DEFAULT_PUBLIC_EXPLORER_TABLE;
+  }
+  return DEFAULT_PUBLIC_EXPLORER_TABLE;
+}
 
 // ── Scrape Analysis Tab ────────────────────────────────────────────────────
 function LegacyScrapeAnalysis({ dark }) {
@@ -4931,14 +4959,18 @@ function searchResultToDetailRecord(result) {
 
 function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceToDossier, isEvidenceInDossier, explorerContextRequest, onHandledExplorerContextRequest }) {
   const T = dark ? DARK : LIGHT;
-  const [activeTable, setActiveTable] = useState(EXPLORER_TABLES[0]);
+  const [activeTable, setActiveTable] = useState(() => {
+    if (typeof window === "undefined") return DEFAULT_PUBLIC_EXPLORER_TABLE;
+    const storedTableKey = window.localStorage.getItem(EXPLORER_TABLE_STORAGE_KEY);
+    return resolvePublicExplorerTable(storedTableKey);
+  });
   const [searchQ, setSearchQ] = useState("");
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [sortCol, setSortCol] = useState(EXPLORER_TABLES[0].defaultSort || null);
-  const [sortDir, setSortDir] = useState(EXPLORER_TABLES[0].defaultDir || "asc");
+  const [sortCol, setSortCol] = useState(activeTable.defaultSort || null);
+  const [sortDir, setSortDir] = useState(activeTable.defaultDir || "asc");
   const [detailRecord, setDetailRecord] = useState(null);
   const [selectedEvidenceRowIds, setSelectedEvidenceRowIds] = useState([]);
   const dataRequestRef = useRef(0);
@@ -4979,8 +5011,23 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
   }, [activeTable.key, page, searchQ, sortCol, sortDir]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const publicTable = resolvePublicExplorerTable(activeTable.key);
+    if (publicTable.key !== activeTable.key) {
+      setActiveTable(publicTable);
+      setSortCol(publicTable.defaultSort || null);
+      setSortDir(publicTable.defaultDir || "asc");
+      setPage(0);
+      setDetailRecord(null);
+      window.localStorage.setItem(EXPLORER_TABLE_STORAGE_KEY, publicTable.key);
+      return;
+    }
+    window.localStorage.setItem(EXPLORER_TABLE_STORAGE_KEY, activeTable.key);
+  }, [activeTable]);
+
+  useEffect(() => {
     if (!explorerContextRequest) return;
-    const requestedTable = EXPLORER_TABLES.find(tbl => tbl.key === explorerContextRequest.tableKey) || EXPLORER_TABLES[0];
+    const requestedTable = resolvePublicExplorerTable(explorerContextRequest.tableKey);
     setActiveTable(requestedTable);
     setSearchQ(explorerContextRequest.search || "");
     setPage(0);
@@ -5049,16 +5096,19 @@ function DataExplorer({ dark, onSelectCompany, onSelectArtifact, onAddEvidenceTo
     <div style={{ height: "100%", display: "flex", flexDirection: "column", fontFamily: "Georgia,serif" }}>
       <div style={{ padding: "14px 24px 0", borderBottom: `1px solid ${T.border}`, background: T.surface, overflowX: "auto" }}>
         <div style={{ display: "flex", gap: 2, minWidth: "max-content" }}>
-          {EXPLORER_TABLES.map(tbl => (
+          {PUBLIC_EXPLORER_TABLES.map(tbl => (
               <button key={tbl.key} onClick={() => handleTableChange(tbl)}
-                style={{ padding: "7px 14px", borderRadius: "6px 6px 0 0", border: `1px solid ${activeTable.key === tbl.key ? T.border : "transparent"}`, borderBottom: activeTable.key === tbl.key ? `2px solid ${T.accent}` : "1px solid transparent", background: activeTable.key === tbl.key ? T.bg : "transparent", color: activeTable.key === tbl.key ? T.accent : T.textMuted, fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif", fontWeight: activeTable.key === tbl.key ? 700 : 400, whiteSpace: "nowrap" }}>{tbl.label}</button>
+                style={{ padding: "7px 14px", borderRadius: "6px 6px 0 0", border: `1px solid ${activeTable.key === tbl.key ? T.border : "transparent"}`, borderBottom: activeTable.key === tbl.key ? `2px solid ${T.accent}` : "1px solid transparent", background: activeTable.key === tbl.key ? T.bg : "transparent", color: activeTable.key === tbl.key ? T.accent : T.textMuted, fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif", fontWeight: activeTable.key === tbl.key ? 700 : 400, whiteSpace: "nowrap" }}>{tbl.publicLabel || tbl.label}</button>
           ))}
         </div>
+      </div>
+      <div style={{ padding: "10px 24px", borderBottom: `1px solid ${T.border}`, background: T.accentBg, color: T.textMid, fontSize: 11, lineHeight: 1.6 }}>
+        This public view shows a curated subset of the synthetic demo tables: companies, ingredients, source evidence, source pages, network links, and associations. Internal scoring and compatibility tables are hidden by default.
       </div>
       <div style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${T.border}`, background: T.surfaceAlt }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.surface, border: `1px solid ${searchQ ? T.accent : T.border}`, borderRadius: 6, padding: "6px 12px", flex: 1, maxWidth: 400 }}>
           <span style={{ color: T.textMuted, fontSize: 13 }}>⌕</span>
-            <input value={searchQ} onChange={e => handleSearchChange(e.target.value)} placeholder={activeTable.searchCol ? `Search by ${activeTable.searchCol}...` : "No search available"} disabled={!activeTable.searchCol}
+            <input value={searchQ} onChange={e => handleSearchChange(e.target.value)} placeholder={activeTable.searchPlaceholder || (activeTable.searchCol ? `Search by ${activeTable.searchCol}...` : "No search available")} disabled={!activeTable.searchCol}
               style={{ background: "none", border: "none", outline: "none", color: T.text, fontSize: 11, fontFamily: "Georgia,serif", flex: 1 }} />
             {searchQ && <button onClick={() => handleSearchChange("")} style={{ background: "none", border: "none", color: T.textMuted, cursor: "pointer", fontSize: 12 }}>✕</button>}
         </div>
